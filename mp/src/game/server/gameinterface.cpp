@@ -1457,8 +1457,8 @@ void CServerGameDLL::CreateNetworkStringTables( void )
 	PrecacheMaterial( "debug/debugempty" );
 	Assert( GetMaterialIndex( "debug/debugempty" ) == 0 );
 
-	PrecacheParticleSystem( "error" );	// ensure error particle system is handy
-	Assert( GetParticleSystemIndex( "error" ) == 0 );
+	PrecacheParticleSystem( "blood_spurt" );	// ensure error particle system is handy
+	Assert( GetParticleSystemIndex( "blood_spurt" ) == 0 );
 
 	CreateNetworkStringTables_GameRules();
 
@@ -2299,7 +2299,7 @@ const char *GetParticleSystemNameFromIndex( int nMaterialIndex )
 {
 	if ( nMaterialIndex < g_pStringTableParticleEffectNames->GetMaxStrings() )
 		return g_pStringTableParticleEffectNames->GetString( nMaterialIndex );
-	return "error";
+	return "blood_spurt";
 }
 
 //-----------------------------------------------------------------------------

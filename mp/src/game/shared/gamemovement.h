@@ -14,6 +14,13 @@
 
 #include "igamemovement.h"
 #include "cmodel.h"
+
+#ifndef CLIENT_DLL
+#include "hl2mp_player.h"
+#else
+#include "c_hl2mp_player.h"
+#endif
+
 #include "tier0/vprof.h"
 
 #define CTEXTURESMAX		512			// max number of textures loaded
@@ -63,6 +70,13 @@ public:
 #define BRUSH_ONLY true
 	virtual unsigned int PlayerSolidMask( bool brushOnly = false );	///< returns the solid mask for the given player, so bots can have a more-restrictive set
 	CBasePlayer		*player;
+
+#ifndef CLIENT_DLL
+	CHL2MP_Player	*hl2mp_player;
+#else
+	C_HL2MP_Player	*hl2mp_player;
+#endif
+
 	CMoveData *GetMoveData() { return mv; }
 protected:
 	// Input/Output for this movement
@@ -246,6 +260,8 @@ protected:
 	virtual void	SetGroundEntity( trace_t *pm );
 
 	virtual void	StepMove( Vector &vecDestination, trace_t &trace );
+
+	void JetMove(void);
 
 	// when we step on ground that's too steep, search to see if there's any ground nearby that isn't too steep
 	void			TryTouchGroundInQuadrants( const Vector& start, const Vector& end, unsigned int fMask, int collisionGroup, trace_t& pm );

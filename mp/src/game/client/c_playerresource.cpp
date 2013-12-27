@@ -66,8 +66,8 @@ C_PlayerResource::C_PlayerResource()
 	}
 
 #ifdef HL2MP
-	m_Colors[TEAM_COMBINE] = COLOR_BLUE;
-	m_Colors[TEAM_REBELS] = COLOR_RED;
+	m_Colors[TEAM_HUMANS] = COLOR_RED;
+	m_Colors[TEAM_SPIDERS] = COLOR_BLUE;
 	m_Colors[TEAM_UNASSIGNED] = COLOR_YELLOW;
 #endif
 
@@ -154,11 +154,13 @@ bool C_PlayerResource::IsAlive(int iIndex )
 	return m_bAlive[iIndex];
 }
 
-int C_PlayerResource::GetTeam(int iIndex )
+int C_PlayerResource::GetTeam(int iIndex)
 {
 	if ( iIndex < 1 || iIndex > MAX_PLAYERS )
 	{
-		Assert( false );
+		//Assert( false );
+		// sometimes Ent 0 is sent for World entity,
+		// but this is still called for HUD display
 		return 0;
 	}
 	else

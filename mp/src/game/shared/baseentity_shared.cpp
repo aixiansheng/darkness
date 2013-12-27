@@ -1604,7 +1604,9 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 	bool bDoServerEffects = true;
 
 #if defined( HL2MP ) && defined( GAME_DLL )
-	bDoServerEffects = false;
+	if (info.m_iAmmoType != pAmmoDef->Index("spike")) {
+		bDoServerEffects = false;
+	}
 #endif
 
 #if defined( GAME_DLL )

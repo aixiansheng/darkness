@@ -276,10 +276,11 @@ void CGib::SpawnSpecificGibs(	CBaseEntity*	pVictim,
 	for (int i=0;i<nNumGibs;i++)
 	{
 		CGib *pGib = CREATE_ENTITY( CGib, "gib" );
-		pGib->Spawn( cModelName );
+		pGib->m_lifeTime = flLifetime;
+		pGib->Spawn( cModelName, flLifetime );
 		pGib->m_nBody = i;
 		pGib->InitGib( pVictim, vMinVelocity, vMaxVelocity );
-		pGib->m_lifeTime = flLifetime;
+
 		
 		if ( pVictim != NULL )
 		{
@@ -608,7 +609,7 @@ void CGib::Spawn( const char *szGibModel )
 	m_lifeTime = 25;
 	SetTouch ( &CGib::BounceGibTouch );
 
-    m_bForceRemove = false;
+    m_bForceRemove = true;
 
 	m_material = matNone;
 	m_cBloodDecals = 5;// how many blood decals this gib can place (1 per bounce until none remain). 

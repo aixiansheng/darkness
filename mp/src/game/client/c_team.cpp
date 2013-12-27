@@ -33,6 +33,8 @@ IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_Team, DT_Team, CTeam)
 	RecvPropInt( RECVINFO(m_iTeamNum)),
 	RecvPropInt( RECVINFO(m_iScore)),
 	RecvPropInt( RECVINFO(m_iRoundsWon) ),
+	RecvPropInt( RECVINFO(asset_points) ),
+	RecvPropInt( RECVINFO(num_spawns) ),
 	RecvPropString( RECVINFO(m_szTeamname)),
 	
 	RecvPropArray2( 
@@ -75,6 +77,9 @@ C_Team::C_Team()
 
 	// Add myself to the global list of team entities
 	g_Teams.AddToTail( this );
+
+	num_spawns = 0;
+	asset_points = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -85,6 +90,9 @@ C_Team::~C_Team()
 	g_Teams.FindAndRemove( this );
 }
 
+int C_Team::NumSpawnPoints(void) {
+	return num_spawns;
+}
 
 void C_Team::RemoveAllPlayers()
 {
@@ -96,6 +104,9 @@ void C_Team::PreDataUpdate( DataUpdateType_t updateType )
 	BaseClass::PreDataUpdate( updateType );
 }
 
+int C_Team::GetAssetPoints(void) {
+	return asset_points;
+}
 
 //-----------------------------------------------------------------------------
 // Gets the ith player on the team (may return NULL) 

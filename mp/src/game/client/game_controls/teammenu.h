@@ -72,6 +72,8 @@ protected:
 	// command callbacks
 	// MESSAGE_FUNC_INT( OnTeamButton, "TeamButton", team );
 
+	void OnCommand(const char *command);
+
 	IViewPort	*m_pViewPort;
 	vgui::RichText *m_pMapInfo;
 	vgui::HTML *m_pMapInfoHTML;

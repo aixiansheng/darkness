@@ -883,6 +883,10 @@ bool CHL2GameMovement::CheckLadderAutoMount( CFuncLadder *ladder, const Vector& 
 //-----------------------------------------------------------------------------
 bool CHL2GameMovement::LadderMove( void )
 {
+	if (hl2mp_player->GetTeamNumber() != TEAM_HUMANS) {
+		SetLadder(NULL);
+		return false;
+	}
 
 	if ( player->GetMoveType() == MOVETYPE_NOCLIP )
 	{

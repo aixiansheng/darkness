@@ -13,6 +13,8 @@
 #include "iclientmode.h"
 #include "vgui/ILocalize.h"
 #include "hl2mp_gamerules.h"
+#include "c_hl2mp_player.h"
+#include "class_info.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -141,6 +143,7 @@ void CTargetID::Paint()
 	{
 		C_BasePlayer *pPlayer = static_cast<C_BasePlayer*>(cl_entitylist->GetEnt( iEntIndex ));
 		C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
+		C_HL2MP_Player *p = ToHL2MPPlayer(pPlayer);
 
 		const char *printFormatString = NULL;
 		wchar_t wszPlayerName[ MAX_PLAYER_NAME_LENGTH ];
@@ -151,8 +154,17 @@ void CTargetID::Paint()
 		// Some entities we always want to check, cause the text may change
 		// even while we're looking at it
 		// Is it a player?
-		if ( IsPlayerIndex( iEntIndex ) )
+
+		if ( IsPlayerIndex( iEntIndex ))
 		{
+			if (p->GetTeamNumber() == TEAM_SPIDERS &&
+				p->m_iClassNumber == CLASS_GUARDIAN_IDX &&
+				p->IsStopped() == true) {
+
+					return;
+
+			}
+
 			c = GetColorForTargetTeam( pPlayer->GetTeamNumber() );
 
 			bShowPlayerName = true;

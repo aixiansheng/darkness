@@ -19,6 +19,8 @@
 #include "particle_parse.h"
 #include "KeyValues.h"
 #include "time.h"
+#include "ents/ent_infested_corpse.h"
+#include "class_info.h"
 
 #ifdef USES_ECON_ITEMS
 	#include "econ_item_constants.h"
@@ -30,7 +32,7 @@
 	#include "c_te_effect_dispatch.h"
 #else
 	#include "te_effect_dispatch.h"
-
+	#include "ents/egg.h"
 bool NPC_CheckBrushExclude( CBaseEntity *pEntity, CBaseEntity *pBrush );
 #endif
 
@@ -225,9 +227,50 @@ bool PassServerEntityFilter( const IHandleEntity *pTouch, const IHandleEntity *p
 	
 	// don't clip against owner
 	if ( pEntPass->GetOwnerEntity() == pEntTouch )
-		return false;	
+		return false;
 
 
+
+#ifndef CLIENT_DLL
+	//
+	// ghetto no-clipping on server-side only for eggs and for infested corpses
+	// i'd rather have a little jitter here for now than have another entity being
+	// synced with the client
+	//
+	const CEggEntity *egg;
+
+	if ((egg = dynamic_cast<const CEggEntity *>(pEntTouch)) != NULL) {
+		if (!(egg->ShouldCollideWithEntity(pEntPass))) {
+			return false;
+		}
+	} else 	if ((egg = dynamic_cast<const CEggEntity *>(pEntPass)) != NULL) {
+		if (!(egg->ShouldCollideWithEntity(pEntTouch))) {
+			return false;
+		}
+	}
+
+	const CInfestedCorpse *corpse;
+	CHL2MP_Player *player;
+
+	if ((corpse = dynamic_cast<const CInfestedCorpse *>(pEntTouch)) != NULL) {
+		player = corpse->GetCreator();
+		if (player && player->edict() == pEntPass->edict()) {
+			if (player->GetTeamNumber() == corpse->GetTeamNumber() && player->m_iClassNumber == CLASS_GUARDIAN_IDX) {
+				return false;
+			}
+		}
+	} else if ((corpse = dynamic_cast<const CInfestedCorpse *>(pEntPass)) != NULL) {
+		player = corpse->GetCreator();
+		if (player && player->edict() == pEntTouch->edict()) {
+			if (player->GetTeamNumber() == corpse->GetTeamNumber() && player->m_iClassNumber == CLASS_GUARDIAN_IDX) {
+				return false;
+			}
+		}
+	}
+
+#endif
+
+	
 	return true;
 }
 

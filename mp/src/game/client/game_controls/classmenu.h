@@ -20,6 +20,8 @@
 #include <game/client/iviewport.h>
 
 #include "mouseoverpanelbutton.h"
+#include "class_info.h"
+#include "c_hl2mp_player.h"
 
 namespace vgui
 {
@@ -41,8 +43,8 @@ public:
 
 	virtual const char *GetName( void ) { return PANEL_CLASS; }
 	virtual void SetData(KeyValues *data);
-	virtual void Reset();
-	virtual void Update() {};
+	virtual void Reset() {};
+	virtual void Update();
 	virtual bool NeedsUpdate( void ) { return false; }
 	virtual bool HasInputElements( void ) { return true; }
 	virtual void ShowPanel( bool bShow );
@@ -52,10 +54,12 @@ public:
 	virtual bool IsVisible() { return BaseClass::IsVisible(); }
 	virtual void SetParent( vgui::VPANEL parent ) { BaseClass::SetParent( parent ); }
 
+	virtual void OnThink(void);
+
 protected:
 
-	virtual vgui::Panel *CreateControlByName(const char *controlName);
-	virtual MouseOverPanelButton* CreateNewMouseOverPanelButton(vgui::EditablePanel *panel);
+	//virtual vgui::Panel *CreateControlByName(const char *controlName);
+	//virtual MouseOverPanelButton* CreateNewMouseOverPanelButton(vgui::EditablePanel *panel);
 
 	//vgui2 overrides
 	virtual void OnKeyCodePressed(vgui::KeyCode code);
@@ -69,10 +73,14 @@ protected:
 
 	IViewPort	*m_pViewPort;
 	ButtonCode_t m_iScoreBoardKey;
-	int			m_iTeam;
+	
 	vgui::EditablePanel *m_pPanel;
 
 	CUtlVector< MouseOverPanelButton * > m_mouseoverButtons;
+
+	void ShowClasses(class_info_t *infos, int num);
+
+	int	m_iTeam;
 };
 
 

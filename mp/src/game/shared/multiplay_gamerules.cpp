@@ -37,6 +37,8 @@
 	#include "team.h"
 	#include "usermessages.h"
 	#include "tier0/icommandline.h"
+	#include "ents/materiel.h"
+	#include "ents/ent_infested_corpse.h"
 
 #ifdef NEXT_BOT
 	#include "NextBotManager.h"
@@ -79,7 +81,7 @@ ConVar mp_timelimit( "mp_timelimit", "0", FCVAR_NOTIFY|FCVAR_REPLICATED, "game t
 #endif
 					);
 
-ConVar fraglimit( "mp_fraglimit","0", FCVAR_NOTIFY|FCVAR_REPLICATED, "The number of kills at which the map ends");
+//ConVar fraglimit( "mp_fraglimit","0", FCVAR_NOTIFY|FCVAR_REPLICATED, "The number of kills at which the map ends");
 
 ConVar mp_show_voice_icons( "mp_show_voice_icons", "1", FCVAR_REPLICATED, "Show overhead player voice icons when players are speaking.\n" );
 
@@ -617,19 +619,8 @@ ConVarRef suitcharger( "sk_suitcharger" );
 	//=========================================================
 	float CMultiplayRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 	{
-		int iFallDamage = (int)falldamage.GetFloat();
-
-		switch ( iFallDamage )
-		{
-		case 1://progressive
-			pPlayer->m_Local.m_flFallVelocity -= PLAYER_MAX_SAFE_FALL_SPEED;
-			return pPlayer->m_Local.m_flFallVelocity * DAMAGE_FOR_FALL_SPEED;
-			break;
-		default:
-		case 0:// fixed
-			return 10;
-			break;
-		}
+		pPlayer->m_Local.m_flFallVelocity -= PLAYER_MAX_SAFE_FALL_SPEED;
+		return pPlayer->m_Local.m_flFallVelocity * DAMAGE_FOR_FALL_SPEED;
 	} 
 
 	//=========================================================
@@ -710,10 +701,33 @@ ConVarRef suitcharger( "sk_suitcharger" );
 	//-----------------------------------------------------------------------------
 	CBasePlayer *CMultiplayRules::GetDeathScorer( CBaseEntity *pKiller, CBaseEntity *pInflictor )
 	{
+		CMateriel *mat;
+		CBasePlayer *creator;
+		CInfestedCorpse *corpse;
+
 		if ( pKiller)
 		{
 			if ( pKiller->Classify() == CLASS_PLAYER )
 				return (CBasePlayer*)pKiller;
+
+			mat = dynamic_cast<CMateriel *>(pKiller);
+			corpse = dynamic_cast<CInfestedCorpse *>(pKiller);
+			if (mat) {
+				//
+				// players can change teams after they make structures
+				// So only return a scorer when the creator is still on
+				// the same team as the item doing the killing
+				//
+				creator = ToBasePlayer(mat->GetCreator());
+				if (creator && creator->GetTeamNumber() == pKiller->GetTeamNumber()) {
+					return creator;
+				}
+			} else if (corpse) {
+				creator = ToBasePlayer(corpse->GetCreator());
+				if (creator && creator->GetTeamNumber() == pKiller->GetTeamNumber()) {
+					return creator;
+				}
+			}
 
 			// Killing entity might be specifying a scorer player
 			IScorer *pScorerInterface = dynamic_cast<IScorer*>( pKiller );

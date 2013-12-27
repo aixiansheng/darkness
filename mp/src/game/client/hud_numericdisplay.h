@@ -25,8 +25,10 @@ public:
 
 	void SetDisplayValue(int value);
 	void SetSecondaryValue(int value);
+	void SetThirdValue(int value);
 	void SetShouldDisplayValue(bool state);
 	void SetShouldDisplaySecondaryValue(bool state);
+	void SetShouldDisplayThirdValue(bool state);
 	void SetLabelText(const wchar_t *text);
 	void SetIndent(bool state);
 	void SetIsTime(bool state);
@@ -47,8 +49,9 @@ protected:
 
 	int m_iValue;
 	int m_iSecondaryValue;
+	int m_iThirdValue;
 	wchar_t m_LabelText[32];
-	bool m_bDisplayValue, m_bDisplaySecondaryValue;
+	bool m_bDisplayValue, m_bDisplaySecondaryValue, m_bDisplayThirdValue;
 	bool m_bIndent;
 	bool m_bIsTime;
 
@@ -67,6 +70,9 @@ protected:
 	CPanelAnimationVarAliasType( float, digit_ypos, "digit_ypos", "2", "proportional_float" );
 	CPanelAnimationVarAliasType( float, digit2_xpos, "digit2_xpos", "98", "proportional_float" );
 	CPanelAnimationVarAliasType( float, digit2_ypos, "digit2_ypos", "16", "proportional_float" );
+
+	CPanelAnimationVarAliasType( float, digit3_xpos, "digit3_xpos", "146", "proportional_float" );
+	CPanelAnimationVarAliasType( float, digit3_ypos, "digit3_ypos", "16", "proportional_float" );
 };
 
 

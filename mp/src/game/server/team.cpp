@@ -8,11 +8,18 @@
 #include "team.h"
 #include "player.h"
 #include "team_spawnpoint.h"
+#include "gameinterface.h"
+#include "ents/teleporter.h"
+#include "ents/egg.h"
+#include "ents/point_set.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 CUtlVector< CTeam * > g_Teams;
+CTeam *g_SpiderTeam;
+CTeam *g_HumanTeam;
+CPointSet *g_PointSet;
 
 //-----------------------------------------------------------------------------
 // Purpose: SendProxy that converts the Team's player UtlVector to entindexes
@@ -35,12 +42,13 @@ int SendProxyArrayLength_PlayerArray( const void *pStruct, int objectID )
 	return pTeam->m_aPlayers.Count();
 }
 
-
 // Datatable
 IMPLEMENT_SERVERCLASS_ST_NOBASE(CTeam, DT_Team)
 	SendPropInt( SENDINFO(m_iTeamNum), 5 ),
 	SendPropInt( SENDINFO(m_iScore), 0 ),
 	SendPropInt( SENDINFO(m_iRoundsWon), 8 ),
+	SendPropInt( SENDINFO(asset_points), 10, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO(num_spawns), 5, SPROP_UNSIGNED ),
 	SendPropString( SENDINFO( m_szTeamname ) ),
 
 	SendPropArray2( 
@@ -73,6 +81,17 @@ int GetNumberOfTeams( void )
 	return g_Teams.Size();
 }
 
+bool CTeam::spend_points(int p) {
+	if (p > asset_points)
+		return false;
+	
+	asset_points -= p;
+	return true;
+}
+
+void CTeam::reclaim_points(int p) {
+	asset_points += p;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Needed because this is an entity, but should never be used
@@ -80,6 +99,8 @@ int GetNumberOfTeams( void )
 CTeam::CTeam( void )
 {
 	memset( m_szTeamname.GetForModify(), 0, sizeof(m_szTeamname) );
+	asset_points = STUB_POINT_VALUE;
+	num_spawns = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -87,6 +108,7 @@ CTeam::CTeam( void )
 //-----------------------------------------------------------------------------
 CTeam::~CTeam( void )
 {
+	spawnQueue.Purge();
 	m_aSpawnPoints.Purge();
 	m_aPlayers.Purge();
 }
@@ -123,13 +145,98 @@ bool CTeam::ShouldTransmitToPlayer( CBasePlayer* pRecipient, CBaseEntity* pEntit
 //-----------------------------------------------------------------------------
 void CTeam::Init( const char *pName, int iNumber )
 {
-	InitializeSpawnpoints();
-	InitializePlayers();
-
 	m_iScore = 0;
 
 	Q_strncpy( m_szTeamname.GetForModify(), pName, MAX_TEAM_NAME_LENGTH );
 	m_iTeamNum = iNumber;
+
+	InitializeSpawnpoints();
+	InitializePlayers();
+
+	asset_points = STUB_POINT_VALUE;
+
+	num_spawns = 0;
+}
+
+void CTeam::InitPoints(void) {
+	int delta;
+
+	//
+	// this is the number of points used in level init
+	// which should be subtracted from the CPointSet's
+	// points
+	//
+	delta = STUB_POINT_VALUE - asset_points;
+
+	if (m_iTeamNum == TEAM_SPIDERS) {
+		asset_points = g_PointSet->SpiderPoints() - delta;
+	} else if (m_iTeamNum == TEAM_HUMANS) {
+		asset_points = g_PointSet->HumanPoints() - delta;
+	}
+
+	if (asset_points < 0) {
+		asset_points = 0;
+	}
+}
+
+void CTeam::RespawnPlayer(void) {
+	int i;
+	int cnt;
+	int r;
+	EHANDLE ent;
+	CBasePlayer *p;
+	CTeamSpawnPoint *sp;
+	CBaseEntity *parent;
+	CEggEntity *egg = NULL;
+	CTeleporterEntity *tele = NULL;
+
+	if (m_aSpawnPoints.Count() == 0)
+		return;
+
+	if (spawnQueue.Count() == 0)
+		return;
+
+	//ent = spawnQueue.Head();
+	ent = spawnQueue[0];
+	p = dynamic_cast<CBasePlayer *>(ent.Get());
+	if (p == NULL)
+		return;
+
+	//
+	// try to find a spawn for the player
+	// and dequeue the player if one is found
+	//
+	cnt = m_aSpawnPoints.Count();
+	r = random->RandomInt(1, cnt);
+	for (i = r; i < r + cnt; i++) {
+		sp = m_aSpawnPoints[i % cnt];
+		if (sp->IsValid(p)) {
+			parent = sp->GetParent();
+			if (parent) {
+				if ((egg = dynamic_cast<CEggEntity *>(parent)) != NULL) {
+					egg->SpawnSound();
+				} else if ((tele = dynamic_cast<CTeleporterEntity *>(parent)) != NULL) {
+					tele->SpawnSound();
+				}
+			}
+
+			sp->SpawnPlayer(p);
+			spawnQueue.Remove(0);
+
+			// move spawn to end of list
+			break;
+		}
+	}
+}
+
+void CTeam::EnqueueSpawn(CBasePlayer *p) {
+	EHANDLE ent;
+
+	ent = p;
+
+	if (spawnQueue.Find(ent) == spawnQueue.InvalidIndex()) {
+		spawnQueue.AddToTail(ent);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -172,6 +279,7 @@ void CTeam::InitializeSpawnpoints( void )
 void CTeam::AddSpawnpoint( CTeamSpawnPoint *pSpawnpoint )
 {
 	m_aSpawnPoints.AddToTail( pSpawnpoint );
+	num_spawns = m_aSpawnPoints.Size();
 }
 
 //-----------------------------------------------------------------------------
@@ -184,9 +292,19 @@ void CTeam::RemoveSpawnpoint( CTeamSpawnPoint *pSpawnpoint )
 		if ( m_aSpawnPoints[i] == pSpawnpoint )
 		{
 			m_aSpawnPoints.Remove( i );
-			return;
+			goto ret;
 		}
 	}
+
+ret:
+	num_spawns = m_aSpawnPoints.Size();
+}
+
+bool CTeam::HasSpawnPoints(void) {
+	if (m_aSpawnPoints.Count() > 0)
+		return true;
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -218,6 +336,7 @@ CBaseEntity *CTeam::SpawnPlayer( CBasePlayer *pPlayer )
 		{
 			// DevMsg( 1, "player: spawning at (%s)\n", STRING(m_aSpawnPoints[iSpawn]->m_iName) );
 			m_aSpawnPoints[iSpawn]->m_OnPlayerSpawn.FireOutput( pPlayer, m_aSpawnPoints[iSpawn] );
+			m_aSpawnPoints[iSpawn]->SpawnPlayer(pPlayer);
 
 			m_iLastSpawn = iSpawn;
 			return m_aSpawnPoints[iSpawn];
@@ -302,30 +421,6 @@ int CTeam::GetScore( void )
 void CTeam::ResetScores( void )
 {
 	SetScore(0);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CTeam::AwardAchievement( int iAchievement )
-{
-	Assert( iAchievement >= 0 && iAchievement < 255 );	// must fit in short 
-
-	CRecipientFilter filter;
-
-	int iNumPlayers = GetNumPlayers();
-
-	for ( int i=0;i<iNumPlayers;i++ )
-	{
-		if ( GetPlayer(i) )
-		{
-			filter.AddRecipient( GetPlayer(i) );
-		}
-	}
-
-	UserMessageBegin( filter, "AchievementEvent" );
-		WRITE_SHORT( iAchievement );
-	MessageEnd();
 }
 
 int CTeam::GetAliveMembers( void )

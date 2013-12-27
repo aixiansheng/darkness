@@ -11,6 +11,10 @@
 #include <KeyValues.h>
 #include "ammodef.h"
 
+#ifdef GAME_DLL
+#include "team.h"
+#endif
+
 #ifdef CLIENT_DLL
 	#include "c_hl2mp_player.h"
 #else
@@ -47,8 +51,8 @@ ConVar sv_report_client_settings("sv_report_client_settings", "0", FCVAR_GAMEDLL
 
 extern ConVar mp_chattime;
 
-extern CBaseEntity	 *g_pLastCombineSpawn;
-extern CBaseEntity	 *g_pLastRebelSpawn;
+extern CBaseEntity	 *g_pLastSpiderSpawn;
+extern CBaseEntity	 *g_pLastHumanSpawn;
 
 #define WEAPON_MAX_DISTANCE_FROM_SPAWN 64
 
@@ -71,7 +75,7 @@ END_NETWORK_TABLE()
 LINK_ENTITY_TO_CLASS( hl2mp_gamerules, CHL2MPGameRulesProxy );
 IMPLEMENT_NETWORKCLASS_ALIASED( HL2MPGameRulesProxy, DT_HL2MPGameRulesProxy )
 
-static HL2MPViewVectors g_HL2MPViewVectors(
+HL2MPViewVectors g_HL2MPViewVectors(
 	Vector( 0, 0, 64 ),       //VEC_VIEW (m_vView) 
 							  
 	Vector(-16, -16, 0 ),	  //VEC_HULL_MIN (m_vHullMin)
@@ -113,8 +117,8 @@ static const char *s_PreserveEnts[] =
 	"info_target",
 	"info_node_hint",
 	"info_player_deathmatch",
-	"info_player_combine",
-	"info_player_rebel",
+	"info_spider_spawn",
+	"info_human_spawn",
 	"info_map_parameters",
 	"keyframe_rope",
 	"move_rope",
@@ -179,13 +183,14 @@ char *sTeamNames[] =
 {
 	"Unassigned",
 	"Spectator",
-	"Combine",
-	"Rebels",
+	"Spiders",
+	"Humans",
 };
 
 CHL2MPRules::CHL2MPRules()
 {
 #ifndef CLIENT_DLL
+	
 	// Create the team managers
 	for ( int i = 0; i < ARRAYSIZE( sTeamNames ); i++ )
 	{
@@ -195,7 +200,7 @@ CHL2MPRules::CHL2MPRules()
 		g_Teams.AddToTail( pTeam );
 	}
 
-	m_bTeamPlayEnabled = teamplay.GetBool();
+	m_bTeamPlayEnabled = true;
 	m_flIntermissionEndTime = 0.0f;
 	m_flGameStartTime = 0;
 
@@ -237,8 +242,8 @@ void CHL2MPRules::CreateStandardEntities( void )
 
 	BaseClass::CreateStandardEntities();
 
-	g_pLastCombineSpawn = NULL;
-	g_pLastRebelSpawn = NULL;
+	g_pLastSpiderSpawn = NULL;
+	g_pLastHumanSpawn = NULL;
 
 #ifdef DBGFLAG_ASSERT
 	CBaseEntity *pEnt = 
@@ -283,12 +288,14 @@ bool CHL2MPRules::IsIntermission( void )
 void CHL2MPRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &info )
 {
 #ifndef CLIENT_DLL
+
 	if ( IsIntermission() )
 		return;
+
 	BaseClass::PlayerKilled( pVictim, info );
+
 #endif
 }
-
 
 void CHL2MPRules::Think( void )
 {
@@ -325,8 +332,8 @@ void CHL2MPRules::Think( void )
 	{
 		if( IsTeamplay() == true )
 		{
-			CTeam *pCombine = g_Teams[TEAM_COMBINE];
-			CTeam *pRebels = g_Teams[TEAM_REBELS];
+			CTeam *pCombine = g_Teams[TEAM_SPIDERS];
+			CTeam *pRebels = g_Teams[TEAM_HUMANS];
 
 			if ( pCombine->GetScore() >= flFragLimit || pRebels->GetScore() >= flFragLimit )
 			{
@@ -370,6 +377,40 @@ void CHL2MPRules::Think( void )
 		m_flRestartGameTime = gpGlobals->curtime + 5;
 		m_bAwaitingReadyRestart = false;
 	}
+
+	// see if all spawns, all players on any team are dead
+	// if so, GoToIntermission()
+
+	if (!g_SpiderTeam->HasSpawnPoints() || !g_HumanTeam->HasSpawnPoints()) {
+		int num_spiders = 0;
+		int num_humans = 0;
+		int i;
+
+		for (i = 0; i < MAX_PLAYERS; i++) {
+			CBasePlayer *p = UTIL_PlayerByIndex(i);
+			int team;
+
+			if (p && !(p->IsDead())) {
+				team = p->GetTeamNumber();
+				if (team == TEAM_SPIDERS)
+					num_spiders++;
+				if (team == TEAM_HUMANS)
+					num_humans++;
+			}
+		}
+
+		if ((num_spiders == 0 && !g_SpiderTeam->HasSpawnPoints()) ||
+			(num_humans == 0 && !g_HumanTeam->HasSpawnPoints())) {
+				GoToIntermission();
+				return;
+		}
+	}
+
+	// respawn up to 2 players on each team any given think
+	g_SpiderTeam->RespawnPlayer();
+	g_SpiderTeam->RespawnPlayer();
+	g_HumanTeam->RespawnPlayer();
+	g_HumanTeam->RespawnPlayer();
 
 	ManageObjectRelocation();
 
@@ -801,11 +842,11 @@ void CHL2MPRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 		{
 			if ( Q_stristr( szModelName, "models/human") )
 			{
-				pHL2Player->ChangeTeam( TEAM_REBELS );
+				pHL2Player->ChangeTeam( TEAM_HUMANS );
 			}
 			else
 			{
-				pHL2Player->ChangeTeam( TEAM_COMBINE );
+				pHL2Player->ChangeTeam( TEAM_SPIDERS );
 			}
 		}
 	}
@@ -836,12 +877,8 @@ int CHL2MPRules::PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget 
 	return GR_NOTTEAMMATE;
 }
 
-const char *CHL2MPRules::GetGameDescription( void )
-{ 
-	if ( IsTeamplay() )
-		return "Team Deathmatch"; 
-
-	return "Deathmatch"; 
+const char *CHL2MPRules::GetGameDescription( void ) { 
+	return "Darkness: Source"; 
 } 
 
 bool CHL2MPRules::IsConnectedUserInfoChangeAllowed( CBasePlayer *pPlayer )
@@ -925,16 +962,27 @@ CAmmoDef *GetAmmoDef()
 		bInitted = true;
 
 		def.AddAmmoType("AR2",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			60,			BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("AR2AltFire",		DMG_DISSOLVE,				TRACER_NONE,			0,			0,			3,			0,							0 );
-		def.AddAmmoType("Pistol",			DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			150,		BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("SMG1",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			225,		BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("357",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			12,			BULLET_IMPULSE(800, 5000),	0 );
+		def.AddAmmoType("AR2AltFire",		DMG_DISSOLVE,				TRACER_NONE,			0,			0,			3,			0,				0 );
+		def.AddAmmoType("Pistol",			DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			36,			BULLET_IMPULSE(200, 1225),	0 );
+		def.AddAmmoType("SMG1",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			100,		BULLET_IMPULSE(200, 1225),		0 );
+		def.AddAmmoType("357",				DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,			0,			12,			BULLET_IMPULSE(800, 5000),	0 );
 		def.AddAmmoType("XBowBolt",			DMG_BULLET,					TRACER_LINE,			0,			0,			10,			BULLET_IMPULSE(800, 8000),	0 );
-		def.AddAmmoType("Buckshot",			DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,			0,			0,			30,			BULLET_IMPULSE(400, 1200),	0 );
-		def.AddAmmoType("RPG_Round",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,							0 );
-		def.AddAmmoType("SMG1_Grenade",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,							0 );
-		def.AddAmmoType("Grenade",			DMG_BURN,					TRACER_NONE,			0,			0,			5,			0,							0 );
-		def.AddAmmoType("slam",				DMG_BURN,					TRACER_NONE,			0,			0,			5,			0,							0 );
+		def.AddAmmoType("Buckshot",			DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,			0,			0,			12,			BULLET_IMPULSE(400, 1200),	0 );
+		def.AddAmmoType("RPG_Round",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,				0 );
+		def.AddAmmoType("SMG1_Grenade",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,				0 );
+		def.AddAmmoType("Grenade",			DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,				0 );
+		def.AddAmmoType("slam",				DMG_BURN,					TRACER_NONE,			0,			0,			1,			0,				0 );
+		def.AddAmmoType("grenade_smk",		DMG_BURN,					TRACER_NONE,			0,			0,			2,			0,				0 );
+		def.AddAmmoType("grenade_spike",	DMG_BULLET,					TRACER_NONE,			0,			0,			3,			0,				0 );
+		def.AddAmmoType("grenade_guardian",	DMG_BULLET,					TRACER_NONE,			0,			0,			4,			0,				0 );
+		def.AddAmmoType("grenade_acid",		DMG_ACID,					TRACER_NONE,			0,			0,			3,			0,				0 );
+		def.AddAmmoType("stingerfire",		DMG_BURN,					TRACER_NONE,			0,			0,			10,			0, 				0 );
+		def.AddAmmoType("spike",			DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,			0,			20,			BULLET_IMPULSE(800, 4000), 	0 );
+		def.AddAmmoType("grenade_c4",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,				0 );
+		def.AddAmmoType("plasma_bolt",		DMG_PLASMA,					TRACER_LINE,			0,			0,			150,		0, 				0 );
+		def.AddAmmoType("plasma",			DMG_PLASMA | DMG_ALWAYSGIB,	TRACER_LINE,			0,			0,			200,		BULLET_IMPULSE(200, 1000), 0 );
+		def.AddAmmoType("xp_shells",		DMG_BLAST,					TRACER_LINE,			0,			0,			3,			0, 				0 );
+		def.AddAmmoType("dronespit",		DMG_BURN,					TRACER_NONE,			0,			0,			7,			0, 				0 );
 	}
 
 	return &def;
@@ -959,7 +1007,7 @@ CAmmoDef *GetAmmoDef()
 		int count = 1;
 		count = clamp( count, 1, 16 );
 
-		int iTeam = TEAM_COMBINE;
+		int iTeam = TEAM_SPIDERS;
 				
 		// Look at -frozen.
 		bool bFrozen = false;
@@ -1030,17 +1078,17 @@ void CHL2MPRules::RestartGame()
 
 	// Respawn entities (glass, doors, etc..)
 
-	CTeam *pRebels = GetGlobalTeam( TEAM_REBELS );
-	CTeam *pCombine = GetGlobalTeam( TEAM_COMBINE );
+	CTeam *pHumans = GetGlobalTeam( TEAM_HUMANS );
+	CTeam *pSpiders = GetGlobalTeam( TEAM_SPIDERS );
 
-	if ( pRebels )
+	if ( pHumans )
 	{
-		pRebels->SetScore( 0 );
+		pHumans->SetScore( 0 );
 	}
 
-	if ( pCombine )
+	if ( pSpiders )
 	{
-		pCombine->SetScore( 0 );
+		pSpiders->SetScore( 0 );
 	}
 
 	m_flIntermissionEndTime = 0;

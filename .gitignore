@@ -18,15 +18,25 @@ ipch
 *.opensdf
 *.idb
 *.vcxproj
+*.vcxproj.filters
 *.sln
+[Dd]ebug*/
+[Rr]elease*/
+*.vpc.sentinel
+*.vpc_crc
+**/generated_proto/**
+**/src/utils/sapi51/**
+**game/**/bin/**
 
 # OSX/Linux build products
+# *.DS_Store
 *.mak
 *.mak.vpc_crc
 *.xcodeproj/
 obj*/
 !devtools/*.mak
 !utils/smdlexp/smdlexp.mak
+*_osx32
 
 # Specific Source build products
 client.pdb

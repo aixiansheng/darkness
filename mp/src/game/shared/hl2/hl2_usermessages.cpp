@@ -17,6 +17,9 @@
 
 void RegisterUserMessages( void )
 {
+	usermessages->Register( "ShowBuildMenu", 1);
+	usermessages->Register( "Points", 1);
+	usermessages->Register( "ItemInfo", 4 );
 	usermessages->Register( "Geiger", 1 );
 	usermessages->Register( "Train", 1 );
 	usermessages->Register( "HudText", -1 );

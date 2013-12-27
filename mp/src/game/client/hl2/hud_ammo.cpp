@@ -15,6 +15,7 @@
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
 #include "ihudlcd.h"
+#include "weapon_shotgun.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -36,6 +37,7 @@ public:
 
 	void SetAmmo(int ammo, bool playAnimation);
 	void SetAmmo2(int ammo2, bool playAnimation);
+	void SetGrenades(int grenades, bool playAnimation);
 	virtual void Paint( void );
 
 protected:
@@ -50,6 +52,7 @@ private:
 	CHandle< C_BaseEntity > m_hCurrentVehicle;
 	int		m_iAmmo;
 	int		m_iAmmo2;
+	int		m_iGrenades;
 	CHudTexture *m_iconPrimaryAmmo;
 };
 
@@ -66,6 +69,7 @@ CHudAmmo::CHudAmmo( const char *pElementName ) : BaseClass(NULL, "HudAmmo"), CHu
 	hudlcd->SetGlobalStat( "(ammo_secondary)", "0" );
 	hudlcd->SetGlobalStat( "(weapon_print_name)", "" );
 	hudlcd->SetGlobalStat( "(weapon_name)", "" );
+	hudlcd->SetGlobalStat( "(grenades)", "0" );
 }
 
 //-----------------------------------------------------------------------------
@@ -75,6 +79,7 @@ void CHudAmmo::Init( void )
 {
 	m_iAmmo		= -1;
 	m_iAmmo2	= -1;
+	m_iGrenades	= -1;
 	
 	m_iconPrimaryAmmo = NULL;
 
@@ -107,6 +112,7 @@ void CHudAmmo::Reset()
 	m_hCurrentVehicle = NULL;
 	m_iAmmo = 0;
 	m_iAmmo2 = 0;
+	m_iGrenades = 0;
 
 	UpdateAmmoDisplays();
 }
@@ -116,10 +122,27 @@ void CHudAmmo::Reset()
 //-----------------------------------------------------------------------------
 void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 {
+	C_HL2MP_Player *p;
+
 	// Clear out the vehicle entity
 	m_hCurrentVehicle = NULL;
 
 	C_BaseCombatWeapon *wpn = GetActiveWeapon();
+	C_WeaponShotgun *sg;
+	int grenade_type;
+	int grenades;
+
+	p = ToHL2MPPlayer(C_BasePlayer::GetLocalPlayer());
+	if (!p)
+		return;
+
+	grenade_type = p->GrenadeType();
+
+	if (grenade_type > 0)
+		grenades = p->GetAmmoCount(grenade_type);
+	else
+		grenades = 0;
+
 
 	hudlcd->SetGlobalStat( "(weapon_print_name)", wpn ? wpn->GetPrintName() : " " );
 	hudlcd->SetGlobalStat( "(weapon_name)", wpn ? wpn->GetName() : " " );
@@ -140,6 +163,18 @@ void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 	// Get our icons for the ammo types
 	m_iconPrimaryAmmo = gWR.GetAmmoIconFromWeapon( wpn->GetPrimaryAmmoType() );
 
+	sg = dynamic_cast<C_WeaponShotgun *>(wpn);
+	if (sg) {
+		if (sg->currentAmmoType == sg->m_iPrimaryAmmoType) {
+			SetLabelText(L"BUCK");
+		} else {
+			SetLabelText(L"XP");
+		}
+	} else {
+		SetLabelText(L"AMMO");
+	}
+
+
 	// get the ammo in our clip
 	int ammo1 = wpn->Clip1();
 	int ammo2;
@@ -157,29 +192,39 @@ void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 
 	hudlcd->SetGlobalStat( "(ammo_primary)", VarArgs( "%d", ammo1 ) );
 	hudlcd->SetGlobalStat( "(ammo_secondary)", VarArgs( "%d", ammo2 ) );
+	hudlcd->SetGlobalStat( "(grenades)", VarArgs( "%d", grenades ) );
 
 	if (wpn == m_hCurrentActiveWeapon)
 	{
 		// same weapon, just update counts
 		SetAmmo(ammo1, true);
 		SetAmmo2(ammo2, true);
+		SetGrenades(grenades, true);
 	}
 	else
 	{
 		// diferent weapon, change without triggering
 		SetAmmo(ammo1, false);
 		SetAmmo2(ammo2, false);
+		SetGrenades(grenades, false);
 
 		// update whether or not we show the total ammo display
-		if (wpn->UsesClipsForAmmo1())
-		{
+		if (wpn->UsesClipsForAmmo1()) {
 			SetShouldDisplaySecondaryValue(true);
-			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("WeaponUsesClips");
-		}
-		else
-		{
-			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("WeaponDoesNotUseClips");
+		} else {
 			SetShouldDisplaySecondaryValue(false);
+		}
+
+		if (grenade_type > 0) {
+			SetShouldDisplayThirdValue(true);
+		} else {
+			SetShouldDisplayThirdValue(false);
+		}
+
+		if (grenade_type > 0 || wpn->UsesClipsForAmmo1()) {
+			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("WeaponUsesClips");
+		} else {
+			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("WeaponDoesNotUseClips");
 		}
 
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("WeaponChanged");
@@ -326,6 +371,14 @@ void CHudAmmo::SetAmmo2(int ammo2, bool playAnimation)
 	}
 
 	SetSecondaryValue(ammo2);
+}
+
+void CHudAmmo::SetGrenades(int grenades, bool playAnimation) {
+	if (grenades != m_iGrenades) {
+		m_iGrenades = grenades;
+	}
+
+	SetThirdValue(m_iGrenades);
 }
 
 //-----------------------------------------------------------------------------
@@ -500,3 +553,124 @@ private:
 
 DECLARE_HUDELEMENT( CHudSecondaryAmmo );
 
+//-----------------------------------------------------------------------------
+// Purpose: Displays the grenade ammunition level
+//-----------------------------------------------------------------------------
+class CHudGrenadeAmmo : public CHudNumericDisplay, public CHudElement
+{
+	DECLARE_CLASS_SIMPLE( CHudGrenadeAmmo, CHudNumericDisplay );
+
+public:
+	CHudGrenadeAmmo( const char *pElementName ) : BaseClass( NULL, "HudAmmoGrenade" ), CHudElement( pElementName ) {
+		m_iAmmo = -1;
+
+		SetHiddenBits( HIDEHUD_HEALTH | HIDEHUD_WEAPONSELECTION | HIDEHUD_PLAYERDEAD | HIDEHUD_NEEDSUIT );
+	}
+
+	void Init( void ) {
+		SetLabelText(L"GREN");
+	}
+
+	void VidInit( void ) {}
+
+	void SetAmmo( int ammo ) {
+		if (ammo != m_iAmmo) {
+			//if (ammo == 0) {
+			//	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("AmmoGrenadeEmpty");
+			//} else if (ammo < m_iAmmo) {
+			//	// ammo has decreased
+			//	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("AmmoGrenadeDecreased");
+			//} else {
+			//	// ammunition has increased
+			//	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("AmmoGrenadeIncreased");
+			//}
+
+			m_iAmmo = ammo;
+		}
+
+		SetDisplayValue( ammo );
+	}
+
+	void Reset()
+	{
+		// hud reset, update ammo state
+		BaseClass::Reset();
+		m_iAmmo = 0;
+		SetAlpha( 0 );
+		UpdateAmmoState();
+	}
+
+	virtual void Paint( void )
+	{
+		BaseClass::Paint();
+
+#ifndef HL2MP
+		if ( m_iconGrenadeAmmo ) {
+			int nLabelHeight;
+			int nLabelWidth;
+			surface()->GetTextSize( m_hTextFont, m_LabelText, nLabelWidth, nLabelHeight );
+
+			// Figure out where we're going to put this
+			int x = text_xpos + ( nLabelWidth - m_iconGrenadeAmmo->Width() ) / 2;
+			int y = text_ypos - ( nLabelHeight + ( m_iconGrenadeAmmo->Height() / 2 ) );
+
+			m_iconGrenadeAmmo->DrawSelf( x, y, GetFgColor() );
+		}
+#endif // HL2MP
+	}
+
+protected:
+
+	virtual void OnThink() {
+		// set whether or not the panel draws based on if we have a grenade type
+		C_HL2MP_Player *p;
+		int grenade_type;
+
+		p = ToHL2MPPlayer(C_BasePlayer::GetLocalPlayer());
+		if (!p)
+			return;
+
+		grenade_type = p->GrenadeType();
+
+		if (grenade_type < 0) {
+			SetPaintEnabled(false);
+			SetPaintBackgroundEnabled(false);
+			return;
+		} else {
+			SetPaintEnabled(true);
+			SetPaintBackgroundEnabled(true);
+		}
+
+		UpdateAmmoState();
+	}
+
+	void UpdateAmmoState() {
+		C_HL2MP_Player *p;
+		int grenade_type;
+		int grenades;
+
+		p = ToHL2MPPlayer(C_BasePlayer::GetLocalPlayer());
+		if (!p)
+			return;
+
+		grenade_type = p->GrenadeType();
+
+		if (grenade_type > 0)
+			grenades = p->GetAmmoCount(grenade_type);
+		else
+			grenades = 0;
+
+		if (grenades > 0) {
+			SetAmmo(grenades);
+		}
+
+		m_iconGrenadeAmmo = gWR.GetAmmoIconFromWeapon( grenade_type );
+	}
+	
+private:
+
+	CHudTexture *m_iconGrenadeAmmo;
+	int		m_iAmmo;
+};
+
+DECLARE_HUDELEMENT( CHudGrenadeAmmo );

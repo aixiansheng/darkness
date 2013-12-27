@@ -1,0 +1,42 @@
+"GameInfo"
+{
+	game	"darkness"
+	gamelogo 1
+	icon	resource/game
+	type	multiplayer_only
+	nomodels 1
+	nohimodel 1
+	nocrosshair 1
+	developer	"DNBrown.net"
+	developer_url	"http://darkness.dnbrown.net"
+	gamedata	"darkness.fgd"
+
+
+	FileSystem
+	{
+		SteamAppId				243750
+		
+		SearchPaths
+		{
+			// VPK distro is broken
+			// game						|gameinfo_path|darkness.vpk
+			game						|gameinfo_path|.
+			game+mod+mod_write+default_write_path		|gameinfo_path|.
+			gamebin						|gameinfo_path|bin
+
+			game				|all_source_engine_paths|hl2mp/hl2mp_pak.vpk
+			game				|all_source_engine_paths|hl2/hl2_english.vpk
+			game				|all_source_engine_paths|hl2/hl2_pak.vpk
+			game				|all_source_engine_paths|hl2/hl2_textures.vpk
+			game				|all_source_engine_paths|hl2/hl2_sound_misc.vpk
+			game				|all_source_engine_paths|hl2/hl2_sound_vo_english.vpk
+			game				|all_source_engine_paths|hl2/hl2_misc.vpk
+			game				|all_source_engine_paths|hl2mp
+			game				|all_source_engine_paths|hl2
+
+
+			platform			|all_source_engine_paths|platform/platform_misc.vpk
+			platform			|all_source_engine_paths|platform
+		}
+	}
+}

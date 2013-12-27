@@ -1,0 +1,948 @@
+// ENTITY SOUNDS HERE TOO
+
+
+"Engy.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/scanner/scanner_siren1.wav"
+		"wave" "npc/scanner/scanner_siren2.wav"
+		"wave" "npc/scanner/scanner_blip1.wav"
+	}
+}
+
+"Grunt.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "vo/npc/female01/readywhenyouare01.wav"
+		"wave" "vo/npc/female01/headcrabs02.wav"
+		"wave" "vo/npc/female01/zombies02.wav"
+		"wave" "vo/npc/female01/watchwhat.wav"
+		"wave" "vo/npc/female01/notthemanithought02.wav"
+	}
+}
+
+"Shock.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "vo/npc/male01/readywhenyouare02.wav"
+		"wave" "vo/npc/male01/vanswer05.wav"
+		"wave" "vo/npc/male01/waitingsomebody.wav"
+		"wave" "vo/npc/male01/answer27.wav"
+		"wave" "vo/npc/male01/likethat.wav"
+		"wave" "vo/npc/male01/hacks01.wav"
+		"wave" "vo/npc/male01/vquestion01.wav"
+		"wave" "vo/npc/male01/notthemanithought01.wav"
+		"wave" "vo/npc/male01/vanswer14.wav"
+		"wave" "vo/npc/male01/question20.wav"
+	}
+}
+
+"Heavy.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/combine_soldier/vo/targetineffective.wav"
+		"wave" "npc/combine_soldier/vo/affirmativewegothimnow.wav"
+		"wave" "npc/combine_soldier/vo/thatsitwrapitup.wav"
+	}
+}
+
+"Commando.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"wave" "vo/gman_misc/gman_03.wav"
+}
+
+"Exterm.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/metropolice/vo/chuckle.wav"
+		"wave" "npc/metropolice/vo/pickupthecan1.wav"
+		"wave" "npc/metropolice/vo/pickupthecan2.wav"
+		"wave" "npc/metropolice/vo/pickupthecan3.wav"
+		"wave" "npc/metropolice/vo/youwantamalcomplianceverdict.wav"
+		"wave" "npc/metropolice/vo/thisisyoursecondwarning.wav"
+	}
+}
+
+"Mech.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/overwatch/radiovoice/allunitsbeginwhitnesssterilization.wav"
+		"wave" "npc/overwatch/radiovoice/youarechargedwithterminal.wav"
+		"wave" "npc/overwatch/radiovoice/sterilize.wav"
+		"wave" "npc/overwatch/radiovoice/prepareforfinalsentencing.wav"
+	}
+}
+
+"Breeder.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"wave" "npc/stalker/breathing3.wav"
+}
+
+"Hatchy.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/headcrab_poison/ph_idle2.wav"
+		"wave" "npc/headcrab_poison/ph_idle3.wav"
+		"wave" "npc/headcrab_poison/ph_pain1.wav"
+		"wave" "npc/headcrab_poison/ph_pain3.wav"
+	}
+}
+
+"Drone.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/zombie_poison/pz_pain1.wav"
+		"wave" "npc/zombie_poison/pz_pain2.wav"
+	}
+}
+
+"Stinger.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/zombie_poison/pz_alert1.wav"
+		"wave" "npc/zombie_poison/pz_alert2.wav"
+		"wave" "npc/zombie_poison/pz_call1.wav"
+		"wave" "npc/zombie_poison/pz_die1.wav"
+		"wave" "npc/zombie_poison/pz_die2.wav"
+	}
+}
+
+"Guardian.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/headcrab_poison/ph_rattle1.wav"
+		"wave" "npc/headcrab_poison/ph_rattle2.wav"
+		"wave" "npc/headcrab_poison/ph_rattle3.wav"
+		"wave" "npc/headcrab_poison/ph_warning1.wav"
+		"wave" "npc/headcrab_poison/ph_warning2.wav"
+		"wave" "npc/headcrab_poison/ph_warning3.wav"
+	}
+}
+
+"Stalker.Taunt"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_95db"
+
+	"rndwave"
+	{
+		"wave" "npc/barnacle/barnacle_tongue_pull1.wav"
+		"wave" "npc/barnacle/barnacle_tongue_pull2.wav"
+		"wave" "npc/barnacle/barnacle_tongue_pull3.wav"
+	}
+}
+
+
+"DamagedMateriel.Sparks"
+{
+	"channel"	"CHAN_AUTO"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_70db"
+
+	"rndwave"
+	{
+		"wave" "misc/spark_sound1.wav"
+		"wave" "misc/spark_sound2.wav"
+		"wave" "buttons/combine_button7.wav"
+		"wave" "buttons/combine_button5.wav"
+		"wave" "buttons/combine_button2.wav"
+	}
+}
+
+"Flare.BurnLoop"
+{
+	"channel"	"CHAN_AUTO"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_75dB"
+
+	"wave" "misc/burn.wav"
+}
+
+"TurretMissile.Loop"
+{
+	"channel"	"CHAN_AUTO"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_70dB"
+
+	"wave"	"ambient/energy/electric_loop.wav"
+}
+
+"Corpse.Flies"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_70db"
+
+	"rndwave"
+	{
+		"wave" "ambient/creatures/flies1.wav"
+		"wave" "ambient/creatures/flies2.wav"
+		"wave" "ambient/creatures/flies3.wav"
+		"wave" "ambient/creatures/flies4.wav"
+		"wave" "ambient/creatures/flies5.wav"
+	}
+}
+
+"Guardian.SwallowC4"
+{
+	"channel"	"CHAN_AUTO"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_85db"
+
+	"wave"	"npc/zombie_poison/pz_call1.wav"
+}
+
+"Detector.Ping"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_85db"
+
+	"wave"	"beeps/alarm_no_loop1.wav"
+}
+
+"C4.Ping"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_75db"
+
+	"wave"	"npc/turret_floor/ping.wav"
+
+}
+
+"Teleporter.PlayerSpawn"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_65db"
+
+	"rndwave"
+	{
+		"wave"	"ambient/machines/teleport1.wav"
+		"wave"	"ambient/machines/teleport3.wav"
+		"wave"	"ambient/machines/teleport4.wav"
+	}
+}
+
+"Exterm.JetBurst"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_70db"
+	"pitch"         "45"
+
+        "wave"  "npc/fast_zombie/idle1.wav"
+}
+
+"Spiker.Init"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_75db"
+
+	"wave"	"npc/strider/creak1.wav"
+}
+"Teleporter.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_75db"
+
+	"wave"	"npc/manhack/gib.wav"
+}
+
+"AmmoCrate.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_75db"
+
+	"wave"	"npc/manhack/gib.wav"
+}
+"Mine.Init"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_65db"
+
+	"wave"	"npc/scanner/scanner_photo1.wav"
+}
+"Medipad.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_75db"
+
+	"wave"	"npc/manhack/gib.wav"
+}
+
+"Medipad.Heal"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_65db"
+
+	"wave"	"npc/scanner/scanner_alert1.wav"
+}
+"Healer.Heal"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_65db"
+
+	"wave"	"npc/barnacle/barnacle_gulp2.wav"
+}
+
+
+"Egg.PlayerSpawn"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_65db"
+
+	"rndwave"
+	{
+		"wave"	"npc/barnacle/neck_snap1.wav"
+		"wave"	"npc/barnacle/neck_snap2.wav"
+	}
+}
+"Egg.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_75db"
+
+	"rndwave"
+	{
+		"wave"	"npc/barnacle/barnacle_crunch3.wav"
+		"wave"	"npc/barnacle/barnacle_crunch2.wav"
+	}
+}
+
+"Healer.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_70db"
+
+	"rndwave"
+	{
+		"wave"	"npc/barnacle/barnacle_crunch3.wav"
+		"wave"	"npc/barnacle/barnacle_crunch2.wav"
+	}
+}
+"Healer.Gargle"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_75db"
+
+	"rndwave"
+	{
+		"wave"	"npc/barnacle/barnacle_digesting1.wav"
+		"wave"	"npc/barnacle/barnacle_digesting2.wav"
+	}
+}
+
+"Mech.Die"
+{
+	"channel"	"CHAN_AUTO"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_85db"
+
+	"rndwave"
+	{
+		"wave"	"npc/dog/dog_alarmed1.wav"
+		"wave"	"npc/dog/dog_alarmed3.wav"
+		"wave"	"npc/dog/dog_on_dropship.wav"
+	}
+}
+
+"Mech.RunFootstepLeft"
+{
+	"channel"	"CHAN_AUTO"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_120db"
+
+	"rndwave"
+	{
+		"wave"	"npc/dog/dog_footstep_run1.wav"
+		"wave"	"npc/dog/dog_footstep_run2.wav"
+		"wave"	"npc/dog/dog_footstep_run3.wav"
+		"wave"	"npc/dog/dog_footstep_run4.wav"
+	}
+}
+
+"Mech.RunFootstepRight"
+{
+	"channel"	"CHAN_AUTO"
+	"volume"	"1.0"
+	"soundlevel"	"SNDLVL_120db"
+
+	"rndwave"
+	{
+		"wave"	"npc/dog/dog_footstep_run5.wav"
+		"wave"	"npc/dog/dog_footstep_run6.wav"
+		"wave"	"npc/dog/dog_footstep_run7.wav"
+		"wave"	"npc/dog/dog_footstep_run8.wav"
+	}
+}
+
+
+"HL2Player.SprintNoPower"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"0.8"
+	"soundlevel"  "SNDLVL_60dB"
+
+	"wave"	"player/suit_denydevice.wav"
+}
+
+"Engy.RunFootstepLeft"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.7"
+	"soundlevel"	"SNDLVL_55dB"
+	
+	"wave"		"npc/dog/dog_servo7.wav"
+}
+
+"Engy.RunFootstepRight"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_60dB"
+	
+	"wave"		"npc/dog/dog_servo7.wav"
+}
+
+"Engy.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_65dB"
+	
+	"wave"		"npc/dog/dog_straining1.wav"
+}
+
+"Breeder.RunFootstepLeft"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.7"
+	"soundlevel"	"SNDLVL_55dB"
+	
+	"wave"		"npc/headcrab/idle2.wav"
+}
+
+"Breeder.RunFootstepRight"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.7"
+	"soundlevel"	"SNDLVL_55dB"
+	
+	"wave"		"npc/headcrab/idle2.wav"
+}
+
+"Breeder.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_65dB"
+	
+	"wave"		"npc/headcrab/alert1.wav"
+}
+
+"Hatchy.RunFootstepLeft"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_65dB"
+	
+	"wave"		"npc/headcrab/idle2.wav"
+}
+
+"Hatchy.RunFootstepRight"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_65dB"
+	
+	"wave"		"npc/headcrab/idle2.wav"
+}
+
+"Hatchy.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_65dB"
+	
+	"wave"		"npc/headcrab/alert1.wav"
+}
+
+"Drone.RunFootstepLeft"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_50dB"
+	
+	"wave"		"npc/fast_zombie/wake1.wav"
+}
+
+"Drone.RunFootstepRight"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_50dB"
+	
+	"wave"		"npc/fast_zombie/wake1.wav"
+}
+
+"Drone.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_65dB"
+	
+	"wave"		"npc/headcrab/alert1.wav"
+}
+
+"Stinger.RunFootstepLeft"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_50dB"
+	
+	"wave"		"npc/headcrab_poison/ph_jump2.wav"
+}
+
+"Stinger.RunFootstepRight"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_50dB"
+	
+	"wave"		"npc/headcrab_poison/ph_jump2.wav"
+}
+
+"Stinger.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_65dB"
+	
+	"wave"		"npc/headcrab/alert1.wav"
+}
+
+"Stalker.RunFootstepLeft"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_50dB"
+	
+	"wave"		"npc/antlion_guard/foot_heavy1.wav"
+}
+
+"Stalker.RunFootstepRight"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"	"SNDLVL_50dB"
+	
+	"wave"		"npc/antlion_guard/foot_light1.wav"
+}
+
+"Stalker.Die"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.9"
+	"soundlevel"	"SNDLVL_75dB"
+	
+	"wave"		"npc/antlion_guard/antlion_guard_die1.wav"
+}
+
+"HL2Player.SprintStart"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"0.9"
+	"soundlevel"  "SNDLVL_60dB"
+
+	"wave"	"player/suit_sprint.wav"
+}
+
+"HL2Player.FlashLightOn"
+{
+	"channel"	"CHAN_WEAPON"
+	"volume"	"0.8"
+	"soundlevel"    "SNDLVL_75dB"
+	"pitch"	"PITCH_NORM"
+
+	"wave" "items/flashlight1.wav"
+}
+
+"HL2Player.FlashLightOff"
+{
+	"channel"	"CHAN_WEAPON"
+	"volume"	"0.8"
+	"soundlevel"  "SNDLVL_75dB"
+	"pitch"	"PITCH_NORM"
+
+	"wave" "items/flashlight1.wav"
+}
+
+"HL2Player.PickupWeapon"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"items/ammo_pickup.wav"
+}
+
+"HL2Player.TrainUse"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"plats/train_use1.wav"
+}
+
+"HL2Player.Use"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.4"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"common/wpn_select.wav"
+}
+
+"HL2Player.UseNPC"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.4"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"common/wpn_select.wav"
+}
+
+"HL2Player.UseDeny"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.4"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"common/wpn_denyselect.wav"
+}
+
+"HL2Player.BurnPain"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"0.5"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"rndwave"
+	{
+			"wave"	"player/pl_burnpain1.wav"
+			"wave"	"player/pl_burnpain2.wav"
+			"wave"	"player/pl_burnpain3.wav"
+	}
+}
+
+
+// SHARED player sounds
+
+"Player.Death"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"0.8"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"rndwave"
+	{
+		"wave"	"player/pl_pain5.wav"
+		"wave"	"player/pl_pain6.wav"
+		"wave"	"player/pl_pain7.wav"
+	}
+}
+
+"Player.PlasmaDamage"
+{
+	"channel"	"CHAN_BODY"
+	"volume"	"0.5"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"player/general/flesh_burn.wav"
+}
+
+"Player.SonicDamage"
+{
+	"channel"	"CHAN_BODY"
+	"volume"	"0.7"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"rndwave"
+	{
+		"wave"	"player/pl_pain5.wav"
+		"wave"	"player/pl_pain6.wav"
+		"wave"	"player/pl_pain7.wav"
+	}
+}
+
+"Player.DrownStart"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"  "SNDLVL_75dB"
+	"pitch"		"90,110"
+
+	"wave"	"player/pl_drown1.wav"
+}
+
+"Player.Swim"
+{
+	"channel"	"CHAN_STATIC"
+	"volume"	"0.5"
+	"pitch"		"PITCH_NORM"
+	"soundlevel"	"SNDLVL_NORM"
+
+	"rndwave"
+	{
+		"wave"		"player/footsteps/wade5.wav"
+		"wave"		"player/footsteps/wade6.wav"
+		"wave"		"player/footsteps/wade7.wav"
+		"wave"		"player/footsteps/wade8.wav"
+	}
+}
+
+"Player.FallDamage"
+{
+	"channel"	"CHAN_AUTO"
+	"volume"	"0.75"
+	"pitch"		"90,110"
+	"soundlevel"	"SNDLVL_NORM"
+
+	"rndwave"
+	{
+		"wave"		"player/pl_fallpain1.wav"
+		"wave"		"player/pl_fallpain3.wav"
+	}
+}
+
+"Player.FallGib"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.75"
+	"pitch"		"90,110"
+	"soundlevel"	"SNDLVL_NORM"
+
+	"rndwave"
+	{
+		"wave"		"physics/body/body_medium_break2.wav"
+	}
+}
+
+"Player.DrownContinue"
+{
+	"channel"	"CHAN_VOICE"
+	"volume"	"1.0"
+	"soundlevel"  "SNDLVL_75dB"
+	"pitch"		"90,110"
+
+	"rndwave"
+	{
+		"wave"	"player/pl_drown1.wav"
+		"wave"	"player/pl_drown2.wav"
+		"wave"	"player/pl_drown3.wav"
+	}
+}
+
+"Player.Wade"
+{
+	"channel"	"CHAN_BODY"
+	"volume"	"0.25"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"rndwave"
+	{
+		"wave"	"player/footsteps/wade5.wav"
+		"wave"	"player/footsteps/wade6.wav"
+		"wave"	"player/footsteps/wade7.wav"
+		"wave"	"player/footsteps/wade8.wav"
+	}
+}
+
+"Player.AmbientUnderWater"
+{
+	"channel"	"CHAN_STATIC"
+	"volume"	"0.22"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"ambient/water/underwater.wav"
+}
+
+"Player.UseTrain"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"plats/train_use1.wav"
+}
+
+"Player.UseDeny"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.4"
+	"soundlevel"  "SNDLVL_75dB"
+
+	"wave"	"common/wpn_select.wav"
+}
+
+"Player.PickupWeapon"
+{
+	"channel"	"CHAN_ITEM"
+	"volume"	"0.8"
+	"soundlevel"  "SNDLVL_75dB"
+	"pitch"	"95,105"
+	"wave"	"items/ammo_pickup.wav"
+}
+
+
+"Geiger.BeepLow"
+{
+	"channel"	"CHAN_STATIC"
+	"soundlevel"	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+
+	"rndwave"
+	{
+		"wave"	"player/geiger1.wav"
+		"wave"	"player/geiger2.wav"
+	}
+}
+
+"Geiger.BeepHigh"
+{
+	"channel"	"CHAN_STATIC"
+	"soundlevel"	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+
+	"rndwave"
+	{
+		"wave"	"player/geiger2.wav"
+		"wave"	"player/geiger3.wav"
+	}
+}
+
+//HL2MP
+
+"NPC_MetroPolice.Die"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"0.500"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_80dB"
+
+	"rndwave"
+	{
+		"wave"	"npc/metropolice/die1.wav"
+		"wave"	"npc/metropolice/die2.wav"
+		"wave"	"npc/metropolice/die3.wav"
+		"wave"	"npc/metropolice/die4.wav"
+	}
+}
+
+"NPC_CombineS.Die"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"0.500"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_80dB"
+
+	"rndwave"
+	{
+		"wave"	"npc/combine_soldier/die1.wav"
+		"wave"	"npc/combine_soldier/die2.wav"
+		"wave"	"npc/combine_soldier/die3.wav"
+	}
+}
+"NPC_Citizen.die"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NORM"
+
+	"rndwave"
+	{
+		"wave"	"npc/combine_soldier/die1.wav"
+		"wave"	"npc/combine_soldier/die2.wav"
+		"wave"	"npc/combine_soldier/die3.wav"
+		//"wave"	"*vo/npc/$gender01/pain07.wav"
+		//"wave"	"*vo/npc/$gender01/pain08.wav"
+		//"wave"	"*vo/npc/$gender01/pain09.wav"
+	}
+}

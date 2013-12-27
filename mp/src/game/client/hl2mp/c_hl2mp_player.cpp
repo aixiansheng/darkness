@@ -14,6 +14,17 @@
 #include "iviewrender_beams.h"			// flashlight beam
 #include "r_efx.h"
 #include "dlight.h"
+#include "c_basetempentity.h"
+#include "prediction.h"
+#include "bone_setup.h"
+#include "input.h"
+#include "collisionutils.h"
+#include "c_team.h"
+#include "obstacle_pushaway.h"
+#include "class_info.h"
+#include "ScreenSpaceEffects.h"
+#include "model_types.h"
+#include "materialsystem/imaterialvar.h"
 
 // Don't alias here
 #if defined( CHL2MP_Player )
@@ -27,9 +38,22 @@ IMPLEMENT_CLIENTCLASS_DT(C_HL2MP_Player, DT_HL2MP_Player, CHL2MP_Player)
 	RecvPropFloat( RECVINFO( m_angEyeAngles[1] ) ),
 	RecvPropEHandle( RECVINFO( m_hRagdoll ) ),
 	RecvPropInt( RECVINFO( m_iSpawnInterpCounter ) ),
+	RecvPropInt( RECVINFO(m_iPlayerPoints) ),
 	RecvPropInt( RECVINFO( m_iPlayerSoundType) ),
+	RecvPropInt( RECVINFO( m_iClassNumber) ),
+
+	RecvPropInt( RECVINFO( grenade_type) ),
 
 	RecvPropBool( RECVINFO( m_fIsWalking ) ),
+	RecvPropBool( RECVINFO( stopped ) ),
+	RecvPropBool( RECVINFO( plasma_ready ) ),
+	RecvPropBool( RECVINFO( jetpack_on ) ),
+	RecvPropInt( RECVINFO( pack_item_0 ) ),
+	RecvPropInt( RECVINFO( pack_item_1 ) ),
+	RecvPropInt( RECVINFO( pack_item_2 ) ),
+	RecvPropInt( RECVINFO( pack_item_idx ) ),
+	RecvPropBool( RECVINFO( attackMotion ) ),
+
 END_RECV_TABLE()
 
 BEGIN_PREDICTION_DATA( C_HL2MP_Player )
@@ -45,6 +69,8 @@ static ConVar cl_defaultweapon( "cl_defaultweapon", "weapon_physcannon", FCVAR_U
 
 void SpawnBlood (Vector vecSpot, const Vector &vecDir, int bloodColor, float flDamage);
 
+extern HL2MPViewVectors g_HL2MPViewVectors;
+
 C_HL2MP_Player::C_HL2MP_Player() : m_PlayerAnimState( this ), m_iv_angEyeAngles( "C_HL2MP_Player::m_iv_angEyeAngles" )
 {
 	m_iIDEntIndex = 0;
@@ -58,6 +84,16 @@ C_HL2MP_Player::C_HL2MP_Player() : m_PlayerAnimState( this ), m_iv_angEyeAngles(
 	m_blinkTimer.Invalidate();
 
 	m_pFlashlightBeam = NULL;
+	
+	m_iClassNumber = -1;
+
+	classVectors = &g_HL2MPViewVectors;
+	m_iClassNumCache = m_iClassNumber;
+	m_iTeamNumCache = GetTeamNumber();
+}
+
+int C_HL2MP_Player::GrenadeType(void) {
+	return grenade_type;
 }
 
 C_HL2MP_Player::~C_HL2MP_Player( void )
@@ -68,6 +104,25 @@ C_HL2MP_Player::~C_HL2MP_Player( void )
 int C_HL2MP_Player::GetIDTarget() const
 {
 	return m_iIDEntIndex;
+}
+
+bool C_HL2MP_Player::IsStopped() {
+	if (m_nButtons & (IN_ATTACK | IN_ATTACK2 | IN_JUMP))
+		return false;
+
+	return stopped;
+}
+
+bool C_HL2MP_Player::HasAttackMotion(void) {
+	return attackMotion;
+}
+
+bool C_HL2MP_Player::PlasmaReady(void) {
+	return plasma_ready;
+}
+
+bool C_HL2MP_Player::JetOn(void) {
+	return jetpack_on;
 }
 
 //-----------------------------------------------------------------------------
@@ -268,10 +323,27 @@ void C_HL2MP_Player::ClientThink( void )
 //-----------------------------------------------------------------------------
 int C_HL2MP_Player::DrawModel( int flags )
 {
+	C_HL2MP_Player *local;
+
 	if ( !m_bReadyToDraw )
 		return 0;
 
-    return BaseClass::DrawModel(flags);
+	shouldGlow = false;
+
+	if (GetTeamNumber() == TEAM_SPIDERS && m_iClassNumber == CLASS_GUARDIAN_IDX && IsStopped() && HasAttackMotion() == false) {
+		return BaseClass::DrawModel(flags);
+	}
+
+	local = GetLocalHL2MPPlayer();
+	if (local && local->GetTeamNumber() == TEAM_SPIDERS) {
+		shouldGlow = true;
+		if (GetTeamNumber() == TEAM_HUMANS && m_iClassNumber == CLASS_COMMANDO_IDX
+			&& IsStopped()) {
+				shouldGlow = false;
+		}
+	}
+
+	return BaseClass::DrawModel(flags);
 }
 
 //-----------------------------------------------------------------------------
@@ -444,6 +516,12 @@ ShadowType_t C_HL2MP_Player::ShadowCastType( void )
 {
 	if ( !IsVisible() )
 		 return SHADOWS_NONE;
+	
+	if (GetTeamNumber() == TEAM_SPIDERS &&
+		m_iClassNumber == CLASS_GUARDIAN_IDX &&
+		IsStopped()) {
+			return SHADOWS_NONE;
+	}
 
 	return SHADOWS_RENDER_TO_TEXTURE_DYNAMIC;
 }
@@ -506,11 +584,65 @@ void C_HL2MP_Player::OnDataChanged( DataUpdateType_t type )
 
 void C_HL2MP_Player::PostDataUpdate( DataUpdateType_t updateType )
 {
+	C_HL2MP_Player *player;
+
 	if ( m_iSpawnInterpCounter != m_iSpawnInterpCounterCache )
 	{
 		MoveToLastReceivedPosition( true );
 		ResetLatched();
 		m_iSpawnInterpCounterCache = m_iSpawnInterpCounter;
+	}
+	
+
+	player = C_HL2MP_Player::GetLocalHL2MPPlayer();
+	if (player && player == this) {
+
+		//
+		// Potentially toggle bug-vision if the player changes class or team
+		//
+		if (m_iClassNumCache != m_iClassNumber || m_iTeamNumCache != GetTeamNumber()) {
+			m_iClassNumCache = m_iClassNumber;
+			m_iTeamNumCache = GetTeamNumber();
+
+			CMatRenderContextPtr pRenderContext(materials);
+
+			IScreenSpaceEffect *bugv = g_pScreenSpaceEffects->GetScreenSpaceEffect("bugvision");
+
+			switch(m_iTeamNumCache) {
+			case TEAM_SPIDERS:
+				if (m_iClassNumber < NUM_SPIDER_CLASSES && m_iClassNumber >= 0)
+					classVectors = dk_spider_classes[m_iClassNumber].vectors;
+
+				if (bugv && bugv->IsEnabled() == false) {
+					g_pScreenSpaceEffects->EnableScreenSpaceEffect(bugv);
+				}
+
+				break;
+
+			case TEAM_HUMANS:
+				if (m_iClassNumber < NUM_HUMAN_CLASSES && m_iClassNumber >= 0)
+					classVectors = dk_human_classes[m_iClassNumber].vectors;
+
+				if (bugv && bugv->IsEnabled()) {
+					g_pScreenSpaceEffects->DisableScreenSpaceEffect(bugv);
+				}
+
+				break;
+
+			default:
+				//
+				// Since even observer mode needs view vectors
+				// we must set this here
+				//
+
+				if (bugv && bugv->IsEnabled()) {
+					g_pScreenSpaceEffects->DisableScreenSpaceEffect("bugvision");
+				}
+
+				classVectors = dk_human_classes[0].vectors;
+				break;
+			}
+		}
 	}
 
 	BaseClass::PostDataUpdate( updateType );
@@ -566,21 +698,21 @@ bool C_HL2MP_Player::CanSprint( void )
 //-----------------------------------------------------------------------------
 void C_HL2MP_Player::StartSprinting( void )
 {
-	if( m_HL2Local.m_flSuitPower < 10 )
-	{
-		// Don't sprint unless there's a reasonable
-		// amount of suit power.
-		CPASAttenuationFilter filter( this );
-		filter.UsePredictionRules();
-		EmitSound( filter, entindex(), "HL2Player.SprintNoPower" );
-		return;
-	}
+	//if( m_HL2Local.m_flSuitPower < 10 )
+	//{
+	//	// Don't sprint unless there's a reasonable
+	//	// amount of suit power.
+	//	CPASAttenuationFilter filter( this );
+	//	filter.UsePredictionRules();
+	//	EmitSound( filter, entindex(), "HL2Player.SprintNoPower" );
+	//	return;
+	//}
 
-	CPASAttenuationFilter filter( this );
-	filter.UsePredictionRules();
-	EmitSound( filter, entindex(), "HL2Player.SprintStart" );
+	//CPASAttenuationFilter filter( this );
+	//filter.UsePredictionRules();
+	//EmitSound( filter, entindex(), "HL2Player.SprintStart" );
 
-	SetMaxSpeed( HL2_SPRINT_SPEED );
+	//SetMaxSpeed( HL2_SPRINT_SPEED );
 	m_fIsSprinting = true;
 }
 
@@ -644,7 +776,7 @@ void C_HL2MP_Player::HandleSpeedChanges( void )
 //-----------------------------------------------------------------------------
 void C_HL2MP_Player::StartWalking( void )
 {
-	SetMaxSpeed( HL2_WALK_SPEED );
+	//SetMaxSpeed( HL2_WALK_SPEED );
 	m_fIsWalking = true;
 }
 
@@ -652,7 +784,7 @@ void C_HL2MP_Player::StartWalking( void )
 //-----------------------------------------------------------------------------
 void C_HL2MP_Player::StopWalking( void )
 {
-	SetMaxSpeed( HL2_NORM_SPEED );
+	//SetMaxSpeed( HL2_NORM_SPEED );
 	m_fIsWalking = false;
 }
 
@@ -982,4 +1114,27 @@ void C_HL2MP_Player::PostThink( void )
 
 	// Store the eye angles pitch so the client can compute its animation state correctly.
 	m_angEyeAngles = EyeAngles();
+}
+const Vector C_HL2MP_Player::GetPlayerMins(void) const {
+	if ( IsObserver() ) {
+		return classVectors->m_vObsHullMin;	
+	} else {
+		if ( GetFlags() & FL_DUCKING ) {
+			return classVectors->m_vDuckHullMin;
+		} else {
+			return classVectors->m_vHullMin;
+		}
+	}
+}
+
+const Vector C_HL2MP_Player::GetPlayerMaxs(void) const {
+	if ( IsObserver() ) {
+		return classVectors->m_vObsHullMax;	
+	} else {
+		if ( GetFlags() & FL_DUCKING ) {
+			return classVectors->m_vDuckHullMax;
+		} else {
+			return classVectors->m_vHullMax;
+		}
+	}
 }

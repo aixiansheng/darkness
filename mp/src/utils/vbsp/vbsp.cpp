@@ -857,7 +857,11 @@ void ProcessModels (void)
 	}
 
 	// Turn the skybox into a cubemap in case we don't build env_cubemap textures.
-	Cubemap_CreateDefaultCubemaps();
+	//
+	// Disable this temporarily until hammer can locate the
+	// game resources properly to make non-pink/black cubemaps
+	//
+	//Cubemap_CreateDefaultCubemaps();
 	EndBSPFile ();
 }
 

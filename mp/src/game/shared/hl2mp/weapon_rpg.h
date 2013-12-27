@@ -164,6 +164,13 @@ CAPCMissile *FindAPCMissileInCone( const Vector &vecOrigin, const Vector &vecDir
 #define CWeaponRPG C_WeaponRPG
 #endif
 
+enum rpg_firing_state {
+	STATE_OFF,
+	STATE_CHARGING,
+	STATE_WAITING
+};
+typedef enum rpg_firing_state rpg_firing_state_t;
+
 class CWeaponRPG : public CBaseHL2MPCombatWeapon
 {
 	DECLARE_CLASS( CWeaponRPG, CBaseHL2MPCombatWeapon );
@@ -237,6 +244,9 @@ public:
 	CMaterialReference	m_hSpriteMaterial;	// Used for the laser glint
 	CMaterialReference	m_hBeamMaterial;	// Used for the laser beam
 	Beam_t				*m_pBeam;			// Laser beam temp entity
+#else
+
+	virtual void DisplayUsageHudHint(void);
 
 #endif	//CLIENT_DLL
 
@@ -261,6 +271,12 @@ protected:
 
 private:
 	
+	CNetworkVar( rpg_firing_state_t, firing_state);
+	CNetworkVar( float, next_beep );
+	
+	void begin_charging(void);
+	void stop_charging(void);
+
 	CWeaponRPG( const CWeaponRPG & );
 };
 

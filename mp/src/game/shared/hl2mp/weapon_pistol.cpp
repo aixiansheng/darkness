@@ -16,11 +16,11 @@
 
 #include "weapon_hl2mpbasehlmpcombatweapon.h"
 
-#define	PISTOL_FASTEST_REFIRE_TIME		0.1f
-#define	PISTOL_FASTEST_DRY_REFIRE_TIME	0.2f
+#define	PISTOL_FASTEST_REFIRE_TIME		0.2f
+#define	PISTOL_FASTEST_DRY_REFIRE_TIME	0.25f
 
-#define	PISTOL_ACCURACY_SHOT_PENALTY_TIME		0.2f	// Applied amount of time each shot adds to the time we must recover from
-#define	PISTOL_ACCURACY_MAXIMUM_PENALTY_TIME	1.5f	// Maximum penalty to deal out
+#define	PISTOL_ACCURACY_SHOT_PENALTY_TIME		0.1f	// Applied amount of time each shot adds to the time we must recover from
+#define	PISTOL_ACCURACY_MAXIMUM_PENALTY_TIME	1.3f	// Maximum penalty to deal out
 
 #ifdef CLIENT_DLL
 #define CWeaponPistol C_WeaponPistol

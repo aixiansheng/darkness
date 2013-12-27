@@ -182,20 +182,31 @@ bool CGameRules::CanHaveAmmo( CBaseCombatCharacter *pPlayer, const char *szName 
 	return CanHaveAmmo( pPlayer, GetAmmoDef()->Index(szName) );
 }
 
-//=========================================================
-//=========================================================
+//
+// This is only used when the player enters the game... player::Spawn will
+// then call StartObserverMode() based on the player being TEAM_SPECTATOR
+//
+// in the case of Darkness, there should always be a info_player_deathmatch
+// so that this will work
+//
 CBaseEntity *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
-	CBaseEntity *pSpawnSpot = pPlayer->EntSelectSpawnPoint();
-	Assert( pSpawnSpot );
-
-	pPlayer->SetLocalOrigin( pSpawnSpot->GetAbsOrigin() + Vector(0,0,1) );
-	pPlayer->SetAbsVelocity( vec3_origin );
-	pPlayer->SetLocalAngles( pSpawnSpot->GetLocalAngles() );
-	pPlayer->m_Local.m_vecPunchAngle = vec3_angle;
-	pPlayer->m_Local.m_vecPunchAngleVel = vec3_angle;
-	pPlayer->SnapEyeAngles( pSpawnSpot->GetLocalAngles() );
-
+	CBaseEntity *pSpawnSpot = NULL;
+	
+	// magic.. means not humans or spiders
+	if (pPlayer->GetTeamNumber() < 2) {
+		pSpawnSpot = pPlayer->EntSelectSpawnPoint();
+	
+		if (pSpawnSpot) {
+			pPlayer->SetLocalOrigin( pSpawnSpot->GetAbsOrigin() + Vector(0,0,5) );
+			pPlayer->SetAbsVelocity( vec3_origin );
+			pPlayer->SetLocalAngles( pSpawnSpot->GetLocalAngles() );
+			pPlayer->m_Local.m_vecPunchAngle = vec3_angle;
+			pPlayer->m_Local.m_vecPunchAngleVel = vec3_angle;
+			pPlayer->SnapEyeAngles( pSpawnSpot->GetLocalAngles() );
+		}
+	}
+	
 	return pSpawnSpot;
 }
 
@@ -356,11 +367,13 @@ void CGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc
 		// This value is used to scale damage when the explosion is blocked by some other object.
 		float flBlockedDamagePercent = 0.0f;
 
-		if ( pEntity == pEntityIgnore )
+		if ( pEntity == pEntityIgnore ) {
 			continue;
+		}
 
-		if ( pEntity->m_takedamage == DAMAGE_NO )
+		if ( pEntity->m_takedamage == DAMAGE_NO ) {
 			continue;
+		}
 
 		// UNDONE: this should check a damage mask, not an ignore
 		if ( iClassIgnore != CLASS_NONE && pEntity->Classify() == iClassIgnore )
@@ -369,11 +382,13 @@ void CGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc
 		}
 
 		// blast's don't tavel into or out of water
-		if (bInWater && pEntity->GetWaterLevel() == 0)
+		if (bInWater && pEntity->GetWaterLevel() == 0) {
 			continue;
+		}
 
-		if (!bInWater && pEntity->GetWaterLevel() == 3)
+		if (!bInWater && pEntity->GetWaterLevel() == 3) {
 			continue;
+		}
 
 		// Check that the explosion can 'see' this entity.
 		vecSpot = pEntity->BodyTarget( vecSrc, false );
@@ -441,8 +456,7 @@ void CGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc
 
 					UTIL_TraceLine( vecSrc, vecSpot, CONTENTS_SOLID, info.GetInflictor(), COLLISION_GROUP_NONE, &tr );
 
-					if( tr.fraction != 1.0 )
-					{
+					if( tr.fraction != 1.0 ) {
 						continue;
 					}
 					
@@ -454,8 +468,7 @@ void CGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc
 						float scale = flMass / MASS_ABSORB_ALL_DAMAGE;
 
 						// Absorbed all the damage.
-						if( scale >= 1.0f )
-						{
+						if( scale >= 1.0f ) {
 							continue;
 						}
 
@@ -475,8 +488,7 @@ void CGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc
 		flAdjustedDamage = ( vecSrc - tr.endpos ).Length() * falloff;
 		flAdjustedDamage = info.GetDamage() - flAdjustedDamage;
 
-		if ( flAdjustedDamage <= 0 )
-		{
+		if ( flAdjustedDamage <= 0 ) {
 			continue;
 		}
 
@@ -535,7 +547,6 @@ void CGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc
 #if defined( GAME_DLL )
 		if ( info.GetAttacker() && info.GetAttacker()->IsPlayer() && ToBaseCombatCharacter( tr.m_pEnt ) )
 		{
-
 			// This is a total hack!!!
 			bool bIsPrimary = true;
 			CBasePlayer *player = ToBasePlayer( info.GetAttacker() );

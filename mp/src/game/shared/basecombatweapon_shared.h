@@ -43,6 +43,7 @@ class CUserCmd;
 // How many times to display altfire hud hints (per weapon)
 #define WEAPON_ALTFIRE_HUD_HINT_COUNT	1
 #define WEAPON_RELOAD_HUD_HINT_COUNT	1
+#define WEAPON_USAGE_HUD_HINT_COUNT		1
 
 //Start with a constraint in place (don't drop to floor)
 #define	SF_WEAPON_START_CONSTRAINED	(1<<0)	
@@ -202,6 +203,10 @@ public:
 	virtual bool			ShouldDisplayReloadHUDHint();
 	virtual void			DisplayReloadHudHint();
 	virtual void			RescindReloadHudHint();
+
+	virtual bool			ShouldDisplayUsageHUDHint();
+	virtual void			DisplayUsageHudHint();
+	virtual void			RescindUsageHudHint();
 
 	// Weapon client handling
 	virtual void			SetViewModelIndex( int index = 0 );
@@ -600,6 +605,9 @@ public:
 
 	CNetworkVar( bool, m_bFlipViewModel );
 
+	bool					invisible;
+	virtual bool			HideWeapon(void) { return invisible; }
+
 	IPhysicsConstraint		*GetConstraint() { return m_pConstraint; }
 
 private:
@@ -612,6 +620,9 @@ private:
 	bool					m_bReloadHudHintDisplayed;	// Have we displayed a reload HUD hint since this weapon was deployed?
 	float					m_flHudHintPollTime;	// When to poll the weapon again for whether it should display a hud hint.
 	float					m_flHudHintMinDisplayTime; // if the hint is squelched before this, reset my counter so we'll display it again.
+
+	int m_iUsageHudHintCount;
+	bool m_bUsageHudHintDisplayed;
 	
 	// Server only
 #if !defined( CLIENT_DLL )

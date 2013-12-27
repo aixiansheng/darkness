@@ -722,6 +722,14 @@ C_BaseAnimating::C_BaseAnimating() :
 
 	m_bReceivedSequence = false;
 
+	shouldGlow = false;
+	if (overlayMaterial == NULL) {
+		 overlayMaterial = materials->FindMaterial("humanglow", TEXTURE_GROUP_CLIENT_EFFECTS);
+		 if (!IsErrorMaterial(overlayMaterial)) {
+			 overlayMaterial->IncrementReferenceCount();
+		 }
+	}
+
 	m_boneIndexAttached = -1;
 	m_flOldModelScale = 0.0f;
 
@@ -3116,6 +3124,48 @@ int C_BaseAnimating::DrawModel( int flags )
 		}
 	}
 
+	if (shouldGlow) {
+		modelrender->ForcedMaterialOverride(overlayMaterial);
+
+		/////////////////////////////////////
+		/// COPIED FROM ABOVE FOR 2ND PASS
+		/// WITH OVERRIDE TEXTURE
+		/////////////////////////////////////
+
+		if ( r_drawothermodels.GetInt() ) {
+			MDLCACHE_CRITICAL_SECTION();
+
+			int extraFlags = 0;
+			if ( r_drawothermodels.GetInt() == 2 )
+				extraFlags |= STUDIO_WIREFRAME;
+
+			if ( flags & STUDIO_SHADOWDEPTHTEXTURE )
+				extraFlags |= STUDIO_SHADOWDEPTHTEXTURE;
+
+			// Necessary for lighting blending
+			CreateModelInstance();
+
+			if ( !IsFollowingEntity() ) {
+				drawn = InternalDrawModel( flags|extraFlags );
+			} else {
+				// this doesn't draw unless master entity is visible and it's a studio model!!!
+				C_BaseAnimating *follow = FindFollowedEntity();
+				if ( follow ) {
+					// recompute master entity bone structure
+					int baseDrawn = follow->DrawModel( 0 );
+
+					// draw entity
+					// FIXME: Currently only draws if aiment is drawn.  
+					// BUGBUG: Fixup bbox and do a separate cull for follow object
+					if ( baseDrawn )
+						drawn = InternalDrawModel( STUDIO_RENDER|extraFlags );
+				}
+			}
+		} // if (r_drawothermodels.GetInt() )
+
+		modelrender->ForcedMaterialOverride(NULL);
+	}
+
 	// If we're visualizing our bboxes, draw them
 	DrawBBoxVisualizations();
 
@@ -3377,7 +3427,7 @@ void C_BaseAnimating::DoAnimationEvents( CStudioHdr *pStudioHdr )
 	if ( nSeqNum >= nStudioNumSeq )
 	{
 		// This can happen e.g. while reloading Heavy's shotgun, switch to the minigun.
-		Warning( "%s[%d]: Playing sequence %d but there's only %d in total?\n", GetDebugName(), entindex(), nSeqNum, nStudioNumSeq );
+		//Warning( "%s[%d]: Playing sequence %d but there's only %d in total?\n", GetDebugName(), entindex(), nSeqNum, nStudioNumSeq );
 		return;
 	}
 

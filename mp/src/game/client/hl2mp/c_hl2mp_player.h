@@ -12,6 +12,7 @@
 class C_HL2MP_Player;
 #include "c_basehlplayer.h"
 #include "hl2mp_player_shared.h"
+#include "hl2mp_gamerules.h"
 #include "beamdraw.h"
 
 //=============================================================================
@@ -65,7 +66,10 @@ public:
 	virtual void CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNear, float &zFar, float &fov );
 	virtual const QAngle& EyeAngles( void );
 
-	
+	bool IsStopped(void);
+	bool PlasmaReady(void);
+	bool HasAttackMotion(void);
+
 	bool	CanSprint( void );
 	void	StartSprinting( void );
 	void	StopSprinting( void );
@@ -76,6 +80,7 @@ public:
 	void	UpdateIDTarget( void );
 	void	PrecacheFootStepSounds( void );
 	const char	*GetPlayerModelSoundPrefix( void );
+	int GetPlayerPoints(void) { return m_iPlayerPoints; }
 
 	HL2MPPlayerState State_Get() const;
 
@@ -85,6 +90,31 @@ public:
 	bool IsWalking( void ) { return m_fIsWalking; }
 
 	virtual void PostThink( void );
+	void SetMaxSpeed(float speed);
+	const Vector GetPlayerMins(void) const;
+	const Vector GetPlayerMaxs(void) const;
+
+	bool JetOn(void);
+
+	HL2MPViewVectors *classVectors;
+	
+	// class info
+	int m_iClassNumber;
+	int m_iClassNumCache;
+	int m_iTeamNumCache;
+	bool stopped;
+	bool plasma_ready;
+	bool jetpack_on;
+	bool attackMotion;
+
+	int pack_item_0;
+	int pack_item_1;
+	int pack_item_2;
+	int pack_item_idx;
+
+	int grenade_type;
+
+	int GrenadeType(void);
 
 private:
 	
@@ -116,8 +146,9 @@ private:
 
 	CountdownTimer m_blinkTimer;
 
-	int	  m_iSpawnInterpCounter;
-	int	  m_iSpawnInterpCounterCache;
+	int m_iPlayerPoints;
+	int  m_iSpawnInterpCounter;
+	int  m_iSpawnInterpCounterCache;
 
 	int	  m_iPlayerSoundType;
 
@@ -126,11 +157,11 @@ private:
 
 	CNetworkVar( HL2MPPlayerState, m_iPlayerState );	
 
+	int m_iPlayerPointsCache;
 	bool m_fIsWalking;
 };
 
-inline C_HL2MP_Player *ToHL2MPPlayer( CBaseEntity *pEntity )
-{
+inline C_HL2MP_Player *ToHL2MPPlayer( CBaseEntity *pEntity ) {
 	if ( !pEntity || !pEntity->IsPlayer() )
 		return NULL;
 

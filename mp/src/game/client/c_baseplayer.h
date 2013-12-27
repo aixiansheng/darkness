@@ -77,6 +77,8 @@ public:
 	C_BasePlayer();
 	virtual			~C_BasePlayer();
 
+	bool grappling;
+
 	virtual void	Spawn( void );
 	virtual void	SharedSpawn(); // Shared between client and server.
 	virtual bool	GetSteamID( CSteamID *pID );

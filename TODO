@@ -1,0 +1,53 @@
+TODO
+=================
+
+
+
+TODO
+	- F1/F2 key bind help
+	- Fix spectator mode
+	- kiddie config (e = use, g = grenade, r = reload, no inverted mouse)
+	- prediction for stinger/mech projectiles
+
+	- XT toggle armor
+	- stalker crush players
+
+	- breeder nudge
+	- engy tele in wall?
+	- engy power armor
+
+	- armor types: power, light, heavy
+
+	- guardian regen armor when stopped
+
+	- engy model stretch fix
+	- breeder model strech fix
+
+	- spec mode crash only in SRCDS (disable spec for now)
+
+	- contact valvetime after release
+	- gameplay videos
+
+	- make guardian infestation use ragdolls
+	- wraith
+	- medic + flare
+	- humans glow better
+	- engy/breeder flying/stacking
+	- fix player animations, remove aim_yaw/aim_pitch negation in hl2mp_player_shared.cpp
+	- better textures for models (bump maps, etc)
+	- mine w/lasres
+
+	- spider glow
+
+	- spec mode broken
+
+	- armor types and balance
+	
+	- srcds crash on player quit sometimes? (build all human structures, quit?)
+
+	- HUD font size too big
+	- Team HUD positioning... (remove it?)
+
+	- put spikers/turrets in map
+
+	- more maps

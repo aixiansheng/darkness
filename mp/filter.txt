@@ -1,0 +1,17 @@
+*.pdb
+*.exp
+*.lib
+*.ilk
+*.cache
+*.tmp
+*.map
+Makefile
+maps/test.bsp
+maps/graphs/test.ain
+user_custom
+downloadlists
+cfg/pet.txt
+cfg/config.txt
+stats.txt
+voice_ban.dt
+hl2.exe

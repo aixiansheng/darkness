@@ -46,6 +46,9 @@
 #include "tier1/callqueue.h"
 #include "vphysics/constraints.h"
 
+#include "ents/egg.h"
+#include "weapon_breeder.h"
+
 #ifdef PORTAL
 #include "portal_physics_collisionevent.h"
 #include "physicsshadowclone.h"
@@ -516,6 +519,16 @@ int CCollisionEvent::ShouldCollide_2( IPhysicsObject *pObj0, IPhysicsObject *pOb
 		// don't collide with your owner
 		if ( pEntity0->GetOwnerEntity() == pEntity1 || pEntity1->GetOwnerEntity() == pEntity0 )
 			return 0;
+
+		//if (pEntity0->IsSolidFlagSet(FSOLID_NO_TEAM_COLLIDE) ||
+		//	pEntity1->IsSolidFlagSet(FSOLID_NO_TEAM_COLLIDE)) {
+		//		if (pEntity1->GetTeamNumber() == pEntity0->GetTeamNumber())
+		//			return 0;
+
+		//		if (pEntity0->GetCollisionGroup() == COLLISION_GROUP_WEAPON ||
+		//			pEntity1->GetCollisionGroup() == COLLISION_GROUP_WEAPON)
+		//			return 0;
+		//}
 	}
 
 	if ( pEntity0->GetMoveParent() || pEntity1->GetMoveParent() )

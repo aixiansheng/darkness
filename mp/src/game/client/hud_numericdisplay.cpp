@@ -30,8 +30,10 @@ CHudNumericDisplay::CHudNumericDisplay(vgui::Panel *parent, const char *name) : 
 	m_iValue = 0;
 	m_LabelText[0] = 0;
 	m_iSecondaryValue = 0;
+	m_iThirdValue = 0;
 	m_bDisplayValue = true;
 	m_bDisplaySecondaryValue = false;
+	m_bDisplayThirdValue = false;
 	m_bIndent = false;
 	m_bIsTime = false;
 }
@@ -60,6 +62,10 @@ void CHudNumericDisplay::SetSecondaryValue(int value)
 	m_iSecondaryValue = value;
 }
 
+void CHudNumericDisplay::SetThirdValue(int value) {
+	m_iThirdValue = value;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: data accessor
 //-----------------------------------------------------------------------------
@@ -74,6 +80,10 @@ void CHudNumericDisplay::SetShouldDisplayValue(bool state)
 void CHudNumericDisplay::SetShouldDisplaySecondaryValue(bool state)
 {
 	m_bDisplaySecondaryValue = state;
+}
+
+void CHudNumericDisplay::SetShouldDisplayThirdValue(bool state) {
+	m_bDisplayThirdValue = state;
 }
 
 //-----------------------------------------------------------------------------
@@ -190,6 +200,11 @@ void CHudNumericDisplay::Paint()
 	{
 		surface()->DrawSetTextColor(GetFgColor());
 		PaintNumbers(m_hSmallNumberFont, digit2_xpos, digit2_ypos, m_iSecondaryValue);
+	}
+
+	if (m_bDisplayThirdValue) {
+		surface()->DrawSetTextColor(GetFgColor());
+		PaintNumbers(m_hSmallNumberFont, digit3_xpos, digit3_ypos, m_iThirdValue);
 	}
 
 	PaintLabel();

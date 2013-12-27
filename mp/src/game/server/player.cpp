@@ -66,6 +66,8 @@
 #include "fogcontroller.h"
 #include "gameinterface.h"
 #include "hl2orange.spa.h"
+#include "hl2mp_gamerules.h"
+#include "hl2mp_player.h"
 #include "dt_utlvector_send.h"
 #include "vote_controller.h"
 #include "ai_speech.h"
@@ -548,7 +550,7 @@ CBasePlayer *CBasePlayer::CreatePlayer( const char *className, edict_t *ed )
 CBasePlayer::CBasePlayer( )
 {
 	AddEFlags( EFL_NO_AUTO_EDICT_ATTACH );
-
+	grappling = false;
 #ifdef _DEBUG
 	m_vecAutoAim.Init();
 	m_vecAdditionalPVSOrigin.Init();
@@ -996,7 +998,7 @@ void CBasePlayer::DamageEffect(float flDamage, int fDamageType)
 		//ViewPunch(QAngle(random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1)));
 
 		// Burn sound 
-		EmitSound( "Player.PlasmaDamage" );
+		//EmitSound( "Player.PlasmaDamage" );
 	}
 	else if (fDamageType & DMG_SONIC)
 	{
@@ -1118,14 +1120,17 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	// Already dead
 	if ( !IsAlive() )
 		return 0;
+
 	// go take the damage first
 
-	
-	if ( !g_pGameRules->FPlayerCanTakeDamage( this, info.GetAttacker() ) )
-	{
-		// Refuse the damage
-		return 0;
-	}
+	//
+	// team damage is always allowed in Darkness... filtered at hl2mp_player level
+	//
+	//if ( !g_pGameRules->FPlayerCanTakeDamage( this, info.GetAttacker() ) )
+	//{
+	//	// Refuse the damage
+	//	return 0;
+	//}
 
 	// print to console if the appropriate cvar is set
 #ifdef DISABLE_DEBUG_HISTORY
@@ -1203,6 +1208,7 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	// info.SetDamage( (int)info.GetDamage() );
 
 	// Call up to the base class
+
 	fTookDamage = BaseClass::OnTakeDamage( info );
 
 	// Early out if the base class took no damage
@@ -2150,16 +2156,21 @@ void CBasePlayer::PlayerDeathThink(void)
 	}
 	
 // wait for any button down,  or mp_forcerespawn is set and the respawn time is up
-	if (!fAnyButtonDown 
-		&& !( g_pGameRules->IsMultiplayer() && forcerespawn.GetInt() > 0 && (gpGlobals->curtime > (m_flDeathTime + 5))) )
+//	if (!fAnyButtonDown && !( g_pGameRules->IsMultiplayer() && forcerespawn.GetInt() > 0 && (gpGlobals->curtime > (m_flDeathTime + 5))) )
+	if (gpGlobals->curtime < m_flDeathTime + 7)
 		return;
 
 	m_nButtons = 0;
 	m_iRespawnFrames = 0;
 
-	//Msg( "Respawn\n");
+	if (GetTeamNumber() == TEAM_SPIDERS || GetTeamNumber() == TEAM_HUMANS) {
+		if (inSpawnQueue == false) {
+			inSpawnQueue = true;
+			GetTeam()->EnqueueSpawn(this);
+		}
+	}
 
-	respawn( this, !IsObserver() );// don't copy a corpse if we're in deathcam.
+	//respawn( this, !IsObserver() );// don't copy a corpse if we're in deathcam.
 	SetNextThink( TICK_NEVER_THINK );
 }
 
@@ -4417,15 +4428,20 @@ void CBasePlayer::UpdatePlayerSound ( void )
 // than fixing the problem :(
 void FixPlayerCrouchStuck( CBasePlayer *pPlayer )
 {
+	CHL2MP_Player *p;
 	trace_t trace;
+
+	p = dynamic_cast<CHL2MP_Player *>(pPlayer);
+	if (!p)
+		return;
 
 	// Move up as many as 18 pixels if the player is stuck.
 	int i;
-	Vector org = pPlayer->GetAbsOrigin();;
+	Vector org = pPlayer->GetAbsOrigin();
 	for ( i = 0; i < 18; i++ )
 	{
 		UTIL_TraceHull( pPlayer->GetAbsOrigin(), pPlayer->GetAbsOrigin(), 
-			VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_PLAYER_MOVEMENT, &trace );
+			p->classVectors->m_vDuckHullMin, p->classVectors->m_vDuckHullMax, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_PLAYER_MOVEMENT, &trace );
 		if ( trace.startsolid )
 		{
 			Vector origin = pPlayer->GetAbsOrigin();
@@ -4441,7 +4457,7 @@ void FixPlayerCrouchStuck( CBasePlayer *pPlayer )
 	for ( i = 0; i < 18; i++ )
 	{
 		UTIL_TraceHull( pPlayer->GetAbsOrigin(), pPlayer->GetAbsOrigin(), 
-			VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_PLAYER_MOVEMENT, &trace );
+			p->classVectors->m_vDuckHullMin, p->classVectors->m_vDuckHullMax, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_PLAYER_MOVEMENT, &trace );
 		if ( trace.startsolid )
 		{
 			Vector origin = pPlayer->GetAbsOrigin();
@@ -4503,14 +4519,14 @@ void CBasePlayer::PostThink()
 		{
 			// set correct collision bounds (may have changed in player movement code)
 			VPROF_SCOPE_BEGIN( "CBasePlayer::PostThink-Bounds" );
-			if ( GetFlags() & FL_DUCKING )
-			{
-				SetCollisionBounds( VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
-			}
-			else
-			{
-				SetCollisionBounds( VEC_HULL_MIN, VEC_HULL_MAX );
-			}
+			//if ( GetFlags() & FL_DUCKING )
+			//{
+			//	SetCollisionBounds( VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
+			//}
+			//else
+			//{
+			//	SetCollisionBounds( VEC_HULL_MIN, VEC_HULL_MAX );
+			//}
 			VPROF_SCOPE_END();
 
 			VPROF_SCOPE_BEGIN( "CBasePlayer::PostThink-Use" );
@@ -4878,6 +4894,8 @@ void CBasePlayer::InitialSpawn( void )
 //-----------------------------------------------------------------------------
 void CBasePlayer::Spawn( void )
 {
+	grappling = false;
+
 	// Needs to be done before weapons are given
 	if ( Hints() )
 	{
@@ -4946,6 +4964,10 @@ void CBasePlayer::Spawn( void )
 		g_pGameRules->SetDefaultPlayerTeam( this );
 
 	g_pGameRules->GetPlayerSpawnSpot( this );
+	//
+	// CHECK FOR NULL RETURN
+	// MAKE PLAYER WAIT/CANCEL SPAWN?
+	//
 
 	m_Local.m_bDucked = false;// This will persist over round restart if you hold duck otherwise. 
 	m_Local.m_bDucking = false;
@@ -5010,7 +5032,7 @@ void CBasePlayer::Spawn( void )
 
 	m_flLaggedMovementValue = 1.0f;
 	m_vecSmoothedVelocity = vec3_origin;
-	InitVCollision( GetAbsOrigin(), GetAbsVelocity() );
+	//InitVCollision( GetAbsOrigin(), GetAbsVelocity() );
 
 #if !defined( TF_DLL )
 	IGameEvent *event = gameeventmanager->CreateEvent( "player_spawn" );
@@ -5067,11 +5089,11 @@ void CBasePlayer::Precache( void )
 	enginesound->PrecacheSentenceGroup( "HEV" );
 
 	// These are always needed
-#ifndef TF_DLL
-	PrecacheParticleSystem( "slime_splash_01" );
-	PrecacheParticleSystem( "slime_splash_02" );
-	PrecacheParticleSystem( "slime_splash_03" );
-#endif
+//#ifndef TF_DLL
+//	PrecacheParticleSystem( "slime_splash_01" );
+//	PrecacheParticleSystem( "slime_splash_02" );
+//	PrecacheParticleSystem( "slime_splash_03" );
+//#endif
 
 	// in the event that the player JUST spawned, and the level node graph
 	// was loaded, fix all of the node graph pointers before the game starts.
@@ -5241,7 +5263,7 @@ void CBasePlayer::SetArmorValue( int value )
 void CBasePlayer::IncrementArmorValue( int nCount, int nMaxValue )
 { 
 	m_ArmorValue += nCount;
-	if (nMaxValue > 0)
+	if (nMaxValue >= 0)
 	{
 		if (m_ArmorValue > nMaxValue)
 			m_ArmorValue = nMaxValue;
@@ -6540,6 +6562,32 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		{
 			pl->DumpPerfToRecipient( this, nRecords );
 		}
+		return true;
+	} else if (stricmp(cmd, "jointeam") == 0) {
+		if (args.ArgC() < 2)
+			return true;
+
+		int team = atoi(args.Arg(1));
+
+		if (team == GetTeamNumber())
+			return true;
+
+		if (team == 0) {
+			if (g_Teams[TEAM_SPIDERS]->GetNumPlayers() > g_Teams[TEAM_HUMANS]->GetNumPlayers())
+				team = TEAM_HUMANS;
+			else
+				team = TEAM_SPIDERS;
+		}
+
+		if (!IsDead()) {
+			if (GetTeamNumber() != TEAM_UNASSIGNED) {
+				CommitSuicide();
+				IncrementFragCount(1);
+			}
+		}
+
+		ChangeTeam(team);
+
 		return true;
 	}
 

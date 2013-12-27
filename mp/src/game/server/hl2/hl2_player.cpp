@@ -1193,29 +1193,29 @@ void CHL2_Player::StartAutoSprint()
 //-----------------------------------------------------------------------------
 void CHL2_Player::StartSprinting( void )
 {
-	if( m_HL2Local.m_flSuitPower < 10 )
-	{
-		// Don't sprint unless there's a reasonable
-		// amount of suit power.
-		
-		// debounce the button for sound playing
-		if ( m_afButtonPressed & IN_SPEED )
-		{
-			CPASAttenuationFilter filter( this );
-			filter.UsePredictionRules();
-			EmitSound( filter, entindex(), "HL2Player.SprintNoPower" );
-		}
-		return;
-	}
+	//if( m_HL2Local.m_flSuitPower < 10 )
+	//{
+	//	// Don't sprint unless there's a reasonable
+	//	// amount of suit power.
+	//	
+	//	// debounce the button for sound playing
+	//	if ( m_afButtonPressed & IN_SPEED )
+	//	{
+	//		CPASAttenuationFilter filter( this );
+	//		filter.UsePredictionRules();
+	//		EmitSound( filter, entindex(), "HL2Player.SprintNoPower" );
+	//	}
+	//	return;
+	//}
 
-	if( !SuitPower_AddDevice( SuitDeviceSprint ) )
-		return;
+	//if( !SuitPower_AddDevice( SuitDeviceSprint ) )
+	//	return;
 
-	CPASAttenuationFilter filter( this );
-	filter.UsePredictionRules();
-	EmitSound( filter, entindex(), "HL2Player.SprintStart" );
+	//CPASAttenuationFilter filter( this );
+	//filter.UsePredictionRules();
+	//EmitSound( filter, entindex(), "HL2Player.SprintStart" );
 
-	SetMaxSpeed( HL2_SPRINT_SPEED );
+	//SetMaxSpeed( HL2_SPRINT_SPEED );
 	m_fIsSprinting = true;
 }
 
@@ -1231,11 +1231,11 @@ void CHL2_Player::StopSprinting( void )
 
 	if( IsSuitEquipped() )
 	{
-		SetMaxSpeed( HL2_NORM_SPEED );
+		//SetMaxSpeed( HL2_NORM_SPEED );
 	}
 	else
 	{
-		SetMaxSpeed( HL2_WALK_SPEED );
+		//SetMaxSpeed( HL2_WALK_SPEED );
 	}
 
 	m_fIsSprinting = false;
@@ -1267,7 +1267,7 @@ void CHL2_Player::EnableSprint( bool bEnable )
 //-----------------------------------------------------------------------------
 void CHL2_Player::StartWalking( void )
 {
-	SetMaxSpeed( HL2_WALK_SPEED );
+	//SetMaxSpeed( HL2_WALK_SPEED );
 	m_fIsWalking = true;
 }
 
@@ -1275,7 +1275,7 @@ void CHL2_Player::StartWalking( void )
 //-----------------------------------------------------------------------------
 void CHL2_Player::StopWalking( void )
 {
-	SetMaxSpeed( HL2_NORM_SPEED );
+	//SetMaxSpeed( HL2_NORM_SPEED );
 	m_fIsWalking = false;
 }
 
@@ -2373,10 +2373,10 @@ int CHL2_Player::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	}
 
 	// Burnt
-	if ( info.GetDamageType() & DMG_BURN )
-	{
-		EmitSound( "HL2Player.BurnPain" );
-	}
+	//if ( info.GetDamageType() & DMG_BURN )
+	//{
+	//	EmitSound( "HL2Player.BurnPain" );
+	//}
 
 
 	if( (info.GetDamageType() & DMG_SLASH) && hl2_episodic.GetBool() )
@@ -3095,10 +3095,10 @@ bool CHL2_Player::Weapon_CanSwitchTo( CBaseCombatWeapon *pWeapon )
 	if (pVehicle && !pPlayer->UsingStandardWeaponsInVehicle())
 		return false;
 
-	if ( !pWeapon->HasAnyAmmo() && !GetAmmoCount( pWeapon->m_iPrimaryAmmoType ) )
-		return false;
+	if (pWeapon->CanDeploy())
+		return true;
 
-	if ( !pWeapon->CanDeploy() )
+	if ( !pWeapon->HasAnyAmmo() && !GetAmmoCount( pWeapon->m_iPrimaryAmmoType ) )
 		return false;
 
 	if ( GetActiveWeapon() )

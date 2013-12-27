@@ -71,7 +71,7 @@ void FinishClientPutInServer( CHL2MP_Player *pPlayer )
 	data->SetString( "type", "1" );			// show userdata from stringtable entry
 	data->SetString( "msg",	"motd" );		// use this stringtable entry
 	data->SetBool( "unload", sv_motd_unload_on_dismissal.GetBool() );
-
+	pPlayer->ShowViewPortPanel(PANEL_TEAM, true, data);
 	pPlayer->ShowViewPortPanel( PANEL_INFO, true, data );
 
 	data->deleteThis();
@@ -114,7 +114,7 @@ const char *GetGameDescription()
 	if ( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life 2 Deathmatch";
+		return "Darkness: Source";
 }
 
 //-----------------------------------------------------------------------------

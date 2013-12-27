@@ -28,8 +28,8 @@
 
 enum
 {
-	TEAM_COMBINE = 2,
-	TEAM_REBELS,
+	TEAM_SPIDERS = 2,
+	TEAM_HUMANS,
 };
 
 
@@ -122,6 +122,7 @@ public:
 	void RestartGame();
 	
 #ifndef CLIENT_DLL
+	//virtual CBasePlayer *GetDeathScorer( CBaseEntity *pKiller, CBaseEntity *pInflictor, CBaseEntity *pVictim );
 	virtual Vector VecItemRespawnSpot( CItem *pItem );
 	virtual QAngle VecItemRespawnAngles( CItem *pItem );
 	virtual float	FlItemRespawnTime( CItem *pItem );

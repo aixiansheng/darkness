@@ -15,8 +15,14 @@
 #include "hl2mp_player.h"
 #endif
 
+#include "class_info.h"
+
+#include "hl2mp_gamerules.h"
+
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
+
+#define ANIM_RATE_CAP 3.5f
 
 extern ConVar sv_footsteps;
 
@@ -25,6 +31,13 @@ const char *g_ppszPlayerSoundPrefixNames[PLAYER_SOUNDS_MAX] =
 	"NPC_Citizen",
 	"NPC_CombineS",
 	"NPC_MetroPolice",
+	"Breeder",
+	"Hatchy",
+	"Drone",
+	"Stinger",
+	"Stalker",
+	"Engy",
+	"Mech"
 };
 
 const char *CHL2MP_Player::GetPlayerModelSoundPrefix( void )
@@ -45,6 +58,9 @@ void CHL2MP_Player::PrecacheFootStepSounds( void )
 		PrecacheScriptSound( szFootStepName );
 
 		Q_snprintf( szFootStepName, sizeof( szFootStepName ), "%s.RunFootstepRight", g_ppszPlayerSoundPrefixNames[i] );
+		PrecacheScriptSound( szFootStepName );
+
+		Q_snprintf( szFootStepName, sizeof( szFootStepName ), "%s.Die", g_ppszPlayerSoundPrefixNames[i] );
 		PrecacheScriptSound( szFootStepName );
 	}
 }
@@ -189,10 +205,15 @@ void CPlayerAnimState::ComputePlaybackRate()
 	
 	if ( isMoving && ( maxspeed > 0.0f ) )
 	{
-		float flFactor = 1.0f;
+		float flFactor = 0.85f;
 
 		// Note this gets set back to 1.0 if sequence changes due to ResetSequenceInfo below
-		GetOuter()->SetPlaybackRate( ( speed * flFactor ) / maxspeed );
+		//Warning("Setting pbrate = %f\n", (speed * flFactor) / maxspeed);
+		float capped = (speed * flFactor) / maxspeed;
+		if (capped > ANIM_RATE_CAP)
+			capped = ANIM_RATE_CAP;
+
+		GetOuter()->SetPlaybackRate( capped );
 
 		// BUG BUG:
 		// This stuff really should be m_flPlaybackRate = speed / m_flGroundSpeed
@@ -329,7 +350,50 @@ void CPlayerAnimState::ComputePoseParam_BodyPitch( CStudioHdr *pStudioHdr )
 	m_angRender[ PITCH ] = m_angRender[ ROLL ] = 0.0f;
 
 	// See if we have a blender for pitch
-	GetOuter()->SetPoseParameter( pStudioHdr, "aim_pitch", flPitch );
+	
+
+	if (GetOuter()->GetTeamNumber() == TEAM_HUMANS) {
+		if (GetOuter()->m_iClassNumber == CLASS_MECH_IDX) {
+			GetOuter()->SetPoseParameter( pStudioHdr, "aim_pitch", -flPitch );
+		} else {
+			GetOuter()->SetPoseParameter( pStudioHdr, "aim_pitch", flPitch );
+		}
+	} else {
+		GetOuter()->SetPoseParameter( pStudioHdr, "aim_pitch", -flPitch );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : collisionGroup - 
+// Output : Returns true on success, false on failure.
+//-----------------------------------------------------------------------------
+//bool CHL2MP_Player::ShouldCollide( int collisionGroup, int contentsMask ) const
+//{
+//	if ( HL2MPRules()->IsTeamplay() )
+//	{
+//		if ( collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT || collisionGroup == COLLISION_GROUP_PROJECTILE )
+//		{
+//			switch( GetTeamNumber() )
+//			{
+//			case TEAM_HUMANS:
+//				if ( !( contentsMask & CONTENTS_TEAM2 ) )
+//					return false;
+//				break;
+//
+//			case TEAM_SPIDERS:
+//				if ( !( contentsMask & CONTENTS_TEAM1 ) )
+//					return false;
+//				break;
+//			}
+//		}
+//	}
+//
+//	return BaseClass::ShouldCollide( collisionGroup, contentsMask );
+//}
+
+void CHL2MP_Player::SetMaxSpeed(float speed) {
+	BaseClass::SetMaxSpeed(speed);
 }
 
 //-----------------------------------------------------------------------------
@@ -513,7 +577,20 @@ void CPlayerAnimState::ComputePoseParam_BodyLookYaw( void )
 	m_angRender = absangles;
 	m_angRender[ PITCH ] = m_angRender[ ROLL ] = 0.0f;
 
-	GetOuter()->SetPoseParameter( upper_body_yaw, clamp( m_flCurrentTorsoYaw, -60.0f, 60.0f ) );
+	//
+	// handle Darkness' broken models by negating the yaw
+	// for all custom models (on humans, mech) (all spiders)
+	//
+	if (GetOuter()->GetTeamNumber() == TEAM_HUMANS) {
+		if (GetOuter()->m_iClassNumber == CLASS_MECH_IDX) {
+			GetOuter()->SetPoseParameter( upper_body_yaw, clamp( -m_flCurrentTorsoYaw, -60.0f, 60.0f ) );
+		} else {
+			GetOuter()->SetPoseParameter( upper_body_yaw, clamp( m_flCurrentTorsoYaw, -60.0f, 60.0f ) );
+		}
+	} else {
+		GetOuter()->SetPoseParameter( upper_body_yaw, clamp( -m_flCurrentTorsoYaw, -60.0f, 60.0f ) );
+	}
+	
 
 	/*
 	// FIXME: Adrian, what is this?

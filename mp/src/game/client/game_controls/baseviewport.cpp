@@ -35,6 +35,8 @@
 #include "clientscoreboarddialog.h"
 #include "spectatorgui.h"
 #include "teammenu.h"
+#include "classmenu.h"
+#include "buildmenu.h"
 #include "vguitextwindow.h"
 #include "IGameUIFuncs.h"
 #include "mapoverview.h"
@@ -89,6 +91,20 @@ CON_COMMAND( hidepanel, "Hides a viewport panel <name>" )
 		return;
 		
 	 gViewPortInterface->ShowPanel( args[ 1 ], false );
+}
+
+CON_COMMAND(chooseteam, "Opens a menu for team selection") {
+	if (!gViewPortInterface)
+		return;
+	
+	gViewPortInterface->ShowPanel("team", true);
+}
+
+CON_COMMAND(chooseclass, "Opens a menu for class selection") {
+	if (!gViewPortInterface)
+		return;
+
+	gViewPortInterface->ShowPanel("class", true);
 }
 
 /* global helper functions
@@ -231,8 +247,9 @@ void CBaseViewport::CreateDefaultPanels( void )
 	AddNewPanel( CreatePanelByName( PANEL_SPECGUI ), "PANEL_SPECGUI" );
 	AddNewPanel( CreatePanelByName( PANEL_SPECMENU ), "PANEL_SPECMENU" );
 	AddNewPanel( CreatePanelByName( PANEL_NAV_PROGRESS ), "PANEL_NAV_PROGRESS" );
-	// AddNewPanel( CreatePanelByName( PANEL_TEAM ), "PANEL_TEAM" );
-	// AddNewPanel( CreatePanelByName( PANEL_CLASS ), "PANEL_CLASS" );
+	AddNewPanel( CreatePanelByName( PANEL_TEAM ), "PANEL_TEAM" );
+	AddNewPanel( CreatePanelByName( PANEL_CLASS ), "PANEL_CLASS" );
+	AddNewPanel( CreatePanelByName( PANEL_BUILD ), "PANEL_BUILD" );
 	// AddNewPanel( CreatePanelByName( PANEL_BUY ), "PANEL_BUY" );
 #endif
 }
@@ -256,42 +273,25 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 {
 	IViewPortPanel* newpanel = NULL;
 
-#ifndef _XBOX
-	if ( Q_strcmp(PANEL_SCOREBOARD, szPanelName) == 0 )
-	{
-		newpanel = new CClientScoreBoardDialog( this );
+	if ( Q_strcmp(PANEL_SCOREBOARD, szPanelName) == 0 ) {
+		newpanel = new CClientScoreBoardDialog(this);
+	} else if ( Q_strcmp(PANEL_INFO, szPanelName) == 0 ) {
+		newpanel = new CTextWindow(this);
+	} else if ( Q_strcmp(PANEL_TEAM, szPanelName) == 0 ) {
+		newpanel = new CTeamMenu(this);
+	} else if ( Q_strcmp(PANEL_SPECMENU, szPanelName) == 0 ) {
+		newpanel = new CSpectatorMenu(this);
+	} else if ( Q_strcmp(PANEL_SPECGUI, szPanelName) == 0 ) {
+		newpanel = new CSpectatorGUI(this);
+	} else if ( Q_strcmp(PANEL_NAV_PROGRESS, szPanelName) == 0 ) {
+		newpanel = new CNavProgress(this);
+	} else if ( Q_strcmp(PANEL_CLASS, szPanelName) == 0) {
+		newpanel = new CClassMenu(this);
+	} else if ( Q_strcmp(PANEL_BUILD, szPanelName) == 0) {
+		newpanel = new CBuildMenu(this);
 	}
-	else if ( Q_strcmp(PANEL_INFO, szPanelName) == 0 )
-	{
-		newpanel = new CTextWindow( this );
-	}
-/*	else if ( Q_strcmp(PANEL_OVERVIEW, szPanelName) == 0 )
-	{
-		newpanel = new CMapOverview( this );
-	}
-	*/
-	else if ( Q_strcmp(PANEL_TEAM, szPanelName) == 0 )
-	{
-		newpanel = new CTeamMenu( this );
-	}
-	else if ( Q_strcmp(PANEL_SPECMENU, szPanelName) == 0 )
-	{
-		newpanel = new CSpectatorMenu( this );
-	}
-	else if ( Q_strcmp(PANEL_SPECGUI, szPanelName) == 0 )
-	{
-		newpanel = new CSpectatorGUI( this );
-	}
-#if !defined( TF_CLIENT_DLL )
-	else if ( Q_strcmp(PANEL_NAV_PROGRESS, szPanelName) == 0 )
-	{
-		newpanel = new CNavProgress( this );
-	}
-#endif	// TF_CLIENT_DLL
-#endif
 
-	if ( Q_strcmp(PANEL_COMMENTARY_MODELVIEWER, szPanelName) == 0 )
-	{
+	if ( Q_strcmp(PANEL_COMMENTARY_MODELVIEWER, szPanelName) == 0 ) {
 		newpanel = new CCommentaryModelViewer( this );
 	}
 	

@@ -14,6 +14,7 @@
 #include "decals.h"
 #include "coordsize.h"
 #include "rumble_shared.h"
+#include "class_info.h"
 
 #if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
 	#include "hl_movedata.h"
@@ -31,10 +32,15 @@
 extern IFileSystem *filesystem;
 
 #ifndef CLIENT_DLL
+	#include "hl2mp_player.h"
 	#include "env_player_surface_trigger.h"
 	static ConVar dispcoll_drawplane( "dispcoll_drawplane", "0" );
+#else
+	#define CHL2MP_Player C_HL2MP_Player
+	#include "c_hl2mp_player.h"
 #endif
 
+class CHL2MP_Player;
 
 // tickcount currently isn't set during prediction, although gpGlobals->curtime and
 // gpGlobals->frametime are. We should probably set tickcount (to player->m_nTickBase),
@@ -704,7 +710,7 @@ bool CGameMovement::CheckInterval( IntervalType_t type )
 //-----------------------------------------------------------------------------
 Vector CGameMovement::GetPlayerMins( bool ducked ) const
 {
-	return ducked ? VEC_DUCK_HULL_MIN_SCALED( player ) : VEC_HULL_MIN_SCALED( player );
+	return ducked ? hl2mp_player->classVectors->m_vDuckHullMin : hl2mp_player->classVectors->m_vHullMin;
 }
 
 //-----------------------------------------------------------------------------
@@ -714,7 +720,7 @@ Vector CGameMovement::GetPlayerMins( bool ducked ) const
 //-----------------------------------------------------------------------------
 Vector CGameMovement::GetPlayerMaxs( bool ducked ) const
 {	
-	return ducked ? VEC_DUCK_HULL_MAX_SCALED( player ) : VEC_HULL_MAX_SCALED( player );
+	 return ducked ? hl2mp_player->classVectors->m_vDuckHullMax : hl2mp_player->classVectors->m_vHullMax;
 }
 
 //-----------------------------------------------------------------------------
@@ -726,11 +732,11 @@ Vector CGameMovement::GetPlayerMins( void ) const
 {
 	if ( player->IsObserver() )
 	{
-		return VEC_OBS_HULL_MIN_SCALED( player );	
+		return hl2mp_player->classVectors->m_vObsHullMin;
 	}
 	else
 	{
-		return player->m_Local.m_bDucked  ? VEC_DUCK_HULL_MIN_SCALED( player ) : VEC_HULL_MIN_SCALED( player );
+		return player->m_Local.m_bDucked  ? hl2mp_player->classVectors->m_vDuckHullMin : hl2mp_player->classVectors->m_vHullMin;
 	}
 }
 
@@ -743,11 +749,11 @@ Vector CGameMovement::GetPlayerMaxs( void ) const
 {	
 	if ( player->IsObserver() )
 	{
-		return VEC_OBS_HULL_MAX_SCALED( player );	
+		return hl2mp_player->classVectors->m_vObsHullMax;	
 	}
 	else
 	{
-		return player->m_Local.m_bDucked  ? VEC_DUCK_HULL_MAX_SCALED( player ) : VEC_HULL_MAX_SCALED( player );
+		return player->m_Local.m_bDucked  ? hl2mp_player->classVectors->m_vDuckHullMax : hl2mp_player->classVectors->m_vHullMax;
 	}
 }
 
@@ -758,7 +764,7 @@ Vector CGameMovement::GetPlayerMaxs( void ) const
 //-----------------------------------------------------------------------------
 Vector CGameMovement::GetPlayerViewOffset( bool ducked ) const
 {
-	return ducked ? VEC_DUCK_VIEW_SCALED( player ) : VEC_VIEW_SCALED( player );
+	return ducked ? hl2mp_player->classVectors->m_vDuckView : hl2mp_player->classVectors->m_vView;
 }
 
 #if 0
@@ -1072,7 +1078,7 @@ void CGameMovement::CheckParameters( void )
 	// Set dead player view_offset
 	if ( IsDead() )
 	{
-		player->SetViewOffset( VEC_DEAD_VIEWHEIGHT_SCALED( player ) );
+		player->SetViewOffset( hl2mp_player->classVectors->m_vDeadViewHeight );
 	}
 
 	// Adjust client view angles to match values used on server.
@@ -1120,6 +1126,13 @@ void CGameMovement::ReduceTimers( void )
 	}
 }
 
+#define JETMOVE_THRUST 1000.0f
+
+void CGameMovement::JetMove(void) {
+	SetGroundEntity(NULL);
+	mv->m_vecVelocity[2] += JETMOVE_THRUST * gpGlobals->frametime;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : *pMove - 
@@ -1144,9 +1157,24 @@ void CGameMovement::ProcessMovement( CBasePlayer *pPlayer, CMoveData *pMove )
 	// StartTrackPredictionErrors should have set this
 	Assert( player == pPlayer );
 	player = pPlayer;
+	hl2mp_player = dynamic_cast<CHL2MP_Player *>(player);
 
 	mv = pMove;
-	mv->m_flMaxSpeed = pPlayer->GetPlayerMaxSpeed();
+	mv->m_flMaxSpeed = player->MaxSpeed();
+
+	if (player->grappling) {
+		mv->m_flForwardMove = 0.0f;
+		mv->m_flSideMove = 0.0f;
+		mv->m_flUpMove = 0.0f;
+		mv->m_nButtons &= ~IN_DUCK;
+	}
+
+	//if (hl2mp_player->JetOn()) {
+	//	mv->m_flForwardMove = 0.0f;
+	//	mv->m_flSideMove = 0.0f;
+	//	mv->m_flUpMove = 0.0f;
+	//	mv->m_nButtons &= ~IN_DUCK;
+	//}
 
 	// CheckV( player->CurrentCommandNumber(), "StartPos", mv->GetAbsOrigin() );
 
@@ -1154,6 +1182,10 @@ void CGameMovement::ProcessMovement( CBasePlayer *pPlayer, CMoveData *pMove )
 
 	// Run the command.
 	PlayerMove();
+
+	if (hl2mp_player->JetOn()) {
+		JetMove();
+	}
 
 	FinishMove();
 
@@ -1164,12 +1196,14 @@ void CGameMovement::ProcessMovement( CBasePlayer *pPlayer, CMoveData *pMove )
 	//This is probably not needed, but just in case.
 	gpGlobals->frametime = flStoreFrametime;
 
-// 	player = NULL;
+	player = NULL;
+	hl2mp_player = NULL;
 }
 
 void CGameMovement::StartTrackPredictionErrors( CBasePlayer *pPlayer )
 {
 	player = pPlayer;
+	hl2mp_player = dynamic_cast<CHL2MP_Player *>(player);
 
 #if PREDICTION_ERROR_CHECK_LEVEL > 0
 	StartCommand( CBaseEntity::IsServer(), player->CurrentCommandNumber() );
@@ -1400,7 +1434,7 @@ void CGameMovement::WaterMove( void )
 	{
 		// exaggerate upward movement along forward as well
 		float upwardMovememnt = mv->m_flForwardMove * forward.z * 2;
-		upwardMovememnt = clamp( upwardMovememnt, 0.f, mv->m_flClientMaxSpeed );
+		upwardMovememnt = clamp( upwardMovememnt, 0.0f, mv->m_flClientMaxSpeed );
 		wishvel[2] += mv->m_flUpMove + upwardMovememnt;
 	}
 
@@ -2413,7 +2447,13 @@ bool CGameMovement::CheckJumpButton( void )
 	// In the air now.
     SetGroundEntity( NULL );
 	
-	player->PlayStepSound( (Vector &)mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true );
+	if (hl2mp_player->GetTeamNumber() != TEAM_HUMANS || 
+		(hl2mp_player->m_iClassNumber != CLASS_COMMANDO_IDX && 
+		hl2mp_player->m_iClassNumber == CLASS_ENGINEER_IDX)) {
+
+			player->PlayStepSound( (Vector &)mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true );
+
+	}
 	
 	MoveHelper()->PlayerSetAnimation( PLAYER_JUMP );
 
@@ -2438,6 +2478,40 @@ bool CGameMovement::CheckJumpButton( void )
 	else
 	{
 		flMul = sqrt(2 * GetCurrentGravity() * GAMEMOVEMENT_JUMP_HEIGHT);
+	}
+
+	//
+	// increase fMul accordingly
+	//
+	CHL2MP_Player *p;
+	int teamNum;
+	int classNum;
+	float classFactor = 1.0f;
+
+	if ((p = dynamic_cast<CHL2MP_Player *>(player)) != NULL) {
+		teamNum = p->GetTeamNumber();
+		classNum = p->m_iClassNumber;
+
+		switch(teamNum) {
+		case TEAM_SPIDERS:
+			if (classNum < NUM_SPIDER_CLASSES && classNum >= 0) {
+				classFactor = dk_spider_classes[classNum].jump_factor;
+			}
+
+			break;
+
+		case TEAM_HUMANS:
+			if (classNum < NUM_HUMAN_CLASSES && classNum >= 0) {
+				classFactor = dk_human_classes[classNum].jump_factor;
+			}
+
+			break;
+
+		default:
+			break;
+		}
+
+		flMul *= classFactor;
 	}
 
 	// Acclerate upward
@@ -2501,7 +2575,7 @@ bool CGameMovement::CheckJumpButton( void )
 	// Set jump time.
 	if ( gpGlobals->maxClients == 1 )
 	{
-		player->m_Local.m_flJumpTime = GAMEMOVEMENT_JUMP_TIME;
+		player->m_Local.m_flJumpTime = GAMEMOVEMENT_JUMP_TIME * classFactor;
 		player->m_Local.m_bInDuckJump = true;
 	}
 
@@ -3923,21 +3997,27 @@ void CGameMovement::CheckFalling( void )
 				player->m_Local.m_flFallVelocity = MAX( 0.1f, player->m_Local.m_flFallVelocity );
 			}
 
-			if ( player->m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED )
-			{
-				//
-				// If they hit the ground going this fast they may take damage (and die).
-				//
-				bAlive = MoveHelper( )->PlayerFallingDamage();
-				fvol = 1.0;
-			}
-			else if ( player->m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED / 2 )
-			{
-				fvol = 0.85;
-			}
-			else if ( player->m_Local.m_flFallVelocity < PLAYER_MIN_BOUNCE_SPEED )
-			{
-				fvol = 0;
+			if (hl2mp_player->GetTeamNumber() == TEAM_SPIDERS &&
+			    (hl2mp_player->m_iClassNumber == CLASS_HATCHY_IDX ||
+			    hl2mp_player->m_iClassNumber == CLASS_KAMI_IDX ||
+			    hl2mp_player->m_iClassNumber == CLASS_DRONE_IDX)) {
+
+					// skip non-fall damage units
+					bAlive = true;
+					fvol = 0;
+
+			} else {
+				if ( player->m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED ) {
+					//
+					// If they hit the ground going this fast they may take damage (and die).
+					//
+					bAlive = MoveHelper( )->PlayerFallingDamage();
+					fvol = 1.0;
+				} else if ( player->m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED / 2 ) {
+					fvol = 0.85;
+				} else if ( player->m_Local.m_flFallVelocity < PLAYER_MIN_BOUNCE_SPEED ) {
+					fvol = 0;
+				}
 			}
 		}
 
@@ -4045,15 +4125,15 @@ bool CGameMovement::CanUnduck()
 	{
 		for ( i = 0; i < 3; i++ )
 		{
-			newOrigin[i] += ( VEC_DUCK_HULL_MIN_SCALED( player )[i] - VEC_HULL_MIN_SCALED( player )[i] );
+			newOrigin[i] +=( hl2mp_player->classVectors->m_vDuckHullMin[i] - hl2mp_player->classVectors->m_vHullMin[i] );
 		}
 	}
 	else
 	{
 		// If in air an letting go of crouch, make sure we can offset origin to make
 		//  up for uncrouching
-		Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
+		Vector hullSizeNormal = hl2mp_player->classVectors->m_vHullMax - hl2mp_player->classVectors->m_vHullMin;
+		Vector hullSizeCrouch = hl2mp_player->classVectors->m_vDuckHullMax - hl2mp_player->classVectors->m_vDuckHullMin;
 		Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
 		viewDelta.Negate();
 		VectorAdd( newOrigin, viewDelta, newOrigin );
@@ -4084,15 +4164,15 @@ void CGameMovement::FinishUnDuck( void )
 	{
 		for ( i = 0; i < 3; i++ )
 		{
-			newOrigin[i] += ( VEC_DUCK_HULL_MIN_SCALED( player )[i] - VEC_HULL_MIN_SCALED( player )[i] );
+			newOrigin[i] +=  ( hl2mp_player->classVectors->m_vDuckHullMin[i] - hl2mp_player->classVectors->m_vHullMin[i] );
 		}
 	}
 	else
 	{
 		// If in air an letting go of crouch, make sure we can offset origin to make
 		//  up for uncrouching
-		Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
+		Vector hullSizeNormal = hl2mp_player->classVectors->m_vHullMax - hl2mp_player->classVectors->m_vHullMin;
+		Vector hullSizeCrouch = hl2mp_player->classVectors->m_vDuckHullMax - hl2mp_player->classVectors->m_vDuckHullMin;
 		Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
 		viewDelta.Negate();
 		VectorAdd( newOrigin, viewDelta, newOrigin );
@@ -4102,9 +4182,9 @@ void CGameMovement::FinishUnDuck( void )
 	player->RemoveFlag( FL_DUCKING );
 	player->m_Local.m_bDucking  = false;
 	player->m_Local.m_bInDuckJump  = false;
-	player->SetViewOffset( GetPlayerViewOffset( false ) );
+	hl2mp_player->SetViewOffset( GetPlayerViewOffset( false ) );
 	player->m_Local.m_flDucktime = 0;
-
+	
 	mv->SetAbsOrigin( newOrigin );
 
 #ifdef CLIENT_DLL
@@ -4146,8 +4226,8 @@ void CGameMovement::FinishUnDuckJump( trace_t &trace )
 	VectorCopy( mv->GetAbsOrigin(), vecNewOrigin );
 
 	//  Up for uncrouching.
-	Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-	Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
+	Vector hullSizeNormal = hl2mp_player->classVectors->m_vHullMax - hl2mp_player->classVectors->m_vHullMin;
+	Vector hullSizeCrouch = hl2mp_player->classVectors->m_vDuckHullMax - hl2mp_player->classVectors->m_vDuckHullMin;
 	Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
 
 	float flDeltaZ = viewDelta.z;
@@ -4161,10 +4241,10 @@ void CGameMovement::FinishUnDuckJump( trace_t &trace )
 	player->m_Local.m_flDucktime = 0.0f;
 	player->m_Local.m_flDuckJumpTime = 0.0f;
 	player->m_Local.m_flJumpTime = 0.0f;
-
+	
 	Vector vecViewOffset = GetPlayerViewOffset( false );
 	vecViewOffset.z -= flDeltaZ;
-	player->SetViewOffset( vecViewOffset );
+	hl2mp_player->SetViewOffset( vecViewOffset );
 
 	VectorSubtract( vecNewOrigin, viewDelta, vecNewOrigin );
 	mv->SetAbsOrigin( vecNewOrigin );
@@ -4193,14 +4273,14 @@ void CGameMovement::FinishDuck( void )
 		for ( int i = 0; i < 3; i++ )
 		{
 			Vector org = mv->GetAbsOrigin();
-			org[ i ]-= ( VEC_DUCK_HULL_MIN_SCALED( player )[i] - VEC_HULL_MIN_SCALED( player )[i] );
+			org[ i ]-= ( hl2mp_player->classVectors->m_vDuckHullMin[i] - hl2mp_player->classVectors->m_vHullMin[i] );
 			mv->SetAbsOrigin( org );
 		}
 	}
 	else
 	{
-		Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
+		Vector hullSizeNormal = hl2mp_player->classVectors->m_vHullMax - hl2mp_player->classVectors->m_vHullMin;
+		Vector hullSizeCrouch = hl2mp_player->classVectors->m_vDuckHullMax - hl2mp_player->classVectors->m_vDuckHullMin;
 		Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
 		Vector out;
    		VectorAdd( mv->GetAbsOrigin(), viewDelta, out );
@@ -4229,8 +4309,8 @@ void CGameMovement::StartUnDuckJump( void )
 
 	player->SetViewOffset( GetPlayerViewOffset( true ) );
 
-	Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-	Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
+	Vector hullSizeNormal = hl2mp_player->classVectors->m_vHullMax - hl2mp_player->classVectors->m_vHullMin;
+	Vector hullSizeCrouch = hl2mp_player->classVectors->m_vDuckHullMax - hl2mp_player->classVectors->m_vDuckHullMin;
 	Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
 	Vector out;
 	VectorAdd( mv->GetAbsOrigin(), viewDelta, out );
@@ -4585,7 +4665,12 @@ void CGameMovement::PlayerMove( void )
 
 	m_nOnLadder = 0;
 
-	player->UpdateStepSound( player->m_pSurfaceData, mv->GetAbsOrigin(), mv->m_vecVelocity );
+	if (hl2mp_player->GetTeamNumber() == TEAM_HUMANS && 
+		hl2mp_player->m_iClassNumber != CLASS_COMMANDO_IDX && 
+		hl2mp_player->m_iClassNumber != CLASS_ENGINEER_IDX) {
+
+			player->UpdateStepSound( player->m_pSurfaceData, mv->GetAbsOrigin(), mv->m_vecVelocity );
+	}
 
 	UpdateDuckJumpEyeOffset();
 	Duck();

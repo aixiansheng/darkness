@@ -354,14 +354,19 @@ bool CTeamplayRules::IsTeamplay( void )
 
 bool CTeamplayRules::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker )
 {
+	// you can always hurt yourself
+	if (pAttacker->edict() == pPlayer->edict()) {
+		return true;
+	}
+
 	if ( pAttacker && PlayerRelationship( pPlayer, pAttacker ) == GR_TEAMMATE )
 	{
 		// my teammate hit me.
-		if ( (friendlyfire.GetInt() == 0) && (pAttacker != pPlayer) )
-		{
-			// friendly fire is off, and this hit came from someone other than myself,  then don't get hurt
-			return false;
-		}
+//		if ( (friendlyfire.GetInt() == 0) && (pAttacker != pPlayer) )
+//		{
+//			// friendly fire is off, and this hit came from someone other than myself,  then don't get hurt
+//			return false;
+//		}
 	}
 
 	return BaseClass::FPlayerCanTakeDamage( pPlayer, pAttacker );

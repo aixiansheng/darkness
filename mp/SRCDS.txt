@@ -1,0 +1,8 @@
+install steamcmd
+login anonymous
+force_install_dir C:\blah
+app_update 244310
+
+copy darkness folder to blah\
+
+double click srcds.exe, choose darkness, done

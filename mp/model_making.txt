@@ -1,0 +1,46 @@
+game dir should have:
+
+models/modelname/x.mdl, x*.vtx, x.phy, x.vvd
+materials/models/modelname.*.vtf (referenced by model)
+
+
+make a Valve Texture Format (.vtf) from a tga:
+	- make X.tga
+	- make X.vtf with Vtex/VTFEdit
+	- put X.vtf in materials/models/
+
+make a Valve Material Type (.vmt):
+	- make Y.vmt
+	- put Y.vmt in materials/models/Lw
+	- something like this:
+	"VertexLitGeneric"
+	{
+		"$basetexture" "models/X/Y"
+		"$model" 1
+	}
+	- "$cdmaterials" is relative to materials/models
+
+- export a model as an .smd
+- make a QC file:
+	- use spaces, not tabs
+	- each vertex group looks like:
+	triangles
+	foo.tga or foo (material names)
+	...
+	...
+	...
+
+- compile with studiomdl -game C:\\... some dir with a models dir
+
+
+===============
+why can't it find the texture!?
+hitbox vs phys? scale wrong?
+
+==== PHYSICS/COLLISION MODELS ===
+
+- join conves/simple brushes (ctrl-j)
+- one bone parent per convex body works best (massive weight painting helps)
+
+
+==== calcblend errors can occur if the bone mentioned isn't attached to a parent directly? (arm.R on mech vs spine, which works)

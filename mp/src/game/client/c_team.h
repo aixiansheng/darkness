@@ -50,6 +50,9 @@ public:
 
 	void	RemoveAllPlayers();
 
+	int GetAssetPoints(void);
+
+	int NumSpawnPoints(void);
 
 // IClientThinkable overrides.
 public:
@@ -70,6 +73,9 @@ public:
 	int		m_iPing;
 	int		m_iPacketloss;
 	int		m_iTeamNum;
+
+	int num_spawns;
+	int asset_points;
 };
 
 

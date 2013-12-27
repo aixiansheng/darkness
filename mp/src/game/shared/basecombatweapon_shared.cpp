@@ -34,6 +34,7 @@
 
 #ifdef HL2MP
 	#include "hl2mp_gamerules.h"
+	#include "hl2mp_player.h"
 #endif
 
 #endif
@@ -45,7 +46,7 @@
 // this, then teh hud hint counter will be deremented so the hint will be shown again, as
 // if it had never been seen. The total display time for a hud hint is specified in client
 // script HudAnimations.txt (which I can't read here). 
-#define MIN_HUDHINT_DISPLAY_TIME 7.0f
+#define MIN_HUDHINT_DISPLAY_TIME 10.0f
 
 #define HIDEWEAPON_THINK_CONTEXT			"BaseCombatWeapon_HideThink"
 
@@ -213,7 +214,10 @@ void CBaseCombatWeapon::Spawn( void )
 
 	m_iReloadHudHintCount = 0;
 	m_iAltFireHudHintCount = 0;
+	m_iUsageHudHintCount = 0;
 	m_flHudHintMinDisplayTime = 0;
+
+	invisible = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -893,8 +897,7 @@ void CBaseCombatWeapon::RescindAltFireHudHint()
 #endif//CLIENT_DLL
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
 bool CBaseCombatWeapon::ShouldDisplayReloadHUDHint()
 {
 	if( m_iReloadHudHintCount >= WEAPON_RELOAD_HUD_HINT_COUNT )
@@ -914,8 +917,7 @@ bool CBaseCombatWeapon::ShouldDisplayReloadHUDHint()
 
 	return false;
 }
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
 void CBaseCombatWeapon::DisplayReloadHudHint()
 {
 #if !defined( CLIENT_DLL )
@@ -925,8 +927,7 @@ void CBaseCombatWeapon::DisplayReloadHudHint()
 	m_flHudHintMinDisplayTime = gpGlobals->curtime + MIN_HUDHINT_DISPLAY_TIME;
 #endif//CLIENT_DLL
 }
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
 void CBaseCombatWeapon::RescindReloadHudHint()
 {
 #if !defined( CLIENT_DLL )
@@ -937,6 +938,36 @@ void CBaseCombatWeapon::RescindReloadHudHint()
 	m_bReloadHudHintDisplayed = false;
 #endif//CLIENT_DLL
 }
+
+
+bool CBaseCombatWeapon::ShouldDisplayUsageHUDHint() {
+	if (m_iUsageHudHintCount >= WEAPON_USAGE_HUD_HINT_COUNT)
+		return false;
+
+	return true;
+}
+
+void CBaseCombatWeapon::DisplayUsageHudHint() {
+#if !defined( CLIENT_DLL )
+	//UTIL_HudHintText( GetOwner(), "valve_hint_reload" );
+	m_iUsageHudHintCount++;
+	m_bUsageHudHintDisplayed = true;
+	m_flHudHintMinDisplayTime = gpGlobals->curtime + MIN_HUDHINT_DISPLAY_TIME;
+#endif//CLIENT_DLL
+}
+
+void CBaseCombatWeapon::RescindUsageHudHint() {
+#if !defined( CLIENT_DLL )
+	Assert(m_bUsageHudHintDisplayed);
+
+	UTIL_HudHintText( GetOwner(), "" );
+	--m_iUsageHudHintCount;
+	m_bUsageHudHintDisplayed = false;
+#endif//CLIENT_DLL
+}
+
+
+
 
 
 void CBaseCombatWeapon::SetPickupTouch( void )
@@ -1414,6 +1445,7 @@ bool CBaseCombatWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 
 	m_bAltFireHudHintDisplayed = false;
 	m_bReloadHudHintDisplayed = false;
+	m_bUsageHudHintDisplayed = false;
 	m_flHudHintPollTime = gpGlobals->curtime + 5.0f;
 	
 	WeaponSound( DEPLOY );
@@ -1490,11 +1522,14 @@ bool CBaseCombatWeapon::Holster( CBaseCombatWeapon *pSwitchingTo )
 	// if we were displaying a hud hint, squelch it.
 	if (m_flHudHintMinDisplayTime && gpGlobals->curtime < m_flHudHintMinDisplayTime)
 	{
-		if( m_bAltFireHudHintDisplayed )
+		if ( m_bAltFireHudHintDisplayed )
 			RescindAltFireHudHint();
 
-		if( m_bReloadHudHintDisplayed )
+		if ( m_bReloadHudHintDisplayed )
 			RescindReloadHudHint();
+
+		if ( m_bUsageHudHintDisplayed )
+			RescindUsageHudHint();
 	}
 
 	return true;
@@ -1609,33 +1644,29 @@ void CBaseCombatWeapon::ItemPreFrame( void )
 	MaintainIdealActivity();
 
 #ifndef CLIENT_DLL
-#ifndef HL2_EPISODIC
-	if ( IsX360() )
-#endif
+
 	{
 		// If we haven't displayed the hint enough times yet, it's time to try to 
 		// display the hint, and the player is not standing still, try to show a hud hint.
 		// If the player IS standing still, assume they could change away from this weapon at
 		// any second.
-		if( (!m_bAltFireHudHintDisplayed || !m_bReloadHudHintDisplayed) && gpGlobals->curtime > m_flHudHintMinDisplayTime && gpGlobals->curtime > m_flHudHintPollTime && GetOwner() && GetOwner()->IsPlayer() )
+		if ( (!m_bAltFireHudHintDisplayed || !m_bReloadHudHintDisplayed || !m_bUsageHudHintDisplayed) && gpGlobals->curtime > m_flHudHintMinDisplayTime && gpGlobals->curtime > m_flHudHintPollTime && GetOwner() && GetOwner()->IsPlayer() )
 		{
-			CBasePlayer *pPlayer = (CBasePlayer*)(GetOwner());
+			CHL2MP_Player *pPlayer = ToHL2MPPlayer(GetOwner());
 
-			if( pPlayer && pPlayer->GetStickDist() > 0.0f )
-			{
+			if( pPlayer && pPlayer->ShowSpawnHint()) {
 				// If the player is moving, they're unlikely to switch away from the current weapon
-				// the moment this weapon displays its HUD hint.
-				if( ShouldDisplayReloadHUDHint() )
-				{
-					DisplayReloadHudHint();
+				//// the moment this weapon displays its HUD hint.
+				//if (ShouldDisplayReloadHUDHint()) {
+				//	DisplayReloadHudHint();
+				//} else if (ShouldDisplayAltFireHUDHint()) {
+				//	DisplayAltFireHudHint();
+				//}
+				if (ShouldDisplayUsageHUDHint()) {
+					pPlayer->DisableSpawnHint();
+					DisplayUsageHudHint();
 				}
-				else if( ShouldDisplayAltFireHUDHint() )
-				{
-					DisplayAltFireHudHint();
-				}
-			}
-			else
-			{
+			} else {
 				m_flHudHintPollTime = gpGlobals->curtime + 2.0f;
 			}
 		}

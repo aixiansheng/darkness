@@ -1,0 +1,12 @@
+bin
+bin/*.dll
+hl2.exe
+maplist.txt
+gameinfo.txt
+cfg
+cfg/*
+resource
+resource/ui
+resource/*
+resource/ui/*
+darkness.fgd

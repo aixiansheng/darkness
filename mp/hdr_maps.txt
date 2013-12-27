@@ -1,0 +1,18 @@
+Problem: Hammer doesn't make good cubemaps, and the game can't
+overwrite the bad ones it makes. So...
+
+1) mat_specular 0 (turn off specular lights so that build cubemaps will not show pink(
+2) map geofusion
+3) buildcubemaps
+4) buildcubemaps
+5) mat_reloadallmaterials
+6) disconnect
+7) mat_hdr_level 0 (assuming started at 2)
+8) map geofusion
+9) buildcubemaps (specular is still off)
+10) mat_reloadallmaterials
+11) disconnect
+12) map geofusion
+13) mat_hdr_level 2
+14) mat_specular 1
+15) map_geofusion

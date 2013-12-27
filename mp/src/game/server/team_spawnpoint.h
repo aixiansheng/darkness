@@ -14,21 +14,30 @@
 
 class CTeam;
 
+#define DEFAULT_SPAWN_CYCLE 5.0f
+
 //-----------------------------------------------------------------------------
 // Purpose: points at which the player can spawn, restricted by team
 //-----------------------------------------------------------------------------
-class CTeamSpawnPoint : public CPointEntity
+class CTeamSpawnPoint : public CBaseAnimating
 {
 public:
-	DECLARE_CLASS( CTeamSpawnPoint, CPointEntity );
+	DECLARE_CLASS( CTeamSpawnPoint, CBaseAnimating );
 
-	void	Activate( void );
-	virtual bool	IsValid( CBasePlayer *pPlayer );
+	CTeamSpawnPoint(void);
+	virtual void Spawn(void);
+	void Activate( void );
+	virtual bool IsValid( CBasePlayer *pPlayer );
+	void SetCycleEfficiency(float f);
+	void SpawnPlayer(CBasePlayer *p);
 
 	COutputEvent m_OnPlayerSpawn;
 
-protected:	
-	int		m_iDisabled;
+protected:
+	int spawns;
+	int	m_iDisabled;
+	float cycleTime;
+	float nextSpawnTime;
 
 	// Input handlers
 	void InputEnable( inputdata_t &inputdata );
@@ -36,6 +45,8 @@ protected:
 
 	DECLARE_DATADESC();
 };
+
+
 
 //-----------------------------------------------------------------------------
 // Purpose: points at which vehicles can spawn, restricted by team

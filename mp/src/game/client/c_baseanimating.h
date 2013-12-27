@@ -51,7 +51,7 @@ FORWARD_DECLARE_HANDLE( memhandle_t );
 typedef unsigned short MDLHandle_t;
 
 extern ConVar vcollide_wireframe;
-
+extern IMaterial *overlayMaterial;
 
 struct ClientModelRenderInfo_t : public ModelRenderInfo_t
 {
@@ -491,6 +491,8 @@ public:
 	int								m_nHitboxSet;
 
 	CSequenceTransitioner			m_SequenceTransitioner;
+
+	bool shouldGlow;
 
 protected:
 	CIKContext						*m_pIk;

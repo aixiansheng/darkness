@@ -31,6 +31,13 @@ extern IGameUIFuncs *gameuifuncs; // for key binding details
 #endif
 #include <game/client/iviewport.h>
 
+#if defined( TF_CLIENT_DLL )
+#include "item_inventory.h"
+#endif // TF_CLIENT_DLL
+
+#include "hl2mp_gamerules.h"
+#include "c_hl2mp_player.h"
+#include "class_info.h"
 #include <stdlib.h> // MAX_PATH define
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -70,12 +77,10 @@ CClassMenu::CClassMenu(IViewPort *pViewPort) : Frame(NULL, PANEL_CLASS)
 	// info window about this class
 	m_pPanel = new EditablePanel( this, "ClassInfo" );
 
-	LoadControlSettings( "Resource/UI/ClassMenu.res" );
+	LoadControlSettings("Resource/UI/ClassMenu.res");
+	InvalidateLayout();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
 CClassMenu::CClassMenu(IViewPort *pViewPort, const char *panelName) : Frame(NULL, panelName)
 {
 	m_pViewPort = pViewPort;
@@ -100,64 +105,7 @@ CClassMenu::CClassMenu(IViewPort *pViewPort, const char *panelName) : Frame(NULL
 	// Inheriting classes are responsible for calling LoadControlSettings()!
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
-CClassMenu::~CClassMenu()
-{
-}
-
-MouseOverPanelButton* CClassMenu::CreateNewMouseOverPanelButton(EditablePanel *panel)
-{ 
-	return new MouseOverPanelButton(this, "MouseOverPanelButton", panel);
-}
-
-
-Panel *CClassMenu::CreateControlByName(const char *controlName)
-{
-	if( !Q_stricmp( "MouseOverPanelButton", controlName ) )
-	{
-		MouseOverPanelButton *newButton = CreateNewMouseOverPanelButton( m_pPanel );
-
-		m_mouseoverButtons.AddToTail( newButton );
-		return newButton;
-	}
-	else
-	{
-		return BaseClass::CreateControlByName( controlName );
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CClassMenu::Reset()
-{
-	for ( int i = 0 ; i < GetChildCount() ; ++i )
-	{
-		// Hide the subpanel for the MouseOverPanelButtons
-		MouseOverPanelButton *pPanel = dynamic_cast<MouseOverPanelButton *>( GetChild( i ) );
-
-		if ( pPanel )
-		{
-			pPanel->HidePage();
-		}
-	}
-
-	// Turn the first button back on again (so we have a default description shown)
-	Assert( m_mouseoverButtons.Count() );
-	for ( int i=0; i<m_mouseoverButtons.Count(); ++i )
-	{
-		if ( i == 0 )
-		{
-			m_mouseoverButtons[i]->ShowPage();	// Show the first page
-		}
-		else
-		{
-			m_mouseoverButtons[i]->HidePage();	// Hide the rest
-		}
-	}
-}
+CClassMenu::~CClassMenu() {}
 
 //-----------------------------------------------------------------------------
 // Purpose: Called when the user picks a class
@@ -171,8 +119,8 @@ void CClassMenu::OnCommand( const char *command )
 #if !defined( CSTRIKE_DLL ) && !defined( TF_CLIENT_DLL )
 		// They entered a command to change their class, kill them so they spawn with 
 		// the new class right away
-		if ( hud_classautokill.GetBool() )
-		{
+
+		if ( hud_classautokill.GetBool() ) {
             engine->ClientCmd( "kill" );
 		}
 #endif // !CSTRIKE_DLL && !TF_CLIENT_DLL
@@ -183,38 +131,86 @@ void CClassMenu::OnCommand( const char *command )
 	gViewPortInterface->ShowBackGround( false );
 
 	BaseClass::OnCommand( command );
+	engine->ClientCmd(const_cast<char *>(command));
+}
+
+
+void CClassMenu::Update(void) {
+	Label *label;
+	int points;
+	char pointstr[64] = {0};
+	C_HL2MP_Player *player;
+
+	player = C_HL2MP_Player::GetLocalHL2MPPlayer();
+	if (player == NULL) {
+		player = C_HL2MP_Player::GetLocalHL2MPPlayer();
+	}
+
+	if (!player) {
+		ShowClasses(NULL, 0);
+		return;
+	}
+
+	label = dynamic_cast<Label *>(FindChildByName("pointsArea"));
+	if (label) {
+		points = player->GetPlayerPoints();
+		Q_snprintf(pointstr, sizeof(pointstr), "You have %d points", points);
+		label->SetText((const char *)pointstr);
+	}
+
+	m_iTeam = player->GetTeamNumber();
+	if (m_iTeam == TEAM_SPIDERS) {
+		ShowClasses(dk_spider_classes, NUM_SPIDER_CLASSES);
+	} else if (m_iTeam == TEAM_HUMANS) {
+		ShowClasses(dk_human_classes, NUM_HUMAN_CLASSES);
+	} else {
+		ShowClasses(NULL, 0);
+		return;
+	}
+
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: shows the class menu
 //-----------------------------------------------------------------------------
-void CClassMenu::ShowPanel(bool bShow)
-{
-	if ( bShow )
-	{
+void CClassMenu::ShowPanel(bool bShow) {
+	Label *label;
+	int points;
+	char pointstr[64] = {0};
+	C_HL2MP_Player *player;
+
+	player = C_HL2MP_Player::GetLocalHL2MPPlayer();
+
+	if ( BaseClass::IsVisible() == bShow )
+		return;
+
+	if (!player) {
+		ShowClasses(NULL, 0);
+		return;
+	}
+
+	label = dynamic_cast<Label *>(FindChildByName("pointsArea"));
+	if (label) {
+		points = player->GetPlayerPoints();
+		Q_snprintf(pointstr, sizeof(pointstr), "You have %d points", points);
+		label->SetText((const char *)pointstr);
+	}
+
+
+	m_iTeam = player->GetTeamNumber();
+	if (m_iTeam == TEAM_SPIDERS) {
+		ShowClasses(dk_spider_classes, NUM_SPIDER_CLASSES);
+	} else if (m_iTeam == TEAM_HUMANS) {
+		ShowClasses(dk_human_classes, NUM_HUMAN_CLASSES);
+	} else {
+		ShowClasses(NULL, 0);
+		return;
+	}
+	
+	if ( bShow ) {
 		Activate();
 		SetMouseInputEnabled( true );
-
-		// load a default class page
-		for ( int i=0; i<m_mouseoverButtons.Count(); ++i )
-		{
-			if ( i == 0 )
-			{
-				m_mouseoverButtons[i]->ShowPage();	// Show the first page
-			}
-			else
-			{
-				m_mouseoverButtons[i]->HidePage();	// Hide the rest
-			}
-		}
-		
-		if ( m_iScoreBoardKey == BUTTON_CODE_INVALID ) 
-		{
-			m_iScoreBoardKey = gameuifuncs->GetButtonCodeForBind( "showscores" );
-		}
-	}
-	else
-	{
+	} else {
 		SetVisible( false );
 		SetMouseInputEnabled( false );
 	}
@@ -222,32 +218,90 @@ void CClassMenu::ShowPanel(bool bShow)
 	m_pViewPort->ShowBackGround( bShow );
 }
 
+#define BUTTON_STR		"switchclass"
+#define BUTTON_FMT_STR	BUTTON_STR "%d"
 
-void CClassMenu::SetData(KeyValues *data)
-{
-	m_iTeam = data->GetInt( "team" );
+// see ClassMenu.res for max...
+#define MAX_BUTTONS 9
+
+
+void CClassMenu::ShowClasses(class_info_t *infos, int num) {
+	int i;
+	char buf[sizeof(BUTTON_STR) + 1];
+	char dispBuf[32];
+	Button *b;
+	
+	if (infos == NULL || num == 0) {
+		for (i = 0; i < MAX_BUTTONS; i++) {
+			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
+			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
+			if (b) {
+				b->SetText("None");
+				b->SetVisible(false);
+			}
+		}
+	}
+
+	// num > 9 = bad... so don't do it :D
+	for (i = 0; i < num; i++) {
+		Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
+		b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
+		if (b) {
+			Q_snprintf(dispBuf, sizeof(dispBuf), "&%d. %s  [%d points]", i + 1, infos[i].name, infos[i].cost);
+			b->SetText(dispBuf);
+			b->SetVisible(true);
+		}
+	}
+
+	if (i < MAX_BUTTONS - 1) {
+		for (; i < MAX_BUTTONS; i++) {
+			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
+			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
+			if (b) {
+				b->SetText("None");
+				b->SetVisible(false);
+
+			}
+		}
+	}
+}
+
+void CClassMenu::SetData(KeyValues *data) {
+	return;
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Sets the text of a control by name
 //-----------------------------------------------------------------------------
-void CClassMenu::SetLabelText(const char *textEntryName, const char *text)
-{
+void CClassMenu::SetLabelText(const char *textEntryName, const char *text) {
 	Label *entry = dynamic_cast<Label *>(FindChildByName(textEntryName));
-	if (entry)
-	{
+	if (entry) {
 		entry->SetText(text);
+	}
+}
+
+void CClassMenu::OnThink(void) {
+	int team;
+	C_HL2MP_Player *player;
+
+	player = C_HL2MP_Player::GetLocalHL2MPPlayer();
+	if (player) {
+		team = player->GetTeamNumber();
+		if (team != m_iTeam) {
+			m_iTeam = team;
+			if (IsVisible()) {
+				Update();
+			}
+		}
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Sets the visibility of a button by name
 //-----------------------------------------------------------------------------
-void CClassMenu::SetVisibleButton(const char *textEntryName, bool state)
-{
+void CClassMenu::SetVisibleButton(const char *textEntryName, bool state) {
 	Button *entry = dynamic_cast<Button *>(FindChildByName(textEntryName));
-	if (entry)
-	{
+	if (entry) {
 		entry->SetVisible(state);
 	}
 }

@@ -1,0 +1,33 @@
+@include "base.fgd"
+
+@PointClass base(Targetname) studio("models/teleporter.mdl")= ent_teleporter : "Human Spawn Point."
+[
+	input Toggle(void) : "Toggle Teleporter"
+]
+
+@PointClass base(Targetname) studio("models/egg.mdl")= ent_egg : "Spider Spawn Point."
+[
+	input Toggle(void) : "Toggle Egg"
+]
+
+@PointClass base(Targetname) studio("models/healer.mdl")= ent_healer : "Spider Healer."
+[
+]
+
+@PointClass base(Targetname) studio("models/obstacle.mdl")= ent_obstacle : "Spider Obstacle."
+[
+]
+
+@PointClass base(Targetname) studio("models/items/ammocrate_smg1.mdl")= ent_ammo_crate : "Human Ammo Crate."
+[
+]
+
+@PointClass base(Targetname) studio("models/teleporter.mdl")= ent_medipad : "Human Medipad."
+[
+]
+
+@PointClass base(Targetname) = point_set : "Entity to Set Human and Spider Build Points"
+[
+	spiderPoints(integer) : "Spider Points" : 1000 : "Spider Points Value"
+	humanPoints(integer) : "Human Points" : 1000 : "Human Points Value"
+]

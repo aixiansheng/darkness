@@ -105,7 +105,7 @@ void CHudHintDisplay::ApplySchemeSettings( vgui::IScheme *pScheme )
 	BaseClass::ApplySchemeSettings( pScheme );
 
 	SetFgColor( GetSchemeColor("HintMessageFg", pScheme) );
-	m_hFont = pScheme->GetFont( "HudHintText", true );
+	m_hFont = pScheme->GetFont( "HudHintTextLarge", true );
 	m_pLabel->SetBgColor( GetSchemeColor("HintMessageBg", pScheme) );
 	m_pLabel->SetPaintBackgroundType( 2 );
 	m_pLabel->SetSize( 0, GetTall() );		// Start tiny, it'll grow.
@@ -127,6 +127,10 @@ bool CHudHintDisplay::SetHintText( wchar_t *text )
 		m_Labels[i]->MarkForDeletion();
 	}
 	m_Labels.RemoveAll();
+
+	int wide, tall;
+	GetSize( wide, tall );
+	wide -= 20;
 
 	wchar_t *p = text;
 
@@ -158,6 +162,7 @@ bool CHudHintDisplay::SetHintText( wchar_t *text )
 		label->SizeToContents();
 		label->SetContentAlignment( vgui::Label::a_west );
 		label->SetFgColor( GetFgColor() );
+		label->SetWide(wide);
 		m_Labels.AddToTail( vgui::SETUP_PANEL(label) );
 	}
 

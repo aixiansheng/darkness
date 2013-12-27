@@ -9,6 +9,20 @@
 #include "hl2_gamerules.h"
 #include "ammodef.h"
 #include "hl2_shareddefs.h"
+#include "ents/healer.h"
+#include "ents/obstacle.h"
+#include "ents/medipad.h"
+#include "ents/exp_mine.h"
+#include "ents/ammo_crate.h"
+#include "ents/spiker.h"
+#include "ents/spike.h"
+#include "ents/gasser.h"
+#include "ents/detector.h"
+#include "ents/mg_turret.h"
+#include "ents/ent_infested_corpse.h"
+#include "ents/missile_turret.h"
+#include "weapon_stinger_fire.h"
+#include "weapon_drone_slash.h"
 
 #ifdef CLIENT_DLL
 
@@ -322,6 +336,92 @@ ConVar  alyx_darkness_force( "alyx_darkness_force", "0", FCVAR_CHEAT | FCVAR_REP
 		}
 		
 		p->SetOwnerEntity( g_pBodyQueueHead );
+
+		CHealerEntity *healer = (CHealerEntity *)CreateEntityByName("ent_healer");
+		if (healer) {
+			healer->Precache();
+			UTIL_Remove(healer);
+		}
+
+		CObstacleEntity *obs = (CObstacleEntity *)CreateEntityByName("ent_obstacle");
+		if (obs) {
+			obs->Precache();
+			UTIL_Remove(obs);
+		}
+
+		CMedipadEntity *medi = (CMedipadEntity *)CreateEntityByName("ent_medipad");
+		if (medi) {
+			medi->Precache();
+			UTIL_Remove(medi);
+		}
+
+		CExpMineEntity *mine = (CExpMineEntity *)CreateEntityByName("ent_mine");
+		if (mine) {
+			mine->Precache();
+			UTIL_Remove(mine);
+		}
+
+		CAmmoCrate *ammocrate = (CAmmoCrate *)CreateEntityByName("ent_ammo_crate");
+		if (ammocrate) {
+			ammocrate->Precache();
+			UTIL_Remove(ammocrate);
+		}
+
+		CSpikerEntity *spiker = (CSpikerEntity *)CreateEntityByName("ent_spiker");
+		if (spiker) {
+			spiker->Precache();
+			UTIL_Remove(spiker);
+		}
+
+		CSpike *spike = (CSpike *)CreateEntityByName("ent_spike");
+		if (spike) {
+			spike->Precache();
+			UTIL_Remove(spike);
+		}
+
+		CGasserEntity *gasser = (CGasserEntity *)CreateEntityByName("ent_gasser");
+		if (gasser) {
+			gasser->Precache();
+			UTIL_Remove(gasser);
+		}
+
+		CMGTurretEntity *mgt = (CMGTurretEntity *)CreateEntityByName("ent_mg_turret");
+		if (mgt) {
+			mgt->Precache();
+			UTIL_Remove(mgt);
+		}
+
+		CDetectorEntity *det = (CDetectorEntity *)CreateEntityByName("ent_detector");
+		if (det) {
+			det->Precache();
+			UTIL_Remove(det);
+		}
+
+		CInfestedCorpse *icorpse = (CInfestedCorpse *)CreateEntityByName("ent_infested_corpse");
+		if (icorpse) {
+			icorpse->Precache();
+			UTIL_Remove(icorpse);
+		}
+
+		CMSLTurretEntity *mst = (CMSLTurretEntity *)CreateEntityByName("ent_msl_turret");
+		if (mst) {
+			mst->Precache();
+			UTIL_Remove(mst);
+		}
+
+		CSeekerMissile *mis = (CSeekerMissile *)CreateEntityByName("ent_seeker_msl");
+		if (mis) {
+			mis->Precache();
+			UTIL_Remove(mis);
+		}
+
+		CStingerFire *fire = (CStingerFire *)CreateEntityByName("stinger_fireball");
+		if (fire) {
+			fire->Precache();
+			UTIL_Remove(fire);
+		}
+
+		UTIL_PrecacheOther("drone_spit");
 	}
 
 	//-----------------------------------------------------------------------------

@@ -32,6 +32,7 @@
 	#include "smoke_trail.h"
 	#include "collisionutils.h"
 	#include "hl2_shareddefs.h"
+	#include "util.h"
 #endif
 
 #include "debugoverlay_shared.h"
@@ -39,7 +40,9 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#define	RPG_SPEED	1500
+#define	RPG_SPEED			400
+#define RPG_CHARGE_TIME		2.6f
+#define RPG_BEEP_INTERVAL	0.7f
 
 #ifndef CLIENT_DLL
 const char *g_pLaserDotThink = "LaserThinkContext";
@@ -360,7 +363,7 @@ void CMissile::ShotDown( void )
 void CMissile::DoExplosion( void )
 {
 	// Explode
-	ExplosionCreate( GetAbsOrigin(), GetAbsAngles(), GetOwnerEntity(), GetDamage(), GetDamage() * 2, 
+	ExplosionCreate( GetAbsOrigin(), GetAbsAngles(), GetOwnerEntity(), GetDamage(), GetDamage() * 1.5, 
 		SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, this);
 }
 
@@ -1246,9 +1249,9 @@ void CAPCMissile::ComputeActualDotPosition( CLaserDot *pLaserDot, Vector *pActua
 
 #endif
 
-#define	RPG_BEAM_SPRITE		"effects/laser1.vmt"
-#define	RPG_BEAM_SPRITE_NOZ	"effects/laser1_noz.vmt"
-#define	RPG_LASER_SPRITE	"sprites/redglow1"
+//#define	RPG_BEAM_SPRITE		"effects/laser1.vmt"
+//#define	RPG_BEAM_SPRITE_NOZ	"effects/laser1_noz.vmt"
+//#define	RPG_LASER_SPRITE	"sprites/redglow1"
 
 //=============================================================================
 // RPG
@@ -1286,12 +1289,16 @@ BEGIN_NETWORK_TABLE( CWeaponRPG, DT_WeaponRPG )
 	RecvPropBool( RECVINFO( m_bHideGuiding ) ),
 	RecvPropEHandle( RECVINFO( m_hMissile ), RecvProxy_MissileDied ),
 	RecvPropVector( RECVINFO( m_vecLaserDot ) ),
+	RecvPropInt( RECVINFO(firing_state)),
+	RecvPropFloat( RECVINFO(next_beep)),
 #else
 	SendPropBool( SENDINFO( m_bInitialStateUpdate ) ),
 	SendPropBool( SENDINFO( m_bGuiding ) ),
 	SendPropBool( SENDINFO( m_bHideGuiding ) ),
 	SendPropEHandle( SENDINFO( m_hMissile ) ),
 	SendPropVector( SENDINFO( m_vecLaserDot ) ),
+	SendPropInt( SENDINFO( firing_state), 3 ),
+	SendPropFloat( SENDINFO( next_beep ) ),
 #endif
 END_NETWORK_TABLE()
 
@@ -1301,6 +1308,7 @@ BEGIN_PREDICTION_DATA( CWeaponRPG )
 	DEFINE_PRED_FIELD( m_bInitialStateUpdate, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bGuiding, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bHideGuiding, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
+	DEFINE_FIELD( next_beep, FIELD_FLOAT ),
 END_PREDICTION_DATA()
 
 #endif
@@ -1334,6 +1342,22 @@ CWeaponRPG::CWeaponRPG()
 
 	m_fMinRange1 = m_fMinRange2 = 40*12;
 	m_fMaxRange1 = m_fMaxRange2 = 500*12;
+
+	firing_state = STATE_OFF;
+	next_beep = gpGlobals->curtime + RPG_BEEP_INTERVAL;
+	m_flNextPrimaryAttack = FLT_MAX;
+}
+
+void CWeaponRPG::begin_charging(void) {
+	firing_state = STATE_CHARGING;
+	next_beep = gpGlobals->curtime + RPG_BEEP_INTERVAL;
+	m_flNextPrimaryAttack = gpGlobals->curtime + RPG_CHARGE_TIME;
+}
+
+void CWeaponRPG::stop_charging(void) {
+	firing_state = STATE_OFF;
+	next_beep = FLT_MAX;
+	m_flNextPrimaryAttack = FLT_MAX;
 }
 
 //-----------------------------------------------------------------------------
@@ -1359,12 +1383,14 @@ void CWeaponRPG::Precache( void )
 
 	PrecacheScriptSound( "Missile.Ignite" );
 	PrecacheScriptSound( "Missile.Accelerate" );
+	PrecacheScriptSound("Weapon_RPG.beep");
+	//PrecacheScriptSound( "Weapon_SLAM.TripMineMode" );
 
 	// Laser dot...
-	PrecacheModel( "sprites/redglow1.vmt" );
-	PrecacheModel( RPG_LASER_SPRITE );
-	PrecacheModel( RPG_BEAM_SPRITE );
-	PrecacheModel( RPG_BEAM_SPRITE_NOZ );
+	//PrecacheModel( "sprites/redglow1.vmt" );
+	//PrecacheModel( RPG_LASER_SPRITE );
+	//PrecacheModel( RPG_BEAM_SPRITE );
+	//PrecacheModel( RPG_BEAM_SPRITE_NOZ );
 
 #ifndef CLIENT_DLL
 	UTIL_PrecacheOther( "rpg_missile" );
@@ -1427,6 +1453,10 @@ void CWeaponRPG::PrimaryAttack( void )
 	// Only the player fires this way so we can cast
 	CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
 
+	m_flNextPrimaryAttack = FLT_MAX;
+	next_beep = FLT_MAX;
+	firing_state = STATE_OFF;
+
 	if (!pPlayer)
 		return;
 
@@ -1441,8 +1471,6 @@ void CWeaponRPG::PrimaryAttack( void )
 	Vector vecOrigin;
 	Vector vecForward;
 
-	m_flNextPrimaryAttack = gpGlobals->curtime + 0.5f;
-
 	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 	
 	if ( pOwner == NULL )
@@ -1456,9 +1484,17 @@ void CWeaponRPG::PrimaryAttack( void )
 
 #ifndef CLIENT_DLL
 	QAngle vecAngles;
+	CMissile *pMissile;
+
+	if (!(pOwner->GetFlags() & FL_DUCKING)) {
+		vForward.x += RandomFloat( -0.35f, 0.35f );
+		vForward.y += RandomFloat( -0.35f, 0.35f );
+		vForward.z += RandomFloat( -0.35f, 0.35f );
+	}
+
 	VectorAngles( vForward, vecAngles );
 
-	CMissile *pMissile = CMissile::Create( muzzlePoint, vecAngles, GetOwner()->edict() );
+	pMissile = CMissile::Create( muzzlePoint, vecAngles, GetOwner()->edict() );
 	pMissile->m_hOwner = this;
 
 	// If the shot is clear to the player, give the missile a grace period
@@ -1481,6 +1517,8 @@ void CWeaponRPG::PrimaryAttack( void )
 
 	// player "shoot" animation
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );
+	firing_state = STATE_WAITING;
+	
 }
 
 //-----------------------------------------------------------------------------
@@ -1505,21 +1543,19 @@ void CWeaponRPG::SuppressGuiding( bool state )
 
 	if ( m_hLaserDot == NULL )
 	{
-		StartGuiding();
+		//StartGuiding();
 
 		//STILL!?
 		if ( m_hLaserDot == NULL )
 			 return;
 	}
 
-	if ( state )
-	{
+	if ( state ) {
 		m_hLaserDot->TurnOff();
 	}
-	else
-	{
-		m_hLaserDot->TurnOn();
-	}
+//	else {
+//		m_hLaserDot->TurnOn();
+//	}
 #endif
 	
 }
@@ -1530,7 +1566,7 @@ void CWeaponRPG::SuppressGuiding( bool state )
 //-----------------------------------------------------------------------------
 bool CWeaponRPG::Lower( void )
 {
-	if ( m_hMissile != NULL )
+	if (m_hMissile != NULL && IsGuiding())
 		return false;
 
 	return BaseClass::Lower();
@@ -1541,36 +1577,59 @@ bool CWeaponRPG::Lower( void )
 //-----------------------------------------------------------------------------
 void CWeaponRPG::ItemPostFrame( void )
 {
-	BaseClass::ItemPostFrame();
+	CBasePlayer *owner;
+	CHL2MP_Player *p;
 
-	CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
-	
-	if ( pPlayer == NULL )
+	owner = ToBasePlayer(GetOwner());
+	if (!owner)
 		return;
 
-	//If we're pulling the weapon out for the first time, wait to draw the laser
-	if ( ( m_bInitialStateUpdate ) && ( GetActivity() != ACT_VM_DRAW ) )
-	{
-		StartGuiding();
-		m_bInitialStateUpdate = false;
+	p = ToHL2MPPlayer(owner);
+	if (!p)
+		return;
+
+	switch (firing_state) {
+	case STATE_OFF:
+		if (!m_hMissile && (owner->m_nButtons & IN_ATTACK) && owner->GetAmmoCount(m_iPrimaryAmmoType) > 0 &&
+			(p->stopped || p->GetFlags() & FL_DUCKING)) {
+			begin_charging();
+		}
+
+		// consider WeaponSound(EMPTY) on timer m_flNextEmptySoundTime....
+		break;
+
+	case STATE_CHARGING:
+		if (owner->m_nButtons & IN_ATTACK) {
+			if (m_flNextPrimaryAttack < gpGlobals->curtime &&
+				(p->stopped || p->GetFlags() & FL_DUCKING)) {
+				PrimaryAttack();
+				break;
+			}
+
+			// beep, if needed
+			if (next_beep < gpGlobals->curtime) {
+				WeaponSound(SPECIAL1);
+				next_beep = gpGlobals->curtime + RPG_BEEP_INTERVAL;
+			}
+		} else {
+			stop_charging();
+		}
+
+		break;
+	
+	case STATE_WAITING:
+		// can only get out of this state
+		// on notification of rocket death
+		break;
+
+	default:
+		break;
 	}
 
-	// Supress our guiding effects if we're lowered
-	if ( GetIdealActivity() == ACT_VM_IDLE_LOWERED )
-	{
-		SuppressGuiding();
-	}
-	else
-	{
-		SuppressGuiding( false );
-	}
+	StopGuiding();
 
-	//Move the laser
-	UpdateLaserPosition();
-
-	if ( pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0 && m_hMissile == NULL )
-	{
-		StopGuiding();
+	if (!m_bInReload) {
+		WeaponIdle();
 	}
 }
 
@@ -1632,14 +1691,13 @@ bool CWeaponRPG::IsGuiding( void )
 bool CWeaponRPG::Deploy( void )
 {
 	m_bInitialStateUpdate = true;
-
 	return BaseClass::Deploy();
 }
 
 bool CWeaponRPG::CanHolster( void )
 {
 	//Can't have an active missile out
-	if ( m_hMissile != NULL )
+	if (m_hMissile != NULL && IsGuiding())
 		return false;
 
 	return BaseClass::CanHolster();
@@ -1683,7 +1741,7 @@ void CWeaponRPG::StopGuiding( void )
 
 #ifndef CLIENT_DLL
 
-	WeaponSound( SPECIAL2 );
+	//WeaponSound( SPECIAL2 );
 
 	// Kill the dot completely
 	if ( m_hLaserDot != NULL )
@@ -1710,12 +1768,9 @@ void CWeaponRPG::StopGuiding( void )
 //-----------------------------------------------------------------------------
 void CWeaponRPG::ToggleGuiding( void )
 {
-	if ( IsGuiding() )
-	{
+	if ( IsGuiding() ) {
 		StopGuiding();
-	}
-	else
-	{
+	} else {
 		StartGuiding();
 	}
 }
@@ -1806,12 +1861,24 @@ void CWeaponRPG::CreateLaserPointer( void )
 #endif
 }
 
+#ifndef CLIENT_DLL
+
+void CWeaponRPG::DisplayUsageHudHint(void) {
+	UTIL_HudHintText(GetOwner(), "%+attack%  hold to fire\nCrouch for accuracy");
+	BaseClass::DisplayUsageHudHint();
+}
+
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CWeaponRPG::NotifyRocketDied( void )
 {
 	m_hMissile = NULL;
+	firing_state = STATE_OFF;
+	next_beep = FLT_MAX;
+	m_flNextPrimaryAttack = FLT_MAX;
 
 	if ( GetActivity() == ACT_VM_RELOAD )
 		return;
@@ -1830,6 +1897,9 @@ bool CWeaponRPG::Reload( void )
 		return false;
 
 	if ( pOwner->GetAmmoCount(m_iPrimaryAmmoType) <= 0 )
+		return false;
+
+	if (pOwner->GetActiveWeapon() != this)
 		return false;
 
 	WeaponSound( RELOAD );
@@ -1888,76 +1958,76 @@ void CWeaponRPG::GetWeaponAttachment( int attachmentId, Vector &outVector, Vecto
 //-----------------------------------------------------------------------------
 void CWeaponRPG::InitBeam( void )
 {
-	if ( m_pBeam != NULL )
-		return;
+	//if ( m_pBeam != NULL )
+	//	return;
 
-	CBaseCombatCharacter *pOwner = GetOwner();
-	
-	if ( pOwner == NULL )
-		return;
+	//CBaseCombatCharacter *pOwner = GetOwner();
+	//
+	//if ( pOwner == NULL )
+	//	return;
 
-	if ( pOwner->GetAmmoCount(m_iPrimaryAmmoType) <= 0 )
-		return;
+	//if ( pOwner->GetAmmoCount(m_iPrimaryAmmoType) <= 0 )
+	//	return;
 
 
-	BeamInfo_t beamInfo;
+	//BeamInfo_t beamInfo;
 
-	CBaseEntity *pEntity = NULL;
+	//CBaseEntity *pEntity = NULL;
 
-	if ( ShouldDrawUsingViewModel() )
-	{
-		CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
-		
-		if ( pOwner != NULL )
-		{
-			pEntity = pOwner->GetViewModel();
-		}
-	}
-	else
-	{
-		pEntity = this;
-	}
+	//if ( ShouldDrawUsingViewModel() )
+	//{
+	//	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+	//	
+	//	if ( pOwner != NULL )
+	//	{
+	//		pEntity = pOwner->GetViewModel();
+	//	}
+	//}
+	//else
+	//{
+	//	pEntity = this;
+	//}
 
-	beamInfo.m_pStartEnt = pEntity;
-	beamInfo.m_pEndEnt = pEntity;
-	beamInfo.m_nType = TE_BEAMPOINTS;
-	beamInfo.m_vecStart = vec3_origin;
-	beamInfo.m_vecEnd = vec3_origin;
-	
-	beamInfo.m_pszModelName = ( ShouldDrawUsingViewModel() ) ? RPG_BEAM_SPRITE_NOZ : RPG_BEAM_SPRITE;
-	
-	beamInfo.m_flHaloScale = 0.0f;
-	beamInfo.m_flLife = 0.0f;
-	
-	if ( ShouldDrawUsingViewModel() )
-	{
-		beamInfo.m_flWidth = 2.0f;
-		beamInfo.m_flEndWidth = 2.0f;
-		beamInfo.m_nStartAttachment = RPG_GUIDE_ATTACHMENT;
-		beamInfo.m_nEndAttachment = RPG_GUIDE_TARGET_ATTACHMENT;
-	}
-	else
-	{
-		beamInfo.m_flWidth = 1.0f;
-		beamInfo.m_flEndWidth = 1.0f;
-		beamInfo.m_nStartAttachment = RPG_GUIDE_ATTACHMENT_3RD;
-		beamInfo.m_nEndAttachment = RPG_GUIDE_TARGET_ATTACHMENT_3RD;
-	}
+	//beamInfo.m_pStartEnt = pEntity;
+	//beamInfo.m_pEndEnt = pEntity;
+	//beamInfo.m_nType = TE_BEAMPOINTS;
+	//beamInfo.m_vecStart = vec3_origin;
+	//beamInfo.m_vecEnd = vec3_origin;
+	//
+	//beamInfo.m_pszModelName = ( ShouldDrawUsingViewModel() ) ? RPG_BEAM_SPRITE_NOZ : RPG_BEAM_SPRITE;
+	//
+	//beamInfo.m_flHaloScale = 0.0f;
+	//beamInfo.m_flLife = 0.0f;
+	//
+	//if ( ShouldDrawUsingViewModel() )
+	//{
+	//	beamInfo.m_flWidth = 2.0f;
+	//	beamInfo.m_flEndWidth = 2.0f;
+	//	beamInfo.m_nStartAttachment = RPG_GUIDE_ATTACHMENT;
+	//	beamInfo.m_nEndAttachment = RPG_GUIDE_TARGET_ATTACHMENT;
+	//}
+	//else
+	//{
+	//	beamInfo.m_flWidth = 1.0f;
+	//	beamInfo.m_flEndWidth = 1.0f;
+	//	beamInfo.m_nStartAttachment = RPG_GUIDE_ATTACHMENT_3RD;
+	//	beamInfo.m_nEndAttachment = RPG_GUIDE_TARGET_ATTACHMENT_3RD;
+	//}
 
-	beamInfo.m_flFadeLength = 0.0f;
-	beamInfo.m_flAmplitude = 0;
-	beamInfo.m_flBrightness = 255.0;
-	beamInfo.m_flSpeed = 1.0f;
-	beamInfo.m_nStartFrame = 0.0;
-	beamInfo.m_flFrameRate = 30.0;
-	beamInfo.m_flRed = 255.0;
-	beamInfo.m_flGreen = 0.0;
-	beamInfo.m_flBlue = 0.0;
-	beamInfo.m_nSegments = 4;
-	beamInfo.m_bRenderable = true;
-	beamInfo.m_nFlags = (FBEAM_FOREVER|FBEAM_SHADEOUT);
+	//beamInfo.m_flFadeLength = 0.0f;
+	//beamInfo.m_flAmplitude = 0;
+	//beamInfo.m_flBrightness = 255.0;
+	//beamInfo.m_flSpeed = 1.0f;
+	//beamInfo.m_nStartFrame = 0.0;
+	//beamInfo.m_flFrameRate = 30.0;
+	//beamInfo.m_flRed = 255.0;
+	//beamInfo.m_flGreen = 0.0;
+	//beamInfo.m_flBlue = 0.0;
+	//beamInfo.m_nSegments = 4;
+	//beamInfo.m_bRenderable = true;
+	//beamInfo.m_nFlags = (FBEAM_FOREVER|FBEAM_SHADEOUT);
 
-	m_pBeam = beams->CreateBeamEntPoint( beamInfo );
+	//m_pBeam = beams->CreateBeamEntPoint( beamInfo );
 }
 
 //-----------------------------------------------------------------------------
@@ -1976,17 +2046,17 @@ void CWeaponRPG::DrawEffects( void )
 		return;
 	}
 
-	// Setup our sprite
-	if ( m_hSpriteMaterial == NULL )
-	{
-		m_hSpriteMaterial.Init( RPG_LASER_SPRITE, TEXTURE_GROUP_CLIENT_EFFECTS );
-	}
+	//// Setup our sprite
+	//if ( m_hSpriteMaterial == NULL )
+	//{
+	//	m_hSpriteMaterial.Init( RPG_LASER_SPRITE, TEXTURE_GROUP_CLIENT_EFFECTS );
+	//}
 
-	// Setup our beam
-	if ( m_hBeamMaterial == NULL )
-	{
-		m_hBeamMaterial.Init( RPG_BEAM_SPRITE, TEXTURE_GROUP_CLIENT_EFFECTS );
-	}
+	//// Setup our beam
+	//if ( m_hBeamMaterial == NULL )
+	//{
+	//	m_hBeamMaterial.Init( RPG_BEAM_SPRITE, TEXTURE_GROUP_CLIENT_EFFECTS );
+	//}
 
 	color32 color={255,255,255,255};
 	Vector	vecAttachment, vecDir;
@@ -2274,10 +2344,10 @@ int CLaserDot::DrawModel( int flags )
 //-----------------------------------------------------------------------------
 void CLaserDot::OnDataChanged( DataUpdateType_t updateType )
 {
-	if ( updateType == DATA_UPDATE_CREATED )
-	{
-		m_hSpriteMaterial.Init( RPG_LASER_SPRITE, TEXTURE_GROUP_CLIENT_EFFECTS );
-	}
+	//if ( updateType == DATA_UPDATE_CREATED )
+	//{
+	//	m_hSpriteMaterial.Init( RPG_LASER_SPRITE, TEXTURE_GROUP_CLIENT_EFFECTS );
+	//}
 }
 
 #endif	//CLIENT_DLL
