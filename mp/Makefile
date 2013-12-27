@@ -19,7 +19,7 @@ VPK_MANIFEST := $(PWD)/vpk_manifest.txt
 VPK_PUBKEY_WIN := $(shell cygpath -w ${VPK_PUBKEY})
 VPK_PRIVKEY_WIN := $(shell cygpath -w ${VPK_PRIVKEY})
 VPK_MANIFEST_WIN := $(shell cygpath -w ${VPK_MANIFEST})
-VPK_DEST := $(PWD)/darkness.vpk
+VPK_DEST := $(PW setu#pD)/darkness.vpk
 VPK_DEST_WIN := $(shell cygpath -w ${VPK_DEST})
 DIST_DIR := darkness
 
@@ -31,7 +31,10 @@ all: $(MDL_SRC) $(MAT_SRC)
 
 textures: $(MAT_SRC)
 
-resources:
+setup:
+	./setup_bin.sh
+
+resources: setup
 	rsync -ar $(GAME_SRC)/resource/ $(GAME_DST)/resource/
 	rsync -a $(GAME_SRC)/scripts/ $(GAME_DST)/scripts/
 	rsync -a $(GAME_SRC)/gameinfo.txt $(GAME_DST)/gameinfo.txt
@@ -57,9 +60,9 @@ dist:
 darkness.zip:
 	zip -r $@ $(DIST_DIR)
 
-.PHONY: clean $(MDL_SRC) $(MAT_SRC) resources textures dist vpk
+.PHONY: clean $(MDL_SRC) $(MAT_SRC) resources textures dist vpk setup
 
-$(MDL_SRC):
+$(MDL_SRC): resources
 	$(MAKE) -C $(MDL_SRC)
 
 $(MAT_SRC):
