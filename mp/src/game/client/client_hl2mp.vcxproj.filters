@@ -2048,6 +2048,9 @@
     <ClInclude Include="..\shared\hl2mp\weapon_stinger_fire.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="nv_screeneffect.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp3player.cpp">
@@ -3734,6 +3737,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\shared\hl2mp\weapon_stinger_fire.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nv_screeneffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
