@@ -19,7 +19,7 @@ VPK_MANIFEST := $(PWD)/vpk_manifest.txt
 VPK_PUBKEY_WIN := $(shell cygpath -w ${VPK_PUBKEY})
 VPK_PRIVKEY_WIN := $(shell cygpath -w ${VPK_PRIVKEY})
 VPK_MANIFEST_WIN := $(shell cygpath -w ${VPK_MANIFEST})
-VPK_DEST := $(PW setu#pD)/darkness.vpk
+VPK_DEST := $(PWD)/darkness.vpk
 VPK_DEST_WIN := $(shell cygpath -w ${VPK_DEST})
 DIST_DIR := darkness
 
