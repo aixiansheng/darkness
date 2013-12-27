@@ -27,7 +27,7 @@ VPK_DIR := darkness_dir.vpk
 VPK_ARCH := darkness_000.vpk
 
 all: $(MDL_SRC) $(MAT_SRC)
-	rsync -ar --exclude 'materialsrc' --exclude 'modelsrc' --exclude 'mapsrc' $(GAME_SRC)/ $(GAME_DST)/
+	rsync -ar -L --exclude 'materialsrc' --exclude 'modelsrc' --exclude 'mapsrc' $(GAME_SRC)/ $(GAME_DST)/
 
 textures: $(MAT_SRC)
 

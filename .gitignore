@@ -65,3 +65,4 @@ config.cfg
 # shader files
 *.tmp
 
+mp/game/mod_hl2mp/**
