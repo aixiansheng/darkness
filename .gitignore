@@ -53,8 +53,8 @@ client.dylib.dSYM/
 server.dylib
 server.dylib.dSYM/
 
-*.vpc.sentinel
-*.vpc_crc
+#*.vpc.sentinel
+#*.vpc_crc
 **/generated_proto/**
 **/src/utils/sapi51/**
 **/game/**/bin/**
