@@ -22,7 +22,7 @@
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 
-#define ANIM_RATE_CAP 3.5f
+#define ANIM_RATE_CAP 4.5f
 
 extern ConVar sv_footsteps;
 

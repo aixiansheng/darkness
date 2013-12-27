@@ -352,7 +352,7 @@ bool CTeamplayRules::IsTeamplay( void )
 	return true;
 }
 
-bool CTeamplayRules::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker )
+bool CTeamplayRules::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker, const CTakeDamageInfo &info )
 {
 	// you can always hurt yourself
 	if (pAttacker->edict() == pPlayer->edict()) {
@@ -369,7 +369,7 @@ bool CTeamplayRules::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pA
 //		}
 	}
 
-	return BaseClass::FPlayerCanTakeDamage( pPlayer, pAttacker );
+	return BaseClass::FPlayerCanTakeDamage( pPlayer, pAttacker, info );
 }
 
 //=========================================================

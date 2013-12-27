@@ -444,6 +444,7 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetHealth", InputSetHealth ),
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "SetHUDVisibility", InputSetHUDVisibility ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "SetFogController", InputSetFogController ),
+	DEFINE_INPUTFUNC( FIELD_STRING, "HandleMapEvent", InputHandleMapEvent ),
 
 	DEFINE_FIELD( m_nNumCrouches, FIELD_INTEGER ),
 	DEFINE_FIELD( m_bDuckToggled, FIELD_BOOLEAN ),
@@ -913,7 +914,7 @@ void CBasePlayer::TraceAttack( const CTakeDamageInfo &inputInfo, const Vector &v
 			// Prevent team damage here so blood doesn't appear
 			if ( info.GetAttacker()->IsPlayer() )
 			{
-				if ( !g_pGameRules->FPlayerCanTakeDamage( this, info.GetAttacker() ) )
+				if ( !g_pGameRules->FPlayerCanTakeDamage( this, info.GetAttacker(), info ) )
 					return;
 			}
 		}
@@ -998,7 +999,7 @@ void CBasePlayer::DamageEffect(float flDamage, int fDamageType)
 		//ViewPunch(QAngle(random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1)));
 
 		// Burn sound 
-		//EmitSound( "Player.PlasmaDamage" );
+		EmitSound( "Player.PlasmaDamage" );
 	}
 	else if (fDamageType & DMG_SONIC)
 	{
@@ -1120,7 +1121,6 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	// Already dead
 	if ( !IsAlive() )
 		return 0;
-
 	// go take the damage first
 
 	//
@@ -1208,7 +1208,6 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	// info.SetDamage( (int)info.GetDamage() );
 
 	// Call up to the base class
-
 	fTookDamage = BaseClass::OnTakeDamage( info );
 
 	// Early out if the base class took no damage
@@ -3322,7 +3321,8 @@ void CBasePlayer::PhysicsSimulate( void )
 	}
 #endif // _DEBUG
 
-	if ( int numUsrCmdProcessTicksMax = sv_maxusrcmdprocessticks.GetInt() )
+	int numUsrCmdProcessTicksMax = sv_maxusrcmdprocessticks.GetInt();
+	if ( gpGlobals->maxClients != 1 && numUsrCmdProcessTicksMax ) // don't apply this filter in SP games
 	{
 		// Grant the client some time buffer to execute user commands
 		m_flMovementTimeForUserCmdProcessingRemaining += TICK_INTERVAL;
@@ -5089,11 +5089,11 @@ void CBasePlayer::Precache( void )
 	enginesound->PrecacheSentenceGroup( "HEV" );
 
 	// These are always needed
-//#ifndef TF_DLL
-//	PrecacheParticleSystem( "slime_splash_01" );
-//	PrecacheParticleSystem( "slime_splash_02" );
-//	PrecacheParticleSystem( "slime_splash_03" );
-//#endif
+#ifndef TF_DLL
+	PrecacheParticleSystem( "slime_splash_01" );
+	PrecacheParticleSystem( "slime_splash_02" );
+	PrecacheParticleSystem( "slime_splash_03" );
+#endif
 
 	// in the event that the player JUST spawned, and the level node graph
 	// was loaded, fix all of the node graph pointers before the game starts.
@@ -8687,6 +8687,14 @@ void CBasePlayer::InputSetHealth( inputdata_t &inputdata )
 		TakeDamage( CTakeDamageInfo( this, this, iDelta, DMG_GENERIC ) );
 		m_ArmorValue = armor;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CBasePlayer::InputHandleMapEvent( inputdata_t &inputdata )
+{
+	Internal_HandleMapEvent( inputdata );
 }
 
 //-----------------------------------------------------------------------------

@@ -154,13 +154,11 @@ bool C_PlayerResource::IsAlive(int iIndex )
 	return m_bAlive[iIndex];
 }
 
-int C_PlayerResource::GetTeam(int iIndex)
+int C_PlayerResource::GetTeam(int iIndex )
 {
 	if ( iIndex < 1 || iIndex > MAX_PLAYERS )
 	{
-		//Assert( false );
-		// sometimes Ent 0 is sent for World entity,
-		// but this is still called for HUD display
+		Assert( false );
 		return 0;
 	}
 	else

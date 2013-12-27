@@ -363,8 +363,3 @@ void CClassMenu::OnKeyCodePressed(KeyCode code)
 	}
 }
 
-
-
-
-
-

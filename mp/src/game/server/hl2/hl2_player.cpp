@@ -169,7 +169,7 @@ bool Flashlight_UseLegacyVersion( void )
 
 		g_bUseLegacyFlashlight = ( !Q_strcmp( modDir, "hl2" ) ||
 					   !Q_strcmp( modDir, "episodic" ) ||
-					   !Q_strcmp( modDir, "lostcoast" ));
+					   !Q_strcmp( modDir, "lostcoast" ) || !Q_strcmp( modDir, "hl1" ));
 
 		g_bCacheLegacyFlashlightStatus = false;
 	}
@@ -2373,10 +2373,10 @@ int CHL2_Player::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	}
 
 	// Burnt
-	//if ( info.GetDamageType() & DMG_BURN )
-	//{
-	//	EmitSound( "HL2Player.BurnPain" );
-	//}
+	if ( info.GetDamageType() & DMG_BURN )
+	{
+		EmitSound( "HL2Player.BurnPain" );
+	}
 
 
 	if( (info.GetDamageType() & DMG_SLASH) && hl2_episodic.GetBool() )

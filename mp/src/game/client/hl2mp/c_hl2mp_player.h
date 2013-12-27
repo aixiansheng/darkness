@@ -146,9 +146,9 @@ private:
 
 	CountdownTimer m_blinkTimer;
 
-	int m_iPlayerPoints;
-	int  m_iSpawnInterpCounter;
-	int  m_iSpawnInterpCounterCache;
+	int	m_iPlayerPoints;
+	int	m_iSpawnInterpCounter;
+	int	m_iSpawnInterpCounterCache;
 
 	int	  m_iPlayerSoundType;
 
@@ -161,7 +161,8 @@ private:
 	bool m_fIsWalking;
 };
 
-inline C_HL2MP_Player *ToHL2MPPlayer( CBaseEntity *pEntity ) {
+inline C_HL2MP_Player *ToHL2MPPlayer( CBaseEntity *pEntity )
+{
 	if ( !pEntity || !pEntity->IsPlayer() )
 		return NULL;
 

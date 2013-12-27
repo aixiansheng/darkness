@@ -291,7 +291,8 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 		newpanel = new CBuildMenu(this);
 	}
 
-	if ( Q_strcmp(PANEL_COMMENTARY_MODELVIEWER, szPanelName) == 0 ) {
+	if ( Q_strcmp(PANEL_COMMENTARY_MODELVIEWER, szPanelName) == 0 )
+	{
 		newpanel = new CCommentaryModelViewer( this );
 	}
 	

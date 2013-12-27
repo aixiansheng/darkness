@@ -383,18 +383,15 @@ void FX_GunshotSlimeSplash( const Vector &origin, const Vector &normal, float sc
 	VectorAngles( normal, vecAngles );
 	if ( scale < 2.0f )
 	{
-		//DispatchParticleEffect( "slime_splash_01", origin, vecAngles );
-		DispatchParticleEffect( "sparking_gear", origin, vecAngles );
+		DispatchParticleEffect( "slime_splash_01", origin, vecAngles );
 	}
 	else if ( scale < 4.0f )
 	{
-		//DispatchParticleEffect( "slime_splash_02", origin, vecAngles );
-		DispatchParticleEffect( "sparking_gear", origin, vecAngles );
+		DispatchParticleEffect( "slime_splash_02", origin, vecAngles );
 	}
 	else
 	{
-		//DispatchParticleEffect( "slime_splash_03", origin, vecAngles );
-		DispatchParticleEffect( "sparking_gear", origin, vecAngles );
+		DispatchParticleEffect( "slime_splash_03", origin, vecAngles );
 	}
 
 #endif

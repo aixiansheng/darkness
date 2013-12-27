@@ -190,7 +190,6 @@ char *sTeamNames[] =
 CHL2MPRules::CHL2MPRules()
 {
 #ifndef CLIENT_DLL
-	
 	// Create the team managers
 	for ( int i = 0; i < ARRAYSIZE( sTeamNames ); i++ )
 	{
@@ -288,14 +287,12 @@ bool CHL2MPRules::IsIntermission( void )
 void CHL2MPRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &info )
 {
 #ifndef CLIENT_DLL
-
 	if ( IsIntermission() )
 		return;
-
 	BaseClass::PlayerKilled( pVictim, info );
-
 #endif
 }
+
 
 void CHL2MPRules::Think( void )
 {

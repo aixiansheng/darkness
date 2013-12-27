@@ -897,7 +897,8 @@ void CBaseCombatWeapon::RescindAltFireHudHint()
 #endif//CLIENT_DLL
 }
 
-
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 bool CBaseCombatWeapon::ShouldDisplayReloadHUDHint()
 {
 	if( m_iReloadHudHintCount >= WEAPON_RELOAD_HUD_HINT_COUNT )
@@ -917,7 +918,8 @@ bool CBaseCombatWeapon::ShouldDisplayReloadHUDHint()
 
 	return false;
 }
-
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void CBaseCombatWeapon::DisplayReloadHudHint()
 {
 #if !defined( CLIENT_DLL )
@@ -927,7 +929,8 @@ void CBaseCombatWeapon::DisplayReloadHudHint()
 	m_flHudHintMinDisplayTime = gpGlobals->curtime + MIN_HUDHINT_DISPLAY_TIME;
 #endif//CLIENT_DLL
 }
-
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void CBaseCombatWeapon::RescindReloadHudHint()
 {
 #if !defined( CLIENT_DLL )
@@ -1522,10 +1525,10 @@ bool CBaseCombatWeapon::Holster( CBaseCombatWeapon *pSwitchingTo )
 	// if we were displaying a hud hint, squelch it.
 	if (m_flHudHintMinDisplayTime && gpGlobals->curtime < m_flHudHintMinDisplayTime)
 	{
-		if ( m_bAltFireHudHintDisplayed )
+		if( m_bAltFireHudHintDisplayed )
 			RescindAltFireHudHint();
 
-		if ( m_bReloadHudHintDisplayed )
+		if( m_bReloadHudHintDisplayed )
 			RescindReloadHudHint();
 
 		if ( m_bUsageHudHintDisplayed )
@@ -1644,7 +1647,9 @@ void CBaseCombatWeapon::ItemPreFrame( void )
 	MaintainIdealActivity();
 
 #ifndef CLIENT_DLL
-
+#ifndef HL2_EPISODIC
+	if ( IsX360() )
+#endif
 	{
 		// If we haven't displayed the hint enough times yet, it's time to try to 
 		// display the hint, and the player is not standing still, try to show a hud hint.

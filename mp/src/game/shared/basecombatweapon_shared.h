@@ -253,7 +253,7 @@ public:
 																	// but they are out of ammo. The default implementation
 																	// either reloads, switches weapons, or plays an empty sound.
 
-	virtual bool			ShouldBlockPrimaryFire() { return !AutoFiresFullClip(); }
+	virtual bool			ShouldBlockPrimaryFire() { return false; }
 
 #ifdef CLIENT_DLL
 	virtual void			CreateMove( float flInputSampleTime, CUserCmd *pCmd, const QAngle &vecOldViewAngles ) {}

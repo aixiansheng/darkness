@@ -73,14 +73,11 @@ protected:
 
 	IViewPort	*m_pViewPort;
 	ButtonCode_t m_iScoreBoardKey;
-	
+	int			m_iTeam;
 	vgui::EditablePanel *m_pPanel;
 
 	CUtlVector< MouseOverPanelButton * > m_mouseoverButtons;
-
 	void ShowClasses(class_info_t *infos, int num);
-
-	int	m_iTeam;
 };
 
 

@@ -53,6 +53,7 @@ typedef unsigned short MDLHandle_t;
 extern ConVar vcollide_wireframe;
 extern IMaterial *overlayMaterial;
 
+
 struct ClientModelRenderInfo_t : public ModelRenderInfo_t
 {
 	// Added space for lighting origin override. Just allocated space, need to set base pointer
