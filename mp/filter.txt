@@ -5,6 +5,7 @@
 *.cache
 *.tmp
 *.map
+*.xcf
 Makefile
 maps/test.bsp
 maps/graphs/test.ain

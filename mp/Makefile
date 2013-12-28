@@ -34,7 +34,7 @@ textures: $(MAT_SRC)
 setup:
 	./setup_bin.sh
 
-resources: setup
+resources:
 	rsync -ar $(GAME_SRC)/resource/ $(GAME_DST)/resource/
 	rsync -a $(GAME_SRC)/scripts/ $(GAME_DST)/scripts/
 	rsync -a $(GAME_SRC)/gameinfo.txt $(GAME_DST)/gameinfo.txt
@@ -60,12 +60,16 @@ dist:
 darkness.zip:
 	zip -r $@ $(DIST_DIR)
 
-.PHONY: clean $(MDL_SRC) $(MAT_SRC) resources textures dist vpk setup
+.PHONY: clean $(MDL_SRC) $(MAT_SRC) resources textures dist vpk setup matonly
 
 $(MDL_SRC): resources
 	$(MAKE) -C $(MDL_SRC)
 
 $(MAT_SRC):
+	rsync -a --delete --delete-excluded --exclude '*.png' --exclude '*.tga' --exclude '*.xcf' $(MAT_SRC)/ $(MAT_DST)/
+	rsync -a $(MAT_SRC)/game.ico $(MAT_SRC)/game.tga $(MAT_SRC)/game.png $(MAT_DST)/
+
+matonly:
 	rsync -a --delete --delete-excluded --exclude '*.png' --exclude '*.tga' --exclude '*.xcf' $(MAT_SRC)/ $(MAT_DST)/
 	rsync -a $(MAT_SRC)/game.ico $(MAT_SRC)/game.tga $(MAT_SRC)/game.png $(MAT_DST)/
 

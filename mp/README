@@ -4,4 +4,5 @@ BUILD INSTRUCTIONS:
 - build src/everything.sln
 - untar binary files somewhere like $DEVEL/bin/darkness
 - copy/modify build.env, source it (set BINDIR to $DEVEL/bin/darkness, for example)
+- make setup
 - make
