@@ -17,7 +17,7 @@ using namespace vgui;
 #include "hudelement.h"
 #include "hud_numericdisplay.h"
 
-#include "ConVar.h"
+#include "convar.h"
 
 #include "c_hl2mp_player.h"
 

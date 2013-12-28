@@ -3,7 +3,7 @@
 #include "hud_pack_item.h"
 #include "iclientmode.h"
 #include "hud_macros.h"
-#include <vgui_controls/controls.h>
+#include <vgui_controls/Controls.h>
 #include <vgui/ISurface.h>
 
 #include "c_hl2mp_player.h"
