@@ -28,8 +28,10 @@ check_and_link models
 check_and_link sound
 check_and_link particles
 check_and_link materials
-check_and_link resources
+check_and_link resource
 check_and_link shaders
+check_and_link scripts
+check_and_link cfg
 
 rsync $BINDIR/gameinfo.txt $DIST/gameinfo.txt
 rsync $BINDIR/darkness.fgd $DIST/darkness.fgd

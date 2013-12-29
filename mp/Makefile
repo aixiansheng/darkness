@@ -10,9 +10,10 @@ $(DIST):
 	rsync --exclude "*.lib" --exclude "*.pdb" $(GAMEDST)/bin/* $(DIST)/bin/
 
 darkness.zip:
+	rm -f $@
 	zip -r $@ $(DIST)
 
-.PHONY: clean $(DIST)
+.PHONY: clean $(DIST) darkness.zip
 
 
 clean:
