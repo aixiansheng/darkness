@@ -21,7 +21,14 @@
 
 
 #ifdef CLIENT_DLL
+
+#include "dlight.h"
+#include "fx_line.h"
+#include "iefx.h"
+
 #define CWeaponStingerFire C_WeaponStingerFire
+#define CStingerFire C_StingerFire
+
 #endif
 
 //-----------------------------------------------------------------------------
@@ -65,16 +72,18 @@ private:
 };
 
 
-#ifndef CLIENT_DLL
-
 class CStingerFire : public CBaseCombatCharacter {
+public:
 
 	DECLARE_CLASS( CStingerFire, CBaseCombatCharacter );
-	
-public:
+	DECLARE_NETWORKCLASS();
 	
 	CStingerFire();
 	~CStingerFire();
+
+#ifndef CLIENT_DLL
+	
+	DECLARE_DATADESC();
 
 	void	Spawn( void );
 	void	Precache( void );
@@ -98,11 +107,18 @@ protected:
 	float m_flDamage;
 
 	float scale;
-private:
 
-	DECLARE_DATADESC();
-};
+#else
+
+public:
+
+	virtual void Simulate(void);
+	virtual bool ShouldInterpolate(void);
+
 #endif
+
+};
+
 
 #endif // HL2MP_WEAPON_STINGER_FIRE_H
 

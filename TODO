@@ -1,8 +1,6 @@
 ROADMAP
 =================
 
-- stinger/mech prediction	(2h)
-- stinger/mech glow color	(1h)
 - XT toggle armor		(2h)
 - put spikers/turrets in map	(1h)
 - mine w/lasres			(2h)
@@ -40,3 +38,9 @@ ROADMAP
 - more maps
 
 [[[[ REL 1.5 ]]]]
+
+- make better use of VPC to add files to projects
+  so that the repo becomes more portable
+
+
+[[[[ REL X.Y ]]]]

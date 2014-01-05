@@ -173,12 +173,28 @@ void CWeaponPlasmaCanon::FireCanon(bool left) {
 
 
 
-#ifndef CLIENT_DLL
 
 
 ///////////////////////////////////////////////////////////////
 // Plasma bolt (plasma canon fire)
 ///////////////////////////////////////////////////////////////
+
+CPlasmaBolt::CPlasmaBolt() {
+}
+
+CPlasmaBolt::~CPlasmaBolt() {
+}
+
+IMPLEMENT_NETWORKCLASS_ALIASED( PlasmaBolt, DT_PlasmaBolt )
+
+BEGIN_NETWORK_TABLE( CPlasmaBolt, DT_PlasmaBolt )
+#ifndef CLIENT_DLL
+#else
+#endif
+END_NETWORK_TABLE()
+
+
+#ifndef CLIENT_DLL
 
 BEGIN_DATADESC( CPlasmaBolt )
 
@@ -189,12 +205,6 @@ BEGIN_DATADESC( CPlasmaBolt )
 	DEFINE_FUNCTION( BurnOutThink ),
 
 END_DATADESC()
-
-CPlasmaBolt::CPlasmaBolt() {
-}
-
-CPlasmaBolt::~CPlasmaBolt() {
-}
 
 void CPlasmaBolt::Precache(void) {
 	PrecacheModel( "models/weapons/w_missile.mdl" );
@@ -305,6 +315,26 @@ void CPlasmaBolt::CreateSprite(void) {
 	SetRenderMode(kRenderNone);
 
 	EmitSound(MECH_PLASMA_SOUND);
+}
+
+#else
+
+void CPlasmaBolt::Simulate(void) {
+	BaseClass::Simulate();
+
+	if (IsEffectActive(EF_BRIGHTLIGHT)) {
+		dlight_t *dl = effects->CL_AllocDlight(index);
+		dl->origin = GetAbsOrigin();
+		dl->color.r = 255;
+		dl->color.g = 221;
+		dl->color.b = 103;
+		dl->radius = 384;
+		dl->die = gpGlobals->curtime + 0.01f;
+	}
+}
+
+bool CPlasmaBolt::ShouldInterpolate(void) {
+	return true;
 }
 
 #endif

@@ -21,8 +21,18 @@
 
 
 #ifdef CLIENT_DLL
+
+#include "dlight.h"
+#include "fx_line.h"
+#include "iefx.h"
+
 #define CWeaponPlasmaCanon C_WeaponPlasmaCanon
 #define CPlasmaBolt C_PlasmaBolt
+
+#else
+
+#include "Sprite.h"
+
 #endif
 
 //-----------------------------------------------------------------------------
@@ -58,19 +68,17 @@ private:
 #endif
 };
 
-#ifndef CLIENT_DLL
-#include "Sprite.h"
 
 class CPlasmaBolt : public CBaseCombatCharacter {
 public:
 
 	DECLARE_CLASS( CPlasmaBolt, CBaseCombatCharacter );
-	//DECLARE_NETWORKCLASS();
+	DECLARE_NETWORKCLASS();
 
 	CPlasmaBolt();
 	~CPlasmaBolt();
 
-
+#ifndef CLIENT_DLL
 	DECLARE_DATADESC();
 	void	Spawn( void );
 	void	Precache( void );
@@ -87,18 +95,24 @@ public:
 
 	static CPlasmaBolt *Create( const Vector &vecOrigin, const QAngle &vecAngles, edict_t *pentOwner );
 
-#ifndef CLIENT_DLL
 protected:
 	void CreateSprite(void);
 
 	float m_flDamage;
 
 	float scale;
-private:
+
+#else
+
+public:
+
+	virtual void Simulate(void);
+	virtual bool ShouldInterpolate(void);
+
 #endif
 
 };
-#endif
+
 
 #endif // HL2MP_WEAPON_PLASMA_CANON_H
 

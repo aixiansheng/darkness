@@ -211,12 +211,25 @@ void CWeaponStingerFire::PrimaryAttack(void) {
 }
 
 
-#ifndef CLIENT_DLL
-
 
 ///////////////////////////////////////////////////////////////
 // Stinger fire (fireball)
 ///////////////////////////////////////////////////////////////
+
+
+CStingerFire::CStingerFire() {
+}
+
+CStingerFire::~CStingerFire() {
+}
+
+IMPLEMENT_NETWORKCLASS_ALIASED( StingerFire, DT_StingerFire )
+
+BEGIN_NETWORK_TABLE( CStingerFire, DT_StingerFire )
+END_NETWORK_TABLE()
+
+
+#ifndef CLIENT_DLL
 
 LINK_ENTITY_TO_CLASS( stinger_fireball, CStingerFire );
 
@@ -231,11 +244,7 @@ BEGIN_DATADESC( CStingerFire )
 
 END_DATADESC()
 
-CStingerFire::CStingerFire() {
-}
 
-CStingerFire::~CStingerFire() {
-}
 
 void CStingerFire::Precache(void) {
 	PrecacheModel( "models/weapons/w_missile.mdl" );
@@ -331,6 +340,27 @@ void CStingerFire::CreateSprite(void) {
 	DispatchParticleEffect(STINGER_FIRE_EFFECT, PATTACH_ABSORIGIN_FOLLOW, this);
 	SetRenderMode(kRenderNone);
 }
+
+#else
+
+void CStingerFire::Simulate(void) {
+	BaseClass::Simulate();
+
+	if (IsEffectActive(EF_BRIGHTLIGHT)) {
+		dlight_t *dl = effects->CL_AllocDlight(index);
+		dl->origin = GetAbsOrigin();
+		dl->color.r = 255;
+		dl->color.g = 194;
+		dl->color.b = 30;
+		dl->radius = 512;
+		dl->die = gpGlobals->curtime + 0.01f;
+	}
+}
+
+bool CStingerFire::ShouldInterpolate(void) {
+	return true;
+}
+
 
 #endif
 
