@@ -52,6 +52,7 @@ IMPLEMENT_CLIENTCLASS_DT(C_HL2MP_Player, DT_HL2MP_Player, CHL2MP_Player)
 	RecvPropInt( RECVINFO( pack_item_1 ) ),
 	RecvPropInt( RECVINFO( pack_item_2 ) ),
 	RecvPropInt( RECVINFO( pack_item_idx ) ),
+	RecvPropInt( RECVINFO( powerArmorEnabled ) ),
 	RecvPropBool( RECVINFO( attackMotion ) ),
 
 END_RECV_TABLE()

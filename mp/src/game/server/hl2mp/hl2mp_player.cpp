@@ -38,6 +38,7 @@
 #include "grenade_smk.h"
 #include "grenade_frag.h"
 #include "grenade_acid.h"
+#include "usermessages.h"
 
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -101,6 +102,7 @@ IMPLEMENT_SERVERCLASS_ST(CHL2MP_Player, DT_HL2MP_Player)
 	SendPropInt( SENDINFO( pack_item_1 ), 4 ),
 	SendPropInt( SENDINFO( pack_item_2 ), 4 ),
 	SendPropInt( SENDINFO( pack_item_idx ), 4 ),
+	SendPropBool( SENDINFO( powerArmorEnabled ) ),
 	SendPropBool( SENDINFO( attackMotion ) ),
 END_SEND_TABLE()
 
@@ -143,6 +145,11 @@ extern HL2MPViewVectors g_HL2MPViewVectors;
 
 #define XT_PLASMA_HIT				"XT.PlasmaHit"
 
+#define PLASMA_SHIELD_ON			"PlasmaShield.On"
+#define PLASMA_SHIELD_OFF			"PlasmaShield.Off"
+
+#define PLASMA_SHIELD_CTX			"plasma_shield_ctx"
+
 ConVar dk_team_balance( "dk_team_balance", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "if enabled, players won't be allowed to join a team with too many players" );
 
 CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
@@ -184,6 +191,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	gren_weapon = NULL;
 	spec_weapon = NULL;
 	attackMotion = false;
+	powerArmorEnabled = true;
 
 	RegisterThinkContext(DRONE_SPIT_CTX);
 	RegisterThinkContext(PLASMA_THINK_CTX);
@@ -191,6 +199,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	RegisterThinkContext(GUARDIAN_ARMOR_CTX);
 	RegisterThinkContext(GUARDIAN_ATTACK_MOTION_CTX);
 	RegisterThinkContext(HINT_THINK_CTX);
+	RegisterThinkContext(PLASMA_SHIELD_CTX);
 
 	BaseClass::ChangeTeam( 0 );
 }
@@ -333,6 +342,8 @@ void CHL2MP_Player::JetOnThink(void) {
 
 		SetNextThink(gpGlobals->curtime + JET_ON_INTERVAL, JET_ON_CTX);
 
+		SendPowerArmorUpdate();
+
 	} else {
 		StopJetPack();
 	}
@@ -363,6 +374,7 @@ void CHL2MP_Player::RegularRecharge(void) {
 		SetContextThink(&CHL2MP_Player::RechargeThink, gpGlobals->curtime + PLASMA_RECHARGE_DELAY, PLASMA_THINK_CTX);
 	}
 
+	SendPowerArmorUpdate();
 }
 
 void CHL2MP_Player::PlasmaOn(void) {
@@ -391,6 +403,9 @@ void CHL2MP_Player::RechargeThink(void) {
 		x = clamp(x, 0, PLASMA_RECHARGE_MAX_AMT);
 
 		CBasePlayer::GiveAmmo(x, plasma_ammo_type, true);
+
+		SendPowerArmorUpdate();
+
 		if (GetAmmoCount(plasma_ammo_type) < max_plasma) {
 			SetNextThink(gpGlobals->curtime + PLASMA_RECHARGE_INTERVAL, PLASMA_THINK_CTX);
 		
@@ -420,7 +435,9 @@ void CHL2MP_Player::DisablePlasma(bool dmg) {
 		SetContextThink(&CHL2MP_Player::RechargeThink, gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 3.0f, PLASMA_THINK_CTX);
 	}
 	
-	// play power down sound
+	SendPowerArmorUpdate();
+
+	EmitSound(PLASMA_SHIELD_OFF);
 }
 
 //
@@ -435,7 +452,7 @@ void CHL2MP_Player::FilterDamage(CTakeDamageInfo &info) {
 	initial_plasma = PlasmaCharge();
 	dmg = info.GetDamage();
 
-	if (PlasmaReady()) {
+	if (PlasmaReady() && powerArmorEnabled) {
 		if (dmg > initial_plasma) {
 			//
 			// shields will be completely drained by the hit
@@ -514,7 +531,49 @@ void CHL2MP_Player::BurnPlasma(int amt) {
 	}
 }
 
+void CHL2MP_Player::SendPowerArmorUpdate(void) {
+	int val;
 
+	if (powerArmorEnabled)
+		val = PlasmaCharge();
+	else
+		val = 0;
+
+	if (GetTeamNumber() == TEAM_HUMANS &&
+		(m_iClassNumber == CLASS_ENGINEER_IDX ||
+		m_iClassNumber == CLASS_EXTERMINATOR_IDX)) {
+
+		CSingleUserRecipientFilter user(this);
+		user.MakeReliable();
+
+		if (usermessages->LookupUserMessage( "Battery" ) != -1) {
+			UserMessageBegin(user, "Battery" );
+					WRITE_SHORT(val);
+			MessageEnd();
+		}
+
+	}
+}
+
+void CHL2MP_Player::TogglePowerArmor(void) {
+	
+	if (GetTeamNumber() == TEAM_HUMANS &&
+		(m_iClassNumber == CLASS_ENGINEER_IDX ||
+		m_iClassNumber == CLASS_EXTERMINATOR_IDX)) {
+
+		CDisablePredictionFiltering foo;
+
+		if (powerArmorEnabled) {
+			EmitSound(PLASMA_SHIELD_OFF);
+			powerArmorEnabled = false;
+		} else {
+			EmitSound(PLASMA_SHIELD_ON);
+			powerArmorEnabled = true;
+		}
+
+		SendPowerArmorUpdate();
+	}
+}
 
 void CHL2MP_Player::AddPlayerPoints(int i) {
 	m_iPlayerPoints += i;
@@ -582,6 +641,8 @@ void CHL2MP_Player::Precache( void )
 	PrecacheParticleSystem(JETPACK_SPARK);
 	PrecacheScriptSound(HATCHY_SLASH_SOUND);
 	PrecacheScriptSound(XT_PLASMA_HIT);
+	PrecacheScriptSound(PLASMA_SHIELD_ON);
+	PrecacheScriptSound(PLASMA_SHIELD_OFF);
 
 	// may need to precache more stuff here (bug sounds, etc)
 
@@ -932,6 +993,7 @@ void CHL2MP_Player::Spawn(void)
 	stopped = true;
 	stoppedTicks = 0;
 	dropC4 = false;
+	powerArmorEnabled = false;
 
 	next_infestation = 0.0f;
 	attackMotion = false;
@@ -945,7 +1007,20 @@ void CHL2MP_Player::Spawn(void)
 		num_hints++;
 		SetContextThink(&CHL2MP_Player::ShowHelpHint, gpGlobals->curtime + HINT_THINK_DELAY, HINT_THINK_CTX);
 	}
+
+	
+	if (!IsObserver() && IsAlive() && GetTeamNumber() == TEAM_HUMANS &&
+		(m_iClassNumber == CLASS_ENGINEER_IDX ||
+		m_iClassNumber == CLASS_EXTERMINATOR_IDX)) {
+
+			TogglePowerArmor();
+			SpawnHackPowerArmorUpdateThink();
+	}
 	//ClearDetailedHint();
+}
+
+void CHL2MP_Player::SpawnHackPowerArmorUpdateThink(void) {
+	SetContextThink(&CHL2MP_Player::SendPowerArmorUpdate, gpGlobals->curtime + 0.1f, PLASMA_SHIELD_CTX);
 }
 
 void CHL2MP_Player::ShowHelpHint(void) {
@@ -2073,6 +2148,11 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 	} else if (FStrEq(args[0], "dk_show_hint")) {
 		if (!IsObserver() && IsAlive()) {
 			ShowDetailedHint();
+			return true;
+		}
+	} else if (FStrEq(args[0], "dk_toggle_shield")) {
+		if (!IsObserver() && IsAlive()) {
+			TogglePowerArmor();
 			return true;
 		}
 	}

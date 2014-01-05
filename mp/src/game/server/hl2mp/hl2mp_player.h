@@ -85,6 +85,7 @@ public:
 	void MovementThink(void);
 	bool IsStopped(void);
 	void DropC4OnHit(bool value);
+	void TogglePowerArmor(void);
 
 	void NoAttackMotion(void);
 	void AttackMotion(void);
@@ -224,6 +225,9 @@ public:
 	void ThrowGrenade(int type);
 	void CheckThrowPosition(const Vector &vecEye, Vector &vecSrc);
 
+	void SendPowerArmorUpdate(void);
+	void SpawnHackPowerArmorUpdateThink(void);
+
 	CNetworkVar(bool, stopped);
 
 private:
@@ -290,6 +294,7 @@ private:
 
 	CNetworkVar(bool, jetpack_on);
 	CNetworkVar(bool, plasma_ready);
+	CNetworkVar(bool, powerArmorEnabled);
 
 	CBaseCombatWeapon *pri_weapon;
 	CBaseCombatWeapon *sec_weapon;

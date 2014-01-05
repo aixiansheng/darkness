@@ -4,7 +4,7 @@
 #include "item_info.h"
 #include "hl2mp_gamerules.h"
 
-#define SPEED_FACTOR 1200
+#define SPEED_FACTOR 1300
 
 LINK_ENTITY_TO_CLASS(ent_spiker, CSpikerEntity);
 IMPLEMENT_NETWORKCLASS_ALIASED( SpikerEntity, DT_SpikerEntity );

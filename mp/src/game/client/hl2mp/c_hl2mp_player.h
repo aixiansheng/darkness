@@ -106,6 +106,7 @@ public:
 	bool plasma_ready;
 	bool jetpack_on;
 	bool attackMotion;
+	bool powerArmorEnabled;
 
 	int pack_item_0;
 	int pack_item_1;

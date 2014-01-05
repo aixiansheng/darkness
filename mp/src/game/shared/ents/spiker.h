@@ -19,7 +19,7 @@
 	#include "spike.h"
 #endif
 
-#define SPIKER_RADIUS 480
+#define SPIKER_RADIUS 580
 #define SPIKER_DAMAGE 115
 #define SPIKER_THINK_INTERVAL 0.1f
 #define SPIKER_ARM_TIME 2.0f
