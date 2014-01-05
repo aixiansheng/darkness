@@ -381,7 +381,6 @@ void CHL2MP_Player::PlasmaOn(void) {
 	// the plasma rifle ammo is the default plasma amount
 	plasma_ready = true;
 	plasma_recovering = false;
-	max_plasma = GetAmmoDef()->MaxCarry(plasma_ammo_type);
 }
 
 void CHL2MP_Player::PlasmaOff(void) {
@@ -396,6 +395,7 @@ bool CHL2MP_Player::PlasmaReady(void) {
 
 void CHL2MP_Player::RechargeThink(void) {
 	int x;
+	int actual;
 
 	if (jetpack_on == false) {
 
@@ -403,6 +403,15 @@ void CHL2MP_Player::RechargeThink(void) {
 		x = clamp(x, 0, PLASMA_RECHARGE_MAX_AMT);
 
 		CBasePlayer::GiveAmmo(x, plasma_ammo_type, true);
+
+		actual = GetAmmoCount(plasma_ammo_type);
+
+		if (actual > max_plasma) {
+			//
+			// Engy can recharge past max_plasma if we're not careful
+			//
+			CBasePlayer::RemoveAmmo(actual - max_plasma, plasma_ammo_type);
+		}
 
 		SendPowerArmorUpdate();
 
@@ -878,9 +887,9 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 			Weapon_Switch(pri_weapon);
 		}
 
-		if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
-			PlasmaOn();
-		}
+		//if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
+		//	PlasmaOn();
+		//}
 
 		if (m_iClassNumber == CLASS_SHOCK_IDX) {
 			CBasePlayer::GiveAmmo(3, "xp_shells");
@@ -1003,20 +1012,34 @@ void CHL2MP_Player::Spawn(void)
 		WRITE_BYTE((unsigned char)m_iPlayerPoints);
 	MessageEnd();
 
-	if (!IsObserver() && num_hints < 3) {
-		num_hints++;
-		SetContextThink(&CHL2MP_Player::ShowHelpHint, gpGlobals->curtime + HINT_THINK_DELAY, HINT_THINK_CTX);
-	}
+
+	if (!IsObserver() && IsAlive()) {
+		if (num_hints < 3) {
+			num_hints++;
+			SetContextThink(&CHL2MP_Player::ShowHelpHint, gpGlobals->curtime + HINT_THINK_DELAY, HINT_THINK_CTX);
+		}
 
 	
-	if (!IsObserver() && IsAlive() && GetTeamNumber() == TEAM_HUMANS &&
-		(m_iClassNumber == CLASS_ENGINEER_IDX ||
-		m_iClassNumber == CLASS_EXTERMINATOR_IDX)) {
+		if (GetTeamNumber() == TEAM_HUMANS) {
 
-			TogglePowerArmor();
-			SpawnHackPowerArmorUpdateThink();
+			if (m_iClassNumber == CLASS_ENGINEER_IDX) {
+				max_plasma = 30;
+				PlasmaOn();
+
+				TogglePowerArmor();
+				SpawnHackPowerArmorUpdateThink();
+
+				CBasePlayer::GiveAmmo(max_plasma, plasma_ammo_type, false);
+
+			} else if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
+				max_plasma = GetAmmoDef()->MaxCarry(plasma_ammo_type);
+				PlasmaOn();
+
+				TogglePowerArmor();
+				SpawnHackPowerArmorUpdateThink();
+			}
+		}
 	}
-	//ClearDetailedHint();
 }
 
 void CHL2MP_Player::SpawnHackPowerArmorUpdateThink(void) {

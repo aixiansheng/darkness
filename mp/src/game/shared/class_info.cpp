@@ -140,7 +140,7 @@ class_info_t dk_human_classes[NUM_HUMAN_CLASSES] = {
 		CLASS_ENGINEER_IDX, 
 		0, 
 		0, 
-		100, 
+		75, 
 		WEAPON_WELDER, 
 		WEAPON_DESTROYER, 
 		GRENADE_NULL,
