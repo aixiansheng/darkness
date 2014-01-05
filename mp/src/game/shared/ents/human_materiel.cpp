@@ -31,17 +31,25 @@ END_DATADESC()
 
 void CHumanMateriel::Spawn(void) {
 	BaseClass::Spawn();
-	if (item_info->max_health == item_info->initial_health) {
-		EnableEntity();
-	} else {
-		DisableEntity();
-	}
+
+	SetHealth(item_info->max_health);
+	EnableEntity();
 	
 	RegisterThinkContext(SELF_DESTRUCT_CTX);
 	RegisterThinkContext(DAMAGED_EFFECTS_CTX);
 
 	SetContextThink(&CHumanMateriel::DamagedThink, gpGlobals->curtime + DAMAGED_THINK_INT, DAMAGED_EFFECTS_CTX);
 	SetContextThink(&CHumanMateriel::SelfDestructThink, gpGlobals->curtime + SELF_DESTRUCT_TIMEOUT, SELF_DESTRUCT_CTX);
+}
+
+
+//
+// this is called by engy so that human items spawn
+// in need of repair
+//
+void CHumanMateriel::Disable(void) {
+	DisableEntity();
+	SetHealth(item_info->initial_health);
 }
 
 void CHumanMateriel::Precache(void) {

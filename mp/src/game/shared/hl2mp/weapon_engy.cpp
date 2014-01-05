@@ -267,6 +267,7 @@ void CWeaponEngy::MakeItem(int idx) {
 					ammo->SetAbsAngles(ang);
 					ammo->SetCreator(p);
 					DispatchSpawn(ammo);
+					ammo->Disable();
 				}
 				#endif
 
@@ -298,6 +299,7 @@ void CWeaponEngy::MakeItem(int idx) {
 					medipad->SetAbsAngles(ang);
 					medipad->SetCreator(p);
 					DispatchSpawn(medipad);
+					medipad->Disable();
 				}
 				#endif
 
@@ -409,6 +411,7 @@ void CWeaponEngy::MakeItem(int idx) {
 					turret->SetAbsAngles(turned);
 					turret->SetCreator(p);
 					DispatchSpawn(turret);
+					turret->Disable();
 				}
 				#endif
 			}
@@ -438,6 +441,7 @@ void CWeaponEngy::MakeItem(int idx) {
 					missile_turret->SetAbsAngles(turned);
 					missile_turret->SetCreator(p);
 					DispatchSpawn(missile_turret);
+					missile_turret->Disable();
 				}
 				#endif
 			}

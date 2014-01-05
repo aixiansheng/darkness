@@ -86,15 +86,6 @@ void CTeleporterEntity::StartTouch(CBaseEntity *e) {
 	}
 }
 
-
-//
-// this is called by engy so that teleporter won't spawn with max health
-//
-void CTeleporterEntity::Disable(void) {
-	DisableEntity();
-	SetHealth(item_info->initial_health);
-}
-
 void CTeleporterEntity::InputToggle(inputdata_t &input) {
 	if (!active) {
 		Warning("Teleporter activating!\n");

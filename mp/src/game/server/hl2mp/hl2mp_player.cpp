@@ -1905,10 +1905,10 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 	if (type == type_guardian || type == type_spike) {
 		if (m_iClassNumber == CLASS_GUARDIAN_IDX) {
 			sticky = true;
-			speed_factor = 800;
+			speed_factor = 500;
 		} else {
 			sticky = false;
-			speed_factor = 1000;
+			speed_factor = 900;
 		}
 
 		gren_damage = 1.0f;
@@ -1919,7 +1919,7 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 		pGrenade = GuardianGren_Create( vecSrc, vec3_angle, vecThrow, this, gren_timer, sticky);
 
 	} else if (type == type_smoke) {
-		speed_factor = 1200;
+		speed_factor = 600;
 		gren_damage = 1.0f;
 		gren_radius = 250.0f;
 		gren_timer = 2.5f;
@@ -1937,7 +1937,7 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 		pGrenade = AcidGren_Create( vecSrc, vec3_angle, vecThrow, AngularImpulse(600,random->RandomInt(-1200,1200),0), this, gren_timer, false );
 
 	} else if (type == type_frag) {
-		speed_factor = 1200;
+		speed_factor = 600;
 		gren_damage = 275.0f;
 		gren_radius = 250.0f;
 		gren_timer = 2.5f;

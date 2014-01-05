@@ -39,7 +39,6 @@ class CTeleporterEntity : public CHumanMateriel {
 
 		void Spawn(void);
 		void Precache(void);
-		void Disable(void);
 
 		void InputToggle(inputdata_t &input);
 		virtual int OnTakeDamage(const CTakeDamageInfo &info);

@@ -12,7 +12,6 @@
 	#include "team_spawnpoint.h"
 	#include "hl2mp_gamerules.h"
 	#include "team.h"
-	#include "item_info.h"
 	#include "explode.h"
 	#include "soundent.h"
 	#include "ammodef.h"
