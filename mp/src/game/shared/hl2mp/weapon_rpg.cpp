@@ -1861,14 +1861,6 @@ void CWeaponRPG::CreateLaserPointer( void )
 #endif
 }
 
-#ifndef CLIENT_DLL
-
-void CWeaponRPG::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack%  hold to fire\nCrouch for accuracy");
-	BaseClass::DisplayUsageHudHint();
-}
-
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 

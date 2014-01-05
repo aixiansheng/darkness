@@ -73,7 +73,7 @@ void CAmmoCrate::StartTouch(CBaseEntity *ent) {
 	if (p->GetTeamNumber() != TEAM_HUMANS)
 		return;
 
-	UTIL_HudHintText(p, "Press USE [ %+use% ] to refil ammo");
+	UTIL_HudHintText(p, "#DK_Hint_AmmoCrate");
 }
 
 void CAmmoCrate::CrateThink( void ) {

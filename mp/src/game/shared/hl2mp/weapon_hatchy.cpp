@@ -450,10 +450,3 @@ bool CWeaponGrapple::HasAnyAmmo( void ) {
 void CWeaponGrapple::NotifyHookDied( void ) {
 	m_hHook = NULL;
 }
-
-#ifndef CLIENT_DLL
-void CWeaponGrapple::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack%  hold to grapple\n%+attack2%  explode (kami only)");
-	BaseClass::DisplayUsageHudHint();
-}
-#endif

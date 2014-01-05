@@ -38,7 +38,6 @@ public:
 
 #ifndef CLIENT_DLL
 	void ItemStatusUpdate(CBasePlayer *player, int health, int armor);
-	virtual void DisplayUsageHudHint(void);
 #endif
 
 private:

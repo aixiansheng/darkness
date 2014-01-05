@@ -55,7 +55,6 @@ public:
 	virtual void Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 	void HandleAnimEventMeleeHit( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 	int WeaponMeleeAttack1Condition( float flDot, float flDist );
-	virtual void DisplayUsageHudHint(void);
 	virtual void PrimaryAttack( void );
 
 #endif

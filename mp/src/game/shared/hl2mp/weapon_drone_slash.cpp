@@ -362,11 +362,6 @@ void CWeaponDroneSlash::ItemPostFrame( void ) {
 
 #ifndef CLIENT_DLL
 
-void CWeaponDroneSlash::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack%  slash\n%+attack2%  spit");
-	BaseClass::DisplayUsageHudHint();
-}
-
 void CWeaponDroneSlash::HandleAnimEventMeleeHit( animevent_t *pEvent, CBaseCombatCharacter *pOperator )
 {
 	// Trace up or down based on where the enemy is...

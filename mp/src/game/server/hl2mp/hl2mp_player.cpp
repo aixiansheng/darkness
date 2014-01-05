@@ -126,6 +126,9 @@ extern HL2MPViewVectors g_HL2MPViewVectors;
 #define PLASMA_RECHARGE_DELAY		2.5f
 #define PLASMA_RECHARGE_MAX_AMT		25
 
+#define HINT_THINK_CTX				"hint_think_ctx"
+#define HINT_THINK_DELAY			1.0f
+
 #define JET_IGNITE_CTX				"jet_ignite_think"
 #define JET_IGNITE_DELAY			0.2f
 
@@ -169,6 +172,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	classVectors = &g_HL2MPViewVectors;
 	next_heal_sound = 0.0f;
 	dropC4 = false;
+	num_hints = 0;
 
 	plasma_ammo_type = GetAmmoDef()->Index("plasma");
 	jetpack_on = false;
@@ -186,6 +190,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	RegisterThinkContext(JET_IGNITE_CTX);
 	RegisterThinkContext(GUARDIAN_ARMOR_CTX);
 	RegisterThinkContext(GUARDIAN_ATTACK_MOTION_CTX);
+	RegisterThinkContext(HINT_THINK_CTX);
 
 	BaseClass::ChangeTeam( 0 );
 }
@@ -935,6 +940,81 @@ void CHL2MP_Player::Spawn(void)
 	UserMessageBegin(user, "Points");
 		WRITE_BYTE((unsigned char)m_iPlayerPoints);
 	MessageEnd();
+
+	if (!IsObserver() && num_hints < 3) {
+		num_hints++;
+		SetContextThink(&CHL2MP_Player::ShowHelpHint, gpGlobals->curtime + HINT_THINK_DELAY, HINT_THINK_CTX);
+	}
+	//ClearDetailedHint();
+}
+
+void CHL2MP_Player::ShowHelpHint(void) {
+	UTIL_HudHintText(ToBasePlayer(this), "#DK_Hint_Help");
+}
+
+void CHL2MP_Player::ShowDetailedHint(void) {
+	int team = GetTeamNumber();
+	const char *hint = NULL;
+
+	if (team == TEAM_SPIDERS) {
+		switch (m_iClassNumber) {
+		case CLASS_BREEDER_IDX:
+			hint = "#DK_Hint_ClassBreeder";
+			break;
+		case CLASS_HATCHY_IDX:
+			hint = "#DK_Hint_ClassHatchy";
+			break;
+		case CLASS_DRONE_IDX:
+			hint = "#DK_Hint_ClassDrone";
+			break;
+		case CLASS_KAMI_IDX:
+			hint = "#DK_Hint_ClassKami";
+			break;
+		case CLASS_STINGER_IDX:
+			hint = "#DK_Hint_ClassStinger";
+			break;
+		case CLASS_GUARDIAN_IDX:
+			hint = "#DK_Hint_ClassGuardian";
+			break;
+		case CLASS_STALKER_IDX:
+			hint = "#DK_Hint_ClassStalker";
+			break;
+		default:
+			Warning("No Such Spider Class!\n");
+		}
+	} else if (team == TEAM_HUMANS) {
+		switch (m_iClassNumber) {
+		case CLASS_ENGINEER_IDX:
+			hint = "#DK_Hint_ClassEngy";
+			break;
+		case CLASS_GRUNT_IDX:
+			hint = "#DK_Hint_ClassGrunt";
+			break;
+		case CLASS_SHOCK_IDX:
+			hint = "#DK_Hint_ClassShock";
+			break;
+		case CLASS_HEAVY_IDX:
+			hint = "#DK_Hint_ClassHeavy";
+			break;
+		case CLASS_COMMANDO_IDX:
+			hint = "#DK_Hint_ClassCommando";
+			break;
+		case CLASS_EXTERMINATOR_IDX:
+			hint = "#DK_Hint_ClassExterm";
+			break;
+		case CLASS_MECH_IDX:
+			hint = "#DK_Hint_ClassMech";
+			break;
+		default:
+			Warning("No Such Human Class\n");
+		}
+	} else {
+		Warning("Bad Team, Couldn't select Hint\n");
+	}
+
+	if (hint) {
+		UTIL_HudHintText(ToBasePlayer(this), hint);
+	}
 }
 
 //
@@ -1990,6 +2070,11 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 			choosing_class = false;
 
 		return true;
+	} else if (FStrEq(args[0], "dk_show_hint")) {
+		if (!IsObserver() && IsAlive()) {
+			ShowDetailedHint();
+			return true;
+		}
 	}
 
 	return BaseClass::ClientCommand( args );

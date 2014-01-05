@@ -220,10 +220,3 @@ void CWeaponEngyDestroy::SecondaryAttack(void) {
 void CWeaponEngyDestroy::PrimaryAttack(void) {
 	//BaseClass::PrimaryAttack();
 }
-
-#ifndef CLIENT_DLL
-void CWeaponEngyDestroy::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack2%  destroy structure");
-	BaseClass::DisplayUsageHudHint();
-}
-#endif

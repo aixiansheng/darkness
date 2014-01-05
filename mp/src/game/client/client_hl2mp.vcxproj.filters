@@ -3343,9 +3343,6 @@
     <ClCompile Include="hl2mp\hl2mp_hud_target_id.cpp">
       <Filter>Source Files\HL2MP\UI</Filter>
     </ClCompile>
-    <ClCompile Include="hl2mp\hl2mp_hud_team.cpp">
-      <Filter>Source Files\HL2MP\UI</Filter>
-    </ClCompile>
     <ClCompile Include="hl2mp\ui\hl2mpclientscoreboard.cpp">
       <Filter>Source Files\HL2MP\UI</Filter>
     </ClCompile>

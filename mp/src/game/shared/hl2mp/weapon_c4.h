@@ -56,7 +56,6 @@ public:
 
 #ifndef CLIENT_DLL
 	void Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
-	virtual void DisplayUsageHudHint(void);
 #endif
 
 	void	ThrowGrenade( CBasePlayer *pPlayer );

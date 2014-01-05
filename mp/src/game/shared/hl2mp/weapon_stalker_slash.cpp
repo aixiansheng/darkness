@@ -203,11 +203,6 @@ int CWeaponStalkerSlash::WeaponMeleeAttack1Condition( float flDot, float flDist 
 	return COND_CAN_MELEE_ATTACK1;
 }
 
-void CWeaponStalkerSlash::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack%  slash\n%+attack2%  fire spikes");
-	BaseClass::DisplayUsageHudHint();
-}
-
 #endif
 
 

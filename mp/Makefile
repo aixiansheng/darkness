@@ -1,9 +1,19 @@
 DIST := darkness
 
-resources:
+gamedir:
 	rsync $(BINDIR)/gameinfo.txt	$(GAMEDST)/gameinfo.txt
 	rsync $(BINDIR)/darkness.fgd	$(GAMEDST)/darkness.fgd
 	rsync -r $(BINDIR)/cfg/		$(GAMEDST)/cfg
+	rsync -r $(BINDIR)/scripts/	$(GAMEDST)/scripts
+	rsync -r $(BINDIR)/resource/	$(GAMEDST)/resource
+
+gamedir_bigfiles:
+	rsync -r $(BINDIR)/materials/	$(GAMEDST)/materials
+	rsync -r $(BINDIR)/models/	$(GAMEDST)/models
+	rsync -r $(BINDIR)/maps/	$(GAMEDST)/maps
+
+updatebin:
+	rsync $(GAMEDST)/bin/*.dll	$(BINDIR)/bin/
 
 $(DIST):
 	./update_dist.sh $(DIST)

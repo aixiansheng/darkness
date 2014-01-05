@@ -210,13 +210,6 @@ void CWeaponStingerFire::PrimaryAttack(void) {
 
 }
 
-#ifndef CLIENT_DLL
-void CWeaponStingerFire::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack%  spit fire\n%+attack2%  tail slash");
-	BaseClass::DisplayUsageHudHint();
-}
-#endif
-
 
 #ifndef CLIENT_DLL
 

@@ -1484,7 +1484,6 @@ exit 1
     <ClCompile Include="hl2mp\ui\backgroundpanel.cpp" />
     <ClCompile Include="hl2mp\hl2mp_hud_chat.cpp" />
     <ClCompile Include="hl2mp\hl2mp_hud_target_id.cpp" />
-    <ClCompile Include="hl2mp\hl2mp_hud_team.cpp" />
     <ClCompile Include="hl2mp\ui\hl2mpclientscoreboard.cpp" />
     <ClCompile Include="hl2mp\ui\hl2mptextwindow.cpp" />
     <ClCompile Include="hl2mp\hud_deathnotice.cpp" />

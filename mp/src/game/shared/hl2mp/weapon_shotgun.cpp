@@ -64,11 +64,6 @@ void CWeaponShotgun::Spawn(void) {
 	currentAmmoType = m_iPrimaryAmmoType;
 }
 
-void CWeaponShotgun::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack%  fire shotgun\n%+attack2%  toggle explosive shells");
-	BaseClass::DisplayUsageHudHint();
-}
-
 #endif
 
 void CWeaponShotgun::ToggleAmmoType(void) {

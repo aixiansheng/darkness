@@ -572,11 +572,6 @@ void CWeaponEngy::PrimaryAttack(void) {
 
 #ifndef CLIENT_DLL
 
-void CWeaponEngy::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack2%  show build menu\n%+attack%  repair");
-	BaseClass::DisplayUsageHudHint();
-}
-
 void CWeaponEngy::Precache(void) {
 	PrecacheParticleSystem(ENGY_FIX_PARTICLE);
 	BaseClass::Precache();

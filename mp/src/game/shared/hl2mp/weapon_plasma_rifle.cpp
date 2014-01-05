@@ -260,10 +260,3 @@ void CWeaponPlasmaRifle::Precache(void) {
 	PrecacheModel(RAILGUN_BEAM_SPRITE);
 	BaseClass::Precache();
 }
-
-#ifndef CLIENT_DLL
-void CWeaponPlasmaRifle::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack%  fire plasma rifle\n%+attack2%  discharge all plasma\n%+jump%  hold for jetpack");
-	BaseClass::DisplayUsageHudHint();
-}
-#endif

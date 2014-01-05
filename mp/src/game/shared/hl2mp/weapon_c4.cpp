@@ -313,10 +313,3 @@ void CWeaponC4::ThrowGrenade( CBasePlayer *pPlayer ) {
 	// player "shoot" animation
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );
 }
-
-#ifndef CLIENT_DLL
-void CWeaponC4::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack2%  prime C4\n%+attack%  lob C4");
-	BaseClass::DisplayUsageHudHint();
-}
-#endif

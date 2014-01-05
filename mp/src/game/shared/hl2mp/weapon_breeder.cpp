@@ -525,11 +525,6 @@ void CWeaponBreeder::PrimaryAttack(void) {
 
 #ifndef CLIENT_DLL
 
-void CWeaponBreeder::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack2%  show build menu\n%+attack%  hold to destroy structure");
-	BaseClass::DisplayUsageHudHint();
-}
-
 void CWeaponBreeder::WarnPlayer(void) {
 	char buf[64];
 	CHL2MP_Player *p;

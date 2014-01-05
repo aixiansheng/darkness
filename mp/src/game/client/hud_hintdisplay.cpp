@@ -105,7 +105,7 @@ void CHudHintDisplay::ApplySchemeSettings( vgui::IScheme *pScheme )
 	BaseClass::ApplySchemeSettings( pScheme );
 
 	SetFgColor( GetSchemeColor("HintMessageFg", pScheme) );
-	m_hFont = pScheme->GetFont( "HudHintTextLarge", true );
+	m_hFont = pScheme->GetFont( "HudHintText", true );
 	m_pLabel->SetBgColor( GetSchemeColor("HintMessageBg", pScheme) );
 	m_pLabel->SetPaintBackgroundType( 2 );
 	m_pLabel->SetSize( 0, GetTall() );		// Start tiny, it'll grow.
@@ -127,10 +127,6 @@ bool CHudHintDisplay::SetHintText( wchar_t *text )
 		m_Labels[i]->MarkForDeletion();
 	}
 	m_Labels.RemoveAll();
-
-	int wide, tall;
-	GetSize( wide, tall );
-	wide -= 20;
 
 	wchar_t *p = text;
 
@@ -162,7 +158,6 @@ bool CHudHintDisplay::SetHintText( wchar_t *text )
 		label->SizeToContents();
 		label->SetContentAlignment( vgui::Label::a_west );
 		label->SetFgColor( GetFgColor() );
-		label->SetWide(wide);
 		m_Labels.AddToTail( vgui::SETUP_PANEL(label) );
 	}
 
@@ -366,6 +361,7 @@ public:
 protected:
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual void OnThink();
+	void TokenizeLabels(wchar_t *ws);
 
 private:
 	CUtlVector<vgui::Label *> m_Labels;
@@ -391,6 +387,12 @@ CHudHintKeyDisplay::CHudHintKeyDisplay( const char *pElementName ) : BaseClass(N
 	SetParent( pParent );
 	SetVisible( false );
 	SetAlpha( 0 );
+
+	// not until we have other localizations
+	// if (g_pVGuiLocalize->AddFile("resource/darkness_%language%.txt") == false) {
+	if (g_pVGuiLocalize->AddFile("resource/darkness_english.txt") == false) {
+		Warning("Failed to load darkness localization file\n");
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -416,7 +418,7 @@ void CHudHintKeyDisplay::Reset()
 void CHudHintKeyDisplay::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
 	m_hSmallFont = pScheme->GetFont( "HudHintTextSmall", true );
-	m_hLargeFont = pScheme->GetFont( "HudHintTextLarge", true );
+	m_hLargeFont = pScheme->GetFont( "HudHintTextLarge", false );
 
 	BaseClass::ApplySchemeSettings( pScheme );
 }
@@ -449,9 +451,45 @@ void CHudHintKeyDisplay::OnThink()
 		}
 	}
 
-	int ox, oy;
-	GetPos(ox, oy);
-	SetPos( ox, m_iBaseY + m_iYOffset );
+	//int ox, oy;
+	//GetPos(ox, oy);
+	//SetPos( ox, m_iBaseY + m_iYOffset );
+}
+
+void CHudHintKeyDisplay::TokenizeLabels(wchar_t *ws) {
+
+	wchar_t *p = ws;
+
+	while ( p )
+	{
+		wchar_t *line = p;
+		wchar_t *end = wcschr( p, L'\n' );
+		int linelengthbytes = 0;
+		if ( end )
+		{
+			//*end = 0;	//eek
+			p = end+1;
+			linelengthbytes = ( end - line ) * 2;
+		}
+		else
+		{
+			p = NULL;
+		}		
+
+		// replace any key references with bound keys
+		wchar_t buf[512];
+		UTIL_ReplaceKeyBindings( line, linelengthbytes, buf, sizeof( buf ) );
+
+		// put it in a label
+		vgui::Label *label = vgui::SETUP_PANEL(new vgui::Label(this, NULL, buf));
+		label->SetFont( m_hLargeFont );
+		label->SetPaintBackgroundEnabled( false );
+		label->SetPaintBorderEnabled( false );
+		label->SizeToContents();
+		label->SetContentAlignment( vgui::Label::a_west );
+		label->SetFgColor( GetFgColor() );
+		m_Labels.AddToTail( vgui::SETUP_PANEL(label) );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -475,6 +513,7 @@ bool CHudHintKeyDisplay::SetHintText( const char *text )
 	wchar_t wszBuf[256];
 	if ( !ws || wcslen(ws) <= 0)
 	{
+		Warning("Couldn't find localization for key %s\n", text);
 		if (text[0] == '#')
 		{
 			// We don't want to display a localization placeholder, do we?
@@ -485,167 +524,13 @@ bool CHudHintKeyDisplay::SetHintText( const char *text )
 		ws = wszBuf;
 	}
 
-	// parse out the text into a label set
-	while ( *ws )
-	{
-		wchar_t token[256];
-		bool isVar = false;
+	TokenizeLabels(ws);
 
-		// check for variables
-		if ( *ws == '%' )
-		{
-			isVar = true;
-			++ws;
+	if (strstr(text, "DK_Hint_Class")) {
+		ws = g_pVGuiLocalize->Find("DK_Hint_General");
+		if (ws && wcslen(ws) > 0) {
+			TokenizeLabels(ws);
 		}
-
-		// parse out the string
-		wchar_t *end = wcschr( ws, '%' );
-		if ( end )
-		{
-			wcsncpy( token, ws, MIN( end - ws, ARRAYSIZE(token)) );
-			token[end - ws] = L'\0';	// force null termination
-		}
-		else
-		{
-			wcsncpy( token, ws, ARRAYSIZE(token) );
-			token[ ARRAYSIZE(token) - 1 ] = L'\0';	// force null termination
-		}
-
-		ws += wcslen( token );
-		if ( isVar )
-		{
-			// move over the end of the variable
-			++ws; 
-		}
-
-		// put it in a label
-		vgui::Label *label = vgui::SETUP_PANEL(new vgui::Label(this, NULL, token));
-
-		bool bIsBitmap = false;
-
-		// modify the label if necessary
-		if ( isVar )
-		{
-			label->SetFont( m_hLargeFont );
-
-			// lookup key names
-			char binding[64];
-			g_pVGuiLocalize->ConvertUnicodeToANSI( token, binding, sizeof(binding) );
-
-			//!! change some key names into better names
-			char friendlyName[64];
-
-			if ( IsX360() )
-			{
-				int iNumBinds = 0;
-
-				char szBuff[ 512 ];
-				wchar_t szWideBuff[ 64 ];
-
-				for ( int iCode = 0; iCode < BUTTON_CODE_LAST; ++iCode )
-				{
-					ButtonCode_t code = static_cast<ButtonCode_t>( iCode );
-
-					bool bUseThisKey = false;
-
-					// Only check against bind name if we haven't already forced this binding to be used
-					const char *pBinding = gameuifuncs->GetBindingForButtonCode( code );
-
-					if ( !pBinding )
-						continue;
-
-					bUseThisKey = ( Q_stricmp( pBinding, binding ) == 0 );
-
-					if ( !bUseThisKey && 
-						( Q_stricmp( pBinding, "+duck" ) == 0 || Q_stricmp( pBinding, "toggle_duck" ) == 0 ) && 
-						( Q_stricmp( binding, "+duck" ) == 0 || Q_stricmp( binding, "toggle_duck" ) == 0 ) )
-					{
-						// +duck and toggle_duck are interchangable
-						bUseThisKey = true;
-					}
-
-					if ( !bUseThisKey && 
-						( Q_stricmp( pBinding, "+zoom" ) == 0 || Q_stricmp( pBinding, "toggle_zoom" ) == 0 ) && 
-						( Q_stricmp( binding, "+zoom" ) == 0 || Q_stricmp( binding, "toggle_zoom" ) == 0 ) )
-					{
-						// +zoom and toggle_zoom are interchangable
-						bUseThisKey = true;
-					}
-
-					// Don't use this bind in out list
-					if ( !bUseThisKey )
-						continue;
-
-					// Turn localized string into icon character
-					Q_snprintf( szBuff, sizeof( szBuff ), "#GameUI_Icons_%s", g_pInputSystem->ButtonCodeToString( static_cast<ButtonCode_t>( iCode ) ) );
-					g_pVGuiLocalize->ConstructString( szWideBuff, sizeof( szWideBuff ), g_pVGuiLocalize->Find( szBuff ), 0 );
-					g_pVGuiLocalize->ConvertUnicodeToANSI( szWideBuff, szBuff, sizeof( szBuff ) );
-
-					// Add this icon to our list of keys to display
-					friendlyName[ iNumBinds ] = szBuff[ 0 ];
-					++iNumBinds;
-				}
-
-				friendlyName[ iNumBinds ] = '\0';
-
-				if ( iNumBinds == 0 )
-				{
-					friendlyName[ 0 ] = '\0';
-					label->SetFont( m_hSmallFont );
-					label->SetText( "#GameUI_Icons_NONE" );
-				}
-				else
-				{
-					// 360 always uses bitmaps
-					bIsBitmap = true;
-					label->SetText( friendlyName );
-				}
-			}
-			else
-			{
-				const char *key = engine->Key_LookupBinding( *binding == '+' ? binding + 1 : binding );
-				if ( !key )
-				{
-					key = "< not bound >";
-				}
-
-				Q_snprintf( friendlyName, sizeof(friendlyName), "#%s", key );
-				Q_strupr( friendlyName );
-
-				// set the variable text - key may need to be localized (button images for example)
-				wchar_t *locName = g_pVGuiLocalize->Find( friendlyName );
-				if ( !locName || wcslen(locName) <= 0)
-				{
-					label->SetText( friendlyName + 1 );
-				}
-				else
-				{
-					// Assuming localized vars must be using a bitmap image. *May* not be the case, but since
-					// keyboard bindings have never been localized in the past, they probably won't in the future either.
-					bIsBitmap = true;
-					label->SetText( locName );
-				}
-			}
-		}
-		else
-		{
-			label->SetFont( m_hSmallFont );
-		}
-
-		label->SetPaintBackgroundEnabled( false );
-		label->SetPaintBorderEnabled( false );
-		label->SizeToContents();
-		label->SetContentAlignment( vgui::Label::a_west );
-		if ( bIsBitmap && isVar )
-		{
-			// Don't change the color of the button art
-			label->SetFgColor( Color(255,255,255,255) );
-		}
-		else
-		{
-			label->SetFgColor( GetFgColor() );
-		}
-		m_Labels.AddToTail( vgui::SETUP_PANEL(label) );
 	}
 
 // Enable this small block of code to test formatting and layout of hint messages
@@ -684,80 +569,32 @@ bool CHudHintKeyDisplay::SetHintText( const char *text )
 	}
 #endif
 
-	// find the bounds we need to show
-	int widest1 = 0, widest2 = 0;
-	for (int i = 0; i < m_Labels.Count(); i++)
-	{
-		vgui::Label *label = m_Labels[i];
-
-		if (i & 1)
-		{
-			// help text
-			if (label->GetWide() > widest2)
-			{
-				widest2 = label->GetWide();
-			}
-		}
-		else
-		{
-			// variable
-			if (label->GetWide() > widest1)
-			{
-				widest1 = label->GetWide();
-			}
-		}
-	}
+	// find the the widest line to set our width
+	//int widest = 0;
+	//for (int i = 0; i < m_Labels.Count(); i++) {
+	//	vgui::Label *label = m_Labels[i];
+	//	if (label->GetWide() > widest) {
+	//		widest = label->GetWide();
+	//	}
+	//}
 
 	// position the labels
-	int col1_x = m_iTextX;
-	int col2_x = m_iTextX + widest1 + m_iTextGapX;
+	int col_x = m_iTextX;
 	int col_y = m_iTextY;
 
-	for (int i = 0; i < m_Labels.Count(); i += 2)
-	{
-		int rowHeight = 0;
-		vgui::Label *label0 = m_Labels[i];
-		int tall0 = label0->GetTall();
-		rowHeight = tall0;
+	for (int i = 0; i < m_Labels.Count(); i++) {
+		vgui::Label *label = m_Labels[i];
+		int tall = label->GetTall();
+		label->SetPos(col_x, col_y);
 
-		if (i + 1 < m_Labels.Count())
-		{
-			vgui::Label *label1 = m_Labels[i + 1];
-			int tall1 = label1->GetTall();
-			rowHeight = MAX(tall0, tall1);
-			label1->SetPos( col2_x, col_y + (rowHeight - tall1) / 2 );
-		}
-
-		label0->SetPos( col1_x, col_y + (rowHeight - tall0) / 2 );
-
-		col_y += rowHeight + m_iTextGapY;
+		col_y += tall + m_iTextGapY;
 	}
 
-	// move ourselves relative to our start position
-	int newWide = m_iTextX + col2_x + widest2;
-	int newTall = col_y;
 	int ox, oy;
-	GetPos(ox, oy);
+	GetSize(ox, oy);
+ 	SetSize( ox, col_y );
 
-	if (IsRightAligned())
-	{
-		int oldWide = GetWide();
-		int diff = newWide - oldWide;
-		ox -= diff;
-	}
-
-	if (IsBottomAligned())
-	{
-		int oldTall = GetTall();
-		int diff = newTall - oldTall;
-		oy -= diff;
-	}
-
-	// set the size of the hint panel to fit
- 	SetPos( ox, oy );
- 	SetSize( newWide, newTall );
-
-	m_iBaseY = oy;
+	m_iBaseY = col_y;
 
 	return true;
 }

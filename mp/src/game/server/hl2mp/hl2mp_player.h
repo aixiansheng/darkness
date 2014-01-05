@@ -90,6 +90,9 @@ public:
 	void AttackMotion(void);
 	CNetworkVar(bool, attackMotion);
 
+	void ShowHelpHint(void);
+	void ShowDetailedHint(void);
+
 	virtual Vector BodyTarget(const Vector &posSrc, bool noisy);
 		
 	int FlashlightIsOn( void );
@@ -265,6 +268,7 @@ private:
 	float m_flNextGrenadeTime;
 	CNetworkVar(int, grenade_type);
 
+	int num_hints;
 	int max_armor;
 	int stoppedTicks;
 	bool dropC4;

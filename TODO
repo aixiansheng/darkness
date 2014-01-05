@@ -1,53 +1,42 @@
-TODO
+ROADMAP
 =================
 
+- stinger/mech prediction	(2h)
+- stinger/mech glow color	(1h)
+- XT toggle armor		(2h)
+- put spikers/turrets in map	(1h)
+- mine w/lasres			(2h)
 
+= refactor OnTakeDamage, also random buff/nerfs =
 
-TODO
-	- F1/F2 key bind help
-	- Fix spectator mode
-	- kiddie config (e = use, g = grenade, r = reload, no inverted mouse)
-	- prediction for stinger/mech projectiles
+[[[[ REL 1.3 ]]]]
 
-	- XT toggle armor
-	- stalker crush players
+- stalker crush players		(2h)
+- breeder nudge			(2h)
+- engy tele/jumping		(1h)
 
-	- breeder nudge
-	- engy tele in wall?
-	- engy power armor
+- wraith			(12h)
+- medic + flare			(12h)
 
-	- armor types: power, light, heavy
+- spider glow			(2h, use dlight_t)
 
-	- guardian regen armor when stopped
+[[[[ REL 1.4 ]]]]
 
-	- engy model stretch fix
-	- breeder model strech fix
+- Spectator mode crash?
+- Player quit crash?
 
-	- spec mode crash only in SRCDS (disable spec for now)
+- engy power armor
 
-	- contact valvetime after release
-	- gameplay videos
+- contact valvetime after release
+- gameplay videos
 
-	- make guardian infestation use ragdolls
-	- wraith
-	- medic + flare
-	- humans glow better
-	- engy/breeder flying/stacking
-	- fix player animations, remove aim_yaw/aim_pitch negation in hl2mp_player_shared.cpp
-	- better textures for models (bump maps, etc)
-	- mine w/lasres
+- make guardian infestation use ragdolls
+- humans glow better
+- fix player animations, remove aim_yaw/aim_pitch negation in hl2mp_player_shared.cpp
+- better textures for models (bump maps, etc)
 
-	- spider glow
+- HUD font size too big
 
-	- spec mode broken
+- more maps
 
-	- armor types and balance
-	
-	- srcds crash on player quit sometimes? (build all human structures, quit?)
-
-	- HUD font size too big
-	- Team HUD positioning... (remove it?)
-
-	- put spikers/turrets in map
-
-	- more maps
+[[[[ REL 1.5 ]]]]

@@ -61,14 +61,13 @@ public:
 	void DryFire( void );
 	virtual float GetFireRate( void ) { return 0.7; };
 
-#ifndef CLIENT_DLL
-	virtual void Spawn(void);
-	virtual void DisplayUsageHudHint(void);
-#endif
-
 	DECLARE_ACTTABLE();
 
 	CWeaponShotgun(void);
+
+#ifndef CLIENT_DLL
+	virtual void Spawn(void);
+#endif
 
 private:
 	CWeaponShotgun( const CWeaponShotgun & );

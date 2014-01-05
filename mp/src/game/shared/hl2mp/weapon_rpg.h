@@ -244,11 +244,7 @@ public:
 	CMaterialReference	m_hSpriteMaterial;	// Used for the laser glint
 	CMaterialReference	m_hBeamMaterial;	// Used for the laser beam
 	Beam_t				*m_pBeam;			// Laser beam temp entity
-#else
-
-	virtual void DisplayUsageHudHint(void);
-
-#endif	//CLIENT_DLL
+#endif
 
 	CBaseEntity *GetMissile( void ) { return m_hMissile; }
 

@@ -437,7 +437,6 @@ CPPFILES= \
     hl2mp/c_te_hl2mp_shotgun_shot.cpp \
     hl2mp/hl2mp_hud_chat.cpp \
     hl2mp/hl2mp_hud_target_id.cpp \
-    hl2mp/hl2mp_hud_team.cpp \
     hl2mp/hud_deathnotice.cpp \
     hl2mp/ui/backgroundpanel.cpp \
     hl2mp/ui/hl2mpclientscoreboard.cpp \
@@ -3885,18 +3884,6 @@ endif
 $(OBJ_DIR)/hl2mp_hud_target_id.o : $(PWD)/hl2mp/hl2mp_hud_target_id.cpp $(PWD)/client_linux32_hl2mp.mak $(SRCROOT)/devtools/makefile_base_posix.mak
 	$(PRE_COMPILE_FILE)
 	$(COMPILE_FILE) $(POST_COMPILE_FILE)
-
-ifneq (clean, $(findstring clean, $(MAKECMDGOALS)))
--include $(OBJ_DIR)/hl2mp_hud_team.P
-endif
-
-$(OBJ_DIR)/hl2mp_hud_team.o : $(PWD)/hl2mp/hl2mp_hud_team.cpp $(PWD)/client_linux32_hl2mp.mak $(SRCROOT)/devtools/makefile_base_posix.mak
-	$(PRE_COMPILE_FILE)
-	$(COMPILE_FILE) $(POST_COMPILE_FILE)
-
-ifneq (clean, $(findstring clean, $(MAKECMDGOALS)))
--include $(OBJ_DIR)/hud_deathnotice.P
-endif
 
 $(OBJ_DIR)/hud_deathnotice.o : $(PWD)/hl2mp/hud_deathnotice.cpp $(PWD)/client_linux32_hl2mp.mak $(SRCROOT)/devtools/makefile_base_posix.mak
 	$(PRE_COMPILE_FILE)

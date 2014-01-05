@@ -79,10 +79,6 @@ public:
 	bool			HasAnyAmmo( void );
  
 	CBaseEntity		*GetHook( void ) { return m_hHook; }
-
-#ifndef CLIENT_DLL
-	virtual void DisplayUsageHudHint(void);
-#endif
  
 	DECLARE_NETWORKCLASS(); 
 	DECLARE_PREDICTABLE();

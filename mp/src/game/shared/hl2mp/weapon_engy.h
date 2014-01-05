@@ -41,7 +41,6 @@ public:
 #ifndef CLIENT_DLL
 	virtual void Precache(void);
 	void ItemStatusUpdate(CBasePlayer *player, int health, int armor);
-	virtual void DisplayUsageHudHint(void);
 
 	unsigned int repaired_total;
 

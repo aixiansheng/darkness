@@ -41,10 +41,6 @@ public:
 
 	CWeaponPlasmaRifle( const CWeaponPlasmaRifle & );
 
-#ifndef CLIENT_DLL
-	virtual void DisplayUsageHudHint(void);
-#endif
-
 private:
 
 #ifndef CLIENT_DLL

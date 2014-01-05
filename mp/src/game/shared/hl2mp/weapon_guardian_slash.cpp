@@ -101,11 +101,6 @@ void CWeaponGuardianSlash::PrimaryAttack(void) {
 
 #ifndef CLIENT_DLL
 
-void CWeaponGuardianSlash::DisplayUsageHudHint(void) {
-	UTIL_HudHintText(GetOwner(), "%+attack%  slash\n%+use%  eat C-4");
-	BaseClass::DisplayUsageHudHint();
-}
-
 void CWeaponGuardianSlash::HandleAnimEventMeleeHit( animevent_t *pEvent, CBaseCombatCharacter *pOperator )
 {
 	// Trace up or down based on where the enemy is...
