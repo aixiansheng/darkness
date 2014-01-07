@@ -14,6 +14,7 @@
 	#include "team.h"
 	#include "item_info.h"
 	#include "explode.h"
+	#include "beam_shared.h"
 #endif
 
 #define EXPMINE_RADIUS 300
@@ -33,9 +34,14 @@ class CExpMineEntity : public CHumanMateriel {
 		DECLARE_DATADESC();
 
 		void Spawn(void);
+		void SetNormal(Vector &normal);
 		void SetupThink(void);
 		void DetectThink(void);
 		void SolidThink(void);
+
+		Vector endpos;
+		Vector surfaceNorm;
+		CBeam *laser;
 
 #endif
 

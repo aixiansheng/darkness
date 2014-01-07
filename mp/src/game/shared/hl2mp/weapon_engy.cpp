@@ -342,6 +342,7 @@ void CWeaponEngy::MakeItem(int idx) {
 					mine->SetAbsAngles(stick_ang);
 					mine->SetCreator(p);
 					DispatchSpawn(mine);
+					mine->SetNormal(tr.plane.normal);
 				}
 				#endif
 			}
