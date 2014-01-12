@@ -32,8 +32,11 @@ public:
 
 	virtual void Event_Killed(const CTakeDamageInfo &info);
 
+	virtual void StartTouch(CBaseEntity *e);
+
 private:
 	float healAmount;
+	float nextNudge;
 
 #endif
 

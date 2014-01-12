@@ -2,8 +2,8 @@
 #include "human_materiel.h"
 #include "hl2mp_gamerules.h"
 
-#define SELF_DESTRUCT_TIMEOUT	7.0f
-#define DAMAGED_THINK_INT		5.0f
+#define SELF_DESTRUCT_TIMEOUT	4.0f
+#define DAMAGED_THINK_INT		5.5f
 #define SELF_DESTRUCT_CTX		"selfDestruct"
 #define DAMAGED_EFFECTS_CTX		"damageEffects"
 

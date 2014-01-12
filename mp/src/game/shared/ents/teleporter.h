@@ -33,6 +33,9 @@ class CTeleporterEntity : public CHumanMateriel {
 		virtual void EnableEntity(void);
 		virtual void DisableEntity(void);
 
+		void AutoKill(void);
+		bool autoKill;
+
 #ifndef CLIENT_DLL
 
 		DECLARE_DATADESC();
@@ -54,7 +57,7 @@ class CTeleporterEntity : public CHumanMateriel {
 		CTeamSpawnPoint *spawnpoint;
 #else
 		CNewParticleEffect *sparks;
-#endif
+#endif	
 
 };
 

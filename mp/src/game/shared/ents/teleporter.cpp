@@ -12,6 +12,8 @@ END_NETWORK_TABLE()
 
 CTeleporterEntity::CTeleporterEntity() : CHumanMateriel(&human_items[ITEM_TELEPORTER_IDX]) {
 	active = false;
+	autoKill = false;
+
 #ifndef CLIENT_DLL
 	spawnpoint = (CTeamSpawnPoint *)CreateEntityByName("info_player_teamspawn");
 #else
@@ -25,6 +27,9 @@ CTeleporterEntity::~CTeleporterEntity() {
 #endif
 }
 
+void CTeleporterEntity::AutoKill(void) {
+	autoKill = true;
+}
 
 #ifndef CLIENT_DLL
 
@@ -97,12 +102,16 @@ int CTeleporterEntity::TakeHealth(int amt, int type) {
 	int ret;
 	int health;
 
-	ret = BaseClass::TakeHealth(amt, type);
-	health = GetHealth();
+	if (autoKill == false) {
+		ret = BaseClass::TakeHealth(amt, type);
+		health = GetHealth();
 
-	spawnpoint->SetCycleEfficiency(((float)health)/((float)item_info->max_health));
+		spawnpoint->SetCycleEfficiency(((float)health)/((float)item_info->max_health));
 
-	return ret;
+		return ret;
+	}
+
+	return 0;
 }
 
 int CTeleporterEntity::OnTakeDamage(const CTakeDamageInfo &info) {

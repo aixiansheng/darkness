@@ -1,6 +1,8 @@
 #include "cbase.h"
 #include "spider_materiel.h"
 #include "hl2mp_gamerules.h"
+#include "class_info.h"
+#include "in_buttons.h"
 
 #define DMG_SPRITE "blood_spurt"
 
@@ -29,6 +31,8 @@ void CSpiderMateriel::Spawn(void) {
 
 	RegisterThinkContext(SELF_HEAL_CTX);
 	SetContextThink(&CSpiderMateriel::SelfHealThink, gpGlobals->curtime + SELF_HEAL_INTERVAL, SELF_HEAL_CTX);
+
+	nextNudge = 0.0f;
 }
 
 void CSpiderMateriel::Precache(void) {
@@ -72,6 +76,42 @@ void CSpiderMateriel::Event_Killed(const CTakeDamageInfo &info) {
 	}
 
 	BaseClass::Event_Killed(info);
+}
+
+#define MIN_BREEDER_NUDGE_SPEED 250.0f
+#define MIN_NUDGE_WAIT 1.0f
+
+void CSpiderMateriel::StartTouch(CBaseEntity *e) {
+	CHL2MP_Player *p;
+	Vector vel;
+	Vector itemVel;
+	float speed;
+	
+	p = ToHL2MPPlayer(e);
+	if (!p || p->GetTeamNumber() == TEAM_HUMANS || p->m_iClassNumber != CLASS_BREEDER_IDX)
+		return;
+
+	vel = e->GetAbsVelocity();
+	speed = vel.Length();
+
+	if (speed < MIN_BREEDER_NUDGE_SPEED)
+		return;
+
+	if (item_info->idx != ITEM_OBSTACLE_IDX &&
+		item_info->idx != ITEM_SPIKER_IDX)
+		return;
+
+	if (p->m_nButtons & IN_USE) {
+
+		if (nextNudge < gpGlobals->curtime) {
+			itemVel = vel * 1.5f;
+			itemVel.z = 15.0f;
+			SetAbsVelocity(itemVel);
+
+			nextNudge = gpGlobals->curtime + MIN_NUDGE_WAIT;
+		}
+
+	}
 }
 
 #endif

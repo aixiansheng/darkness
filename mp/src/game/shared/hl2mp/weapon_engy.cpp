@@ -183,6 +183,7 @@ void CWeaponEngy::MakeItem(int idx) {
 	CMSLTurretEntity *missile_turret = NULL;
 #endif
 
+	bool autokill;
 	int cost;
 	CHL2MP_Player *p;
 	QAngle stick_ang;
@@ -201,6 +202,7 @@ void CWeaponEngy::MakeItem(int idx) {
 	fwd.z = 0;
 	VectorNormalize(fwd);
 	VectorAngles(fwd, turned);
+	autokill = false;
 
 	dst = p->GetAbsOrigin() + (fwd * 60) + Vector(0, 0, 60);
 	QAngle ang(0, p->GetAbsAngles().y - 90, 0);
@@ -214,8 +216,11 @@ void CWeaponEngy::MakeItem(int idx) {
 			//
 			UTIL_TraceHull(dst, dst, dk_human_classes[CLASS_MECH_IDX].vectors->m_vHullMin, dk_human_classes[CLASS_MECH_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
 			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
+				autokill = true;
+				if (tr.m_pEnt && tr.m_pEnt->IsPlayer()) {
+					WeaponSound(EMPTY);
+					break;
+				}
 			}
 
 
@@ -235,6 +240,10 @@ void CWeaponEngy::MakeItem(int idx) {
 					tele->SetCreator(p);
 					DispatchSpawn(tele);
 					tele->Disable();
+					if (autokill) {
+						tele->AutoKill();
+					}
+
 				}
 				#endif
 
@@ -338,7 +347,7 @@ void CWeaponEngy::MakeItem(int idx) {
 					//stick_ang.z -= 90;
 					//tr.endpos.z -= 6.0f;
 
-					mine->SetAbsOrigin(tr.endpos + tr.plane.normal * 3);
+					mine->SetAbsOrigin(tr.endpos + tr.plane.normal * 2);
 					mine->SetAbsAngles(stick_ang);
 					mine->SetCreator(p);
 					DispatchSpawn(mine);

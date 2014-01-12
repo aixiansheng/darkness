@@ -39,6 +39,7 @@
 #include "grenade_frag.h"
 #include "grenade_acid.h"
 #include "usermessages.h"
+#include "weapon_plasma_canon.h"
 
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -1227,11 +1228,30 @@ void CHL2MP_Player::StartTouch(CBaseEntity *other) {
 }
 
 void CHL2MP_Player::Touch(CBaseEntity *other) {
-
 	Slash(other, false);
 
-	if (other == GetGroundEntity())
+	if (other == GetGroundEntity()) {
+		if (other->IsPlayer() &&
+			GetTeamNumber() == TEAM_SPIDERS &&
+			other->GetTeamNumber() == TEAM_HUMANS &&
+			m_iClassNumber == CLASS_STALKER_IDX &&
+			IsAlive()) {
+				
+				//
+				// stalkers crush players they stand on
+				//
+				Vector crushDir = Vector(0,0,-1);
+				trace_t tr;
+
+				ClearMultiDamage();
+				CTakeDamageInfo dmg(this, this, 1400, DMG_CRUSH);
+				CalculateMeleeDamageForce(&dmg,crushDir, GetAbsOrigin(), 0.05f);
+				other->DispatchTraceAttack(dmg, crushDir, &tr);
+				ApplyMultiDamage();
+		}
+			
 		return;
+	}
 
 	if (other->GetMoveType() != MOVETYPE_VPHYSICS || other->GetSolid() != SOLID_VPHYSICS || (other->GetSolidFlags() & FSOLID_TRIGGER))
 		return;
