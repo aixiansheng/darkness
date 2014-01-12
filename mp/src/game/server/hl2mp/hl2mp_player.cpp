@@ -2589,7 +2589,9 @@ void CHL2MP_Player::FlashlightTurnOff( void )
 	RemoveEffects( EF_DIMLIGHT );
 	
 	if(IsAlive()) {
-		EmitSound( "HL2Player.FlashlightOff" );
+		if (GetTeamNumber() == TEAM_HUMANS) {
+			EmitSound( "HL2Player.FlashlightOff" );
+		}
 	}
 }
 

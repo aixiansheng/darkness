@@ -14,7 +14,7 @@
 #endif
 
 #define HEALER_HEAL_VALUE		1.0f
-#define HEALER_THINK_INTERVAL	0.5f
+#define HEALER_THINK_INTERVAL	0.4f
 
 #define HEALER_GARGLE_SOUND "Healer.Gargle"
 #define HEALER_GARGLE_INTERVAL 3.0f

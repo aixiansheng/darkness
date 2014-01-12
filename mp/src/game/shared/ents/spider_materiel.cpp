@@ -112,6 +112,8 @@ void CSpiderMateriel::StartTouch(CBaseEntity *e) {
 		}
 
 	}
+
+	BaseClass::StartTouch(e);
 }
 
 #endif

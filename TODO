@@ -3,6 +3,7 @@ ROADMAP
 
 Release 1.5:
 
+	- detector glowing effect
 	- only check in VPC files
 	- hatchy sees thru stairs
 	= refactor OnTakeDamage, also random buff/nerfs =
