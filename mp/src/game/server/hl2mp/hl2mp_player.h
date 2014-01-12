@@ -295,6 +295,7 @@ private:
 	CNetworkVar(bool, jetpack_on);
 	CNetworkVar(bool, plasma_ready);
 	CNetworkVar(bool, powerArmorEnabled);
+	CNetworkVar(bool, bugGlow);
 
 	CBaseCombatWeapon *pri_weapon;
 	CBaseCombatWeapon *sec_weapon;

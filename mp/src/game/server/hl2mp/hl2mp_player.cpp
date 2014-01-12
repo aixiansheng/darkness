@@ -105,6 +105,7 @@ IMPLEMENT_SERVERCLASS_ST(CHL2MP_Player, DT_HL2MP_Player)
 	SendPropInt( SENDINFO( pack_item_idx ), 4 ),
 	SendPropBool( SENDINFO( powerArmorEnabled ) ),
 	SendPropBool( SENDINFO( attackMotion ) ),
+	SendPropBool( SENDINFO( bugGlow ) ),
 END_SEND_TABLE()
 
 BEGIN_DATADESC( CHL2MP_Player )
@@ -1041,6 +1042,8 @@ void CHL2MP_Player::Spawn(void)
 			}
 		}
 	}
+
+	bugGlow = false;
 }
 
 void CHL2MP_Player::SpawnHackPowerArmorUpdateThink(void) {
@@ -2554,7 +2557,11 @@ void CHL2MP_Player::CreateRagdollEntity( void )
 //-----------------------------------------------------------------------------
 int CHL2MP_Player::FlashlightIsOn( void )
 {
-	return IsEffectActive( EF_DIMLIGHT );
+	if (GetTeamNumber() == TEAM_HUMANS) {
+		return IsEffectActive( EF_DIMLIGHT );
+	} else {
+		return bugGlow;
+	}
 }
 
 extern ConVar flashlight;
@@ -2562,12 +2569,13 @@ extern ConVar flashlight;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CHL2MP_Player::FlashlightTurnOn( void )
-{
-	if (GetTeamNumber() == TEAM_HUMANS) {
-		if( flashlight.GetInt() > 0 && IsAlive() )
-		{
+{	
+	if ( flashlight.GetInt() > 0 && IsAlive() ) {
+		if (GetTeamNumber() == TEAM_HUMANS) {
 			AddEffects( EF_DIMLIGHT );
 			EmitSound( "HL2Player.FlashlightOn" );
+		} else {
+			bugGlow = true;
 		}
 	}
 }
@@ -2577,10 +2585,10 @@ void CHL2MP_Player::FlashlightTurnOn( void )
 //-----------------------------------------------------------------------------
 void CHL2MP_Player::FlashlightTurnOff( void )
 {
+	bugGlow = false;
 	RemoveEffects( EF_DIMLIGHT );
 	
-	if( IsAlive() )
-	{
+	if(IsAlive()) {
 		EmitSound( "HL2Player.FlashlightOff" );
 	}
 }

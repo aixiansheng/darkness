@@ -114,6 +114,7 @@ public:
 	int pack_item_idx;
 
 	int grenade_type;
+	bool bugGlow;
 
 	int GrenadeType(void);
 

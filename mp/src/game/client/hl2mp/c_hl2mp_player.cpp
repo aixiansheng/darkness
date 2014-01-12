@@ -54,6 +54,7 @@ IMPLEMENT_CLIENTCLASS_DT(C_HL2MP_Player, DT_HL2MP_Player, CHL2MP_Player)
 	RecvPropInt( RECVINFO( pack_item_idx ) ),
 	RecvPropInt( RECVINFO( powerArmorEnabled ) ),
 	RecvPropBool( RECVINFO( attackMotion ) ),
+	RecvPropBool( RECVINFO( bugGlow ) ),
 
 END_RECV_TABLE()
 
@@ -317,6 +318,16 @@ void C_HL2MP_Player::ClientThink( void )
 	}
 
 	UpdateIDTarget();
+
+	if (bugGlow) {
+		dlight_t *dl = effects->CL_AllocDlight(index);
+		dl->origin = GetAbsOrigin();
+		dl->color.r = 10;
+		dl->color.g = 50;
+		dl->color.b = 255;
+		dl->radius = 384;
+		dl->die = gpGlobals->curtime + 0.01f;
+	}
 }
 
 //-----------------------------------------------------------------------------
