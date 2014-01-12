@@ -999,7 +999,7 @@ void CBasePlayer::DamageEffect(float flDamage, int fDamageType)
 		//ViewPunch(QAngle(random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1)));
 
 		// Burn sound 
-		EmitSound( "Player.PlasmaDamage" );
+		//EmitSound( "Player.PlasmaDamage" );
 	}
 	else if (fDamageType & DMG_SONIC)
 	{

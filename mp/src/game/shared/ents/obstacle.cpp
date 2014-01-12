@@ -23,7 +23,6 @@ CObstacleEntity::~CObstacleEntity() {
 #ifndef CLIENT_DLL
 
 BEGIN_DATADESC(CObstacleEntity)
-	DEFINE_THINKFUNC(DmgThink),
 END_DATADESC()
 
 void CObstacleEntity::Precache(void) {
@@ -33,74 +32,31 @@ void CObstacleEntity::Precache(void) {
 void CObstacleEntity::Spawn(void) {
 	Precache();
 	BaseClass::Spawn();
+	SetTouch(&CObstacleEntity::ObsTouch);
 	
-	AddSolidFlags(FSOLID_TRIGGER);
-
+	//AddSolidFlags(FSOLID_TRIGGER);
 	touching.Purge();
 }
 
-void CObstacleEntity::DmgThink(void) {
-	int i;
+void CObstacleEntity::ObsTouch(CBaseEntity *e) {
 	trace_t tr;
 	CHL2MP_Player *p;
 	EHANDLE ent;
 	Vector dir;
 	Vector endpos;
 
-	SetNextThink(gpGlobals->curtime + OBSTACLE_ACTIVE_THINK_INVERVAL);
-	
-	for (i = 0; i < touching.Count(); i++) {
-		ent = touching[i];
-		p = dynamic_cast<CHL2MP_Player *>(ent.Get());
+	p = dynamic_cast<CHL2MP_Player *>(e);
 
-		if (!ent || !p || p->GetTeamNumber() == GetTeamNumber()) {
-			touching.Remove(i);
-		} else {
-			endpos = p->GetAbsOrigin();
-			dir = endpos - GetAbsOrigin();
+	if (p) {
+		endpos = p->GetAbsOrigin();
+		dir = endpos - GetAbsOrigin();
 
-			CTakeDamageInfo info(this, this, OBSTACLE_DMG_VALUE, DMG_GENERIC|DMG_ALWAYSGIB);
-			CalculateMeleeDamageForce(&info, dir, endpos, 0.01f);
-			p->DispatchTraceAttack(info, Vector(0,0,1), &tr);
-			ApplyMultiDamage();
-
-		}
+		CTakeDamageInfo info(this, this, OBSTACLE_DMG_VALUE, DMG_GENERIC|DMG_ALWAYSGIB);
+		CalculateMeleeDamageForce(&info, dir, endpos, 0.01f);
+		p->DispatchTraceAttack(info, Vector(0,0,1), &tr);
+		ApplyMultiDamage();
 	}
 
-	if (touching.Count() == 0) {
-		SetThink(NULL);
-	}
-}
-
-void CObstacleEntity::StartTouch(CBaseEntity *e) {
-	CHL2MP_Player *p;
-	EHANDLE ent;
-	ent = e;
-
-	if ((p = dynamic_cast<CHL2MP_Player *>(e)) != NULL && p->GetTeamNumber() != GetTeamNumber()) {
-		if (touching.Find(ent) == touching.InvalidIndex()) {
-			touching.AddToTail(ent);
-		}
-
-		if (touching.Count() == 1) {
-			SetThink(&CObstacleEntity::DmgThink);
-			SetNextThink(OBSTACLE_ACTIVE_THINK_INVERVAL);
-		}
-	}
-
-	BaseClass::StartTouch(e);
-}
-
-void CObstacleEntity::EndTouch(CBaseEntity *e) {
-	EHANDLE ent;
-	ent = e;
-
-	touching.FindAndRemove(ent);
-	if (touching.Count() == 0) {
-		SetThink(NULL);
-	}
-
-	BaseClass::EndTouch(e);
 }
 
 #endif

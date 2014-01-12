@@ -801,7 +801,7 @@ void CFire::SpawnEffect( fireType_e type, float scale )
 			m_takedamage	= DAMAGE_YES;
 
 			// Start burn sound
-			EmitSound( "Fire.Plasma" );
+			//EmitSound( "Fire.Plasma" );
 		}
 		break;
 	}

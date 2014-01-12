@@ -33,9 +33,6 @@ class CMedipadEntity : public CHumanMateriel {
 
 		void InputToggle(inputdata_t &input);
 
-		//bool PlayerIsWaiting(CBasePlayer *p, float *wait_time);
-		//void MakePlayerWait(CBasePlayer *p, float wait_time);
-
 		void HealThink(void);
 		virtual void StartTouch(CBaseEntity *e);
 		virtual void EndTouch(CBaseEntity *e);

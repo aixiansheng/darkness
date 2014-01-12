@@ -14,6 +14,7 @@ gamedir_bigfiles:
 
 updatebin:
 	rsync $(GAMEDST)/bin/*.dll	$(BINDIR)/bin/
+	rsync $(GAMEDST)/maps/*.bsp	$(BINDIR)/maps/
 
 $(DIST):
 	./update_dist.sh $(DIST)

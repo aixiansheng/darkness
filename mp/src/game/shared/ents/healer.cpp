@@ -12,9 +12,6 @@ CHealerEntity::CHealerEntity() : CSpiderMateriel(&spider_items[ITEM_HEALER_IDX])
 }
 
 CHealerEntity::~CHealerEntity() {
-#ifndef CLIENT_DLL
-	touching.Purge();
-#endif
 }
 
 
@@ -22,7 +19,6 @@ CHealerEntity::~CHealerEntity() {
 
 BEGIN_DATADESC(CHealerEntity)
 	DEFINE_THINKFUNC(HealThink),
-	DEFINE_THINKFUNC(HealThrottleThink),
 END_DATADESC()
 
 
@@ -37,82 +33,44 @@ void CHealerEntity::Spawn(void) {
 
 	UTIL_SetSize(this, HEALER_HULL_MIN, HEALER_HULL_MAX);
 
-	touching.Purge();
 	next_gargle = FLT_MAX;
 
 	SetSequence(LookupSequence("idle"));
 	SetPlaybackRate(1.0f);
 	UseClientSideAnimation();
 
-	RegisterThinkContext(HEAL_THROTTLE_CTX);
-	SetContextThink(&CHealerEntity::HealThrottleThink, gpGlobals->curtime + HEAL_THROTTLE_INT, HEAL_THROTTLE_CTX);
-
 	healed_total = 0;
-}
 
-//
-// sphere query, add players to touching list
-// then set think if list is not empty
-//
-void CHealerEntity::HealThrottleThink(void) {
-	CBaseEntity *ent;
-	CHL2MP_Player *p;
-	EHANDLE enth;
-	trace_t tr;
-
-	SetNextThink(gpGlobals->curtime + HEAL_THROTTLE_INT, HEAL_THROTTLE_CTX);
-
-	touching.Purge();
-
-	for (CEntitySphereQuery sphere(GetAbsOrigin(), HEAL_RADIUS); 
-		(ent = sphere.GetCurrentEntity()) != NULL;
-		sphere.NextEntity()) 
-	{
-		UTIL_TraceLine(GetAbsOrigin(), ent->GetAbsOrigin(), MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
-		
-		if (tr.DidHit())
-			continue; // something's in the way
-
-		// only add players on the same team
-		if ((p = dynamic_cast<CHL2MP_Player *>(ent)) != NULL && p->GetTeamNumber() == GetTeamNumber()) {
-			enth = ent;
-
-			if (touching.Find(enth) == touching.InvalidIndex()) {
-				touching.AddToTail(enth);
-			}
-		}
-
-	}
-
-	if (touching.Count() > 0) {
-		SetThink(&CHealerEntity::HealThink);
-		SetNextThink(gpGlobals->curtime);
-	} else {
-		SetThink(NULL);
-	}
-
+	SetThink(&CHealerEntity::HealThink);
+	SetNextThink(gpGlobals->curtime + HEALER_THINK_INTERVAL);
 }
 
 void CHealerEntity::HealThink(void) {
-	int i;
 	int before, after;
 	trace_t tr;
 	CHL2MP_Player *p;
-	EHANDLE ent;
+	CBaseEntity *ent;
 	CSoundParameters params;
 	EmitSound_t ep;
 	Vector vecOrigin;
 
-	SetNextThink(gpGlobals->curtime + HEALER_ACTIVE_THINK_INVERVAL);
+	SetNextThink(gpGlobals->curtime + HEALER_THINK_INTERVAL);
 	
-	for (i = 0; i < touching.Count(); i++) {
-		ent = touching[i];
-		if (ent) {
-			p = dynamic_cast<CHL2MP_Player *>(ent.Get());
-			if (p) {
+	for (CEntitySphereQuery sphere(GetAbsOrigin(), HEALER_RADIUS);
+		(ent = sphere.GetCurrentEntity()) != NULL;
+		sphere.NextEntity())
+	{
+		UTIL_TraceLine(GetAbsOrigin() + Vector(0,0,10), ent->GetAbsOrigin(), MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+	
+		if (tr.DidHit() && tr.m_pEnt && tr.m_pEnt->edict() != ent->edict())
+			continue;
+
+		p = dynamic_cast<CHL2MP_Player *>(ent);
+
+		if (p && p->GetTeamNumber() == TEAM_SPIDERS) {
+			if (active) {
 				before = p->GetHealth();
 				p->TakeHealth(HEALER_HEAL_VALUE, DMG_GENERIC);
-				p->IncrementArmorValue(HEALER_HEAL_VALUE, p->GetMaxArmor());
 				after = p->GetHealth();
 
 				if (after - before > 0) {
@@ -122,16 +80,15 @@ void CHealerEntity::HealThink(void) {
 					// give creator frags for maintaining a useful medipad every 100 pts of healing
 					//
 
-					if (healed_total % 75 == 0 && GetCreator() && GetCreator()->GetTeamNumber() == GetTeamNumber()) {
+					if (healed_total % 100 == 0 && GetCreator() && GetCreator()->GetTeamNumber() == GetTeamNumber()) {
 						GetCreator()->IncrementFragCount(1);
 					}
 				}
-
-
 			}
+
 		}
 	}
-	
+
 	if (next_gargle < gpGlobals->curtime) {
 		next_gargle = gpGlobals->curtime + HEALER_GARGLE_INTERVAL;
 

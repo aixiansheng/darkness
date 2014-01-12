@@ -244,6 +244,8 @@ void CWeaponBreeder::SecondaryAttack(void) {
 #endif
 }
 
+int foo = 0;
+
 //
 // Use Secondary o show build menu
 //
@@ -353,7 +355,7 @@ void CWeaponBreeder::MakeItem(int idx) {
 
 		case ITEM_OBSTACLE_IDX:
 
-			UTIL_TraceHull(dst, dst, OBSTACLE_HULL_MIN, OBSTACLE_HULL_MAX, MASK_SOLID, NULL, &tr);
+			UTIL_TraceHull(dst - (fwd * 20), dst - (fwd * 20), OBSTACLE_HULL_MIN, OBSTACLE_HULL_MAX, MASK_SHOT, NULL, &tr);
 			if (tr.DidHit()) {
 				WeaponSound(EMPTY);
 				break;
@@ -389,7 +391,7 @@ void CWeaponBreeder::MakeItem(int idx) {
 
 		case ITEM_SPIKER_IDX:
 
-			UTIL_TraceHull(dst, dst, SPIKER_HULL_MIN, SPIKER_HULL_MAX, MASK_SOLID, NULL, &tr);
+			UTIL_TraceHull(dst - (fwd * 20), dst - (fwd * 20), SPIKER_HULL_MIN, SPIKER_HULL_MAX, MASK_SOLID, NULL, &tr);
 			if (tr.DidHit()) {
 				WeaponSound(EMPTY);
 				break;

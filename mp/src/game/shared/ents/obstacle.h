@@ -13,11 +13,7 @@
 	#include "team.h"
 #endif
 
-
-#define OBSTACLE_DMG_VALUE 400.0f
-#define OBSTACLE_DMG_INTERVAL 0.1f
-#define OBSTACLE_INACTIVE_THINK_INTERVAL 0.3f
-#define OBSTACLE_ACTIVE_THINK_INVERVAL 0.1f
+#define OBSTACLE_DMG_VALUE 200.0f
 
 class CObstacleEntity : public CSpiderMateriel {
 	public:
@@ -32,10 +28,7 @@ class CObstacleEntity : public CSpiderMateriel {
 
 		void Spawn(void);
 		void Precache(void);
-
-		void DmgThink(void);
-		void StartTouch(CBaseEntity *e);
-		void EndTouch(CBaseEntity *e);
+		void ObsTouch(CBaseEntity *e);
 
 	private:
 		CUtlVector<EHANDLE> touching;

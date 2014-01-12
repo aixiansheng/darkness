@@ -14,6 +14,7 @@
 #include "in_buttons.h"
 #include "vstdlib/random.h"
 #include "npcevent.h"
+#include "ents/materiel.h"
 
 #if defined( CLIENT_DLL )
 	#include "c_hl2mp_player.h"
@@ -29,7 +30,7 @@
 
 #define	PLASMA_CANON_REFIRE			0.6f
 #define PLASMA_CANON_STAGGER		0.2f
-#define PLASMA_BOLT_DMG				35.0f
+#define PLASMA_BOLT_DMG				24.0f
 #define PLASMA_BOLT_DURATION		4.0f
 
 #define PLASMA_BOLT_RADIUS			85.0f
@@ -246,7 +247,7 @@ unsigned int CPlasmaBolt::PhysicsSolidMaskForEntity( void ) const {
 }
 
 void CPlasmaBolt::BoltTouch( CBaseEntity *pOther ) {
-
+	CMateriel *mat;
 	//
 	// plasma bolts under water--nah!
 	//
@@ -256,7 +257,9 @@ void CPlasmaBolt::BoltTouch( CBaseEntity *pOther ) {
 	//
 
 	if (pOther->IsSolidFlagSet(FSOLID_TRIGGER|FSOLID_VOLUME_CONTENTS)  && 
-		pOther->GetCollisionGroup() != COLLISION_GROUP_WEAPON) {
+		pOther->GetCollisionGroup() != COLLISION_GROUP_WEAPON &&
+		pOther->IsPlayer() == false &&
+		(mat = dynamic_cast<CMateriel *>(pOther)) == NULL) {
 		// triggers for doors fall into this category...
 		return;
 	}

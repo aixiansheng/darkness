@@ -29,7 +29,7 @@ typedef struct item_info_t item_info_t;
 #define TELEPORTER_VALUE	40
 #define AMMO_CRATE_VALUE	60
 #define MEDIPAD_VALUE		70
-#define MINE_VALUE			80
+#define MINE_VALUE			30
 #define SMG_TURRET_VALUE	40
 #define MSL_TURRET_VALUE	60
 #define DETECTOR_VALUE		20
@@ -138,8 +138,8 @@ typedef struct item_info_t item_info_t;
 #define EGG_HULL_MAX Vector(14,14,35)
 #define HEALER_HULL_MIN -Vector(15,15,0)
 #define HEALER_HULL_MAX Vector(15,15,22)
-#define OBSTACLE_HULL_MIN -Vector(6,6,15)
-#define OBSTACLE_HULL_MAX Vector(6,6,15)
+#define OBSTACLE_HULL_MIN -Vector(6.3f, 8.7f, 14.2f)
+#define OBSTACLE_HULL_MAX Vector(8.6f, 6.5f, 5.5f)
 #define SPIKER_HULL_MIN	-Vector(10,10,25)
 #define SPIKER_HULL_MAX Vector(10,10,13)
 #define GASSER_HULL_MIN -Vector(4,4,4)

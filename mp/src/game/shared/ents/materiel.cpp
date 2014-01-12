@@ -64,6 +64,17 @@ void CMateriel::Precache(void) {
 	BaseClass::Precache();
 }
 
+void CMateriel::EndTouch(CBaseEntity *e) {
+	CBaseEntity *groundEnt;
+
+	groundEnt = GetGroundEntity();
+	if (groundEnt && groundEnt->edict() == e->edict()) {
+		SetGroundEntity(NULL);
+	}
+
+	BaseClass::EndTouch(e);
+}
+
 void CMateriel::Spawn(void) {
 	Vector origin;
 	CSoundParameters params;

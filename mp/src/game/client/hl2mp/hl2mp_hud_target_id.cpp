@@ -157,6 +157,10 @@ void CTargetID::Paint()
 
 		if ( IsPlayerIndex( iEntIndex ))
 		{
+			if (p->GetTeamNumber() != pLocalPlayer->GetTeamNumber()) {
+				return;
+			}
+
 			if (p->GetTeamNumber() == TEAM_SPIDERS &&
 				p->m_iClassNumber == CLASS_GUARDIAN_IDX &&
 				p->IsStopped() == true) {

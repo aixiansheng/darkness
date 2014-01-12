@@ -1,7 +1,11 @@
 ROADMAP
 =================
 
-[[[[ REL 1.3 ]]]]
+[[[[ 1.3.1 ]]]]
+
+- only check in VPC files
+
+- hatchy sees thru stairs
 
 = refactor OnTakeDamage, also random buff/nerfs =
 
@@ -13,6 +17,8 @@ ROADMAP
 - medic + flare			(12h)
 
 - spider glow			(2h, use dlight_t)
+
+- need a small map
 
 [[[[ REL 1.4 ]]]]
 

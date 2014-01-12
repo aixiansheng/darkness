@@ -19,7 +19,7 @@
 
 #define EXPMINE_RADIUS 300
 #define EXPMINE_DAMAGE 300
-#define EXPMINE_THINK_INTERVAL 0.1f
+#define EXPMINE_THINK_INTERVAL 0.05f
 #define EXPMINE_ARM_TIME 3.0f
 
 class CExpMineEntity : public CHumanMateriel {

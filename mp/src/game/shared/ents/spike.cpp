@@ -41,7 +41,7 @@ void CSpike::SpikeTouch(CBaseEntity *other) {
 
 		SetSolid(SOLID_NONE);
 
-		CTakeDamageInfo info(this, GetOwnerEntity(), GetAbsVelocity(), GetAbsOrigin(), SPIKE_DAMAGE, DMG_SLASH | DMG_ALWAYSGIB);
+		CTakeDamageInfo info(this, GetOwnerEntity(), GetAbsVelocity(), GetAbsOrigin(), spikeDamage, DMG_SLASH | DMG_ALWAYSGIB);
 		CalculateMeleeDamageForce(&info, forward, tr.endpos, 0.5f);
 		other->DispatchTraceAttack(info, forward, &tr);
 		ApplyMultiDamage();
@@ -80,6 +80,8 @@ void CSpike::Spawn(void) {
 	SetMoveType(MOVETYPE_NONE);
 	BaseClass::Spawn();
 
+	spikeDamage = 20.0f;
+
 	AddEffects(EF_NOSHADOW);
 }
 
@@ -92,6 +94,8 @@ void CSpike::FireAt(Vector v) {
 
 CSpike *Spike_Create( const Vector &position, const QAngle &angles, const Vector &velocity, CBaseEntity *pOwner, float damage, bool fire_now) {
 	CSpike *s = (CSpike *)CBaseEntity::Create( "ent_spike", position, angles, pOwner );
+
+	s->spikeDamage = damage;
 
 	if (fire_now) {
 		s->FireAt(velocity);

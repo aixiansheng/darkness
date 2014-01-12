@@ -136,6 +136,7 @@ void CWeaponPlasmaRifle::FireRifle(void) {
 
 		#ifndef CLIENT_DLL
 		pHL2MPPlayer->PlasmaShot();
+		pHL2MPPlayer->PlasmaShot();
 		#endif
 	}
 

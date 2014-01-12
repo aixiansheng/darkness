@@ -43,6 +43,7 @@ public:
 	virtual void Precache(void);
 	virtual CHL2MP_Player *GetCreator(void);
 	virtual void SetCreator(CHL2MP_Player *player);
+	virtual void EndTouch(CBaseEntity *e);
 
 	CNetworkVar(bool, active);
 

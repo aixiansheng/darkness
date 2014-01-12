@@ -13,17 +13,12 @@
 	#include "team.h"
 #endif
 
-#define HEALER_HEAL_VALUE 1.0f
-#define HEALER_HEAL_INTERVAL 0.3f
-#define HEALER_INACTIVE_THINK_INTERVAL 1.0f
-#define HEALER_ACTIVE_THINK_INVERVAL 0.3f
+#define HEALER_HEAL_VALUE		1.0f
+#define HEALER_THINK_INTERVAL	0.5f
 
 #define HEALER_GARGLE_SOUND "Healer.Gargle"
 #define HEALER_GARGLE_INTERVAL 3.0f
-
-#define HEAL_THROTTLE_CTX "heal_throttle"
-#define HEAL_THROTTLE_INT 1.5f
-#define HEAL_RADIUS 64.0f
+#define HEALER_RADIUS 64.0f
 
 class CHealerEntity : public CSpiderMateriel {
 	public:
@@ -38,14 +33,11 @@ class CHealerEntity : public CSpiderMateriel {
 
 		virtual void Spawn(void);
 		virtual void Precache(void);
-
-		void HealThink(void);
-		void HealThrottleThink(void);
+		virtual void HealThink(void);
 
 		float next_gargle;
 		unsigned int healed_total;
 
-		CUtlVector<EHANDLE> touching;
 #endif
 
 		

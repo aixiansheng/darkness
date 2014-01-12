@@ -20,7 +20,11 @@ public:
 	void	Precache(void);
 	void	SpikeTouch(CBaseEntity *other);
 	void	FireAt(Vector v);
+
 #endif
+
+public:
+	float	spikeDamage;
 
 };
 

@@ -7,8 +7,8 @@
 #define SMG_TURRET_HEAD_MODEL "models/turret_head.mdl"
 #define SMG_TURRET_DETECT_INTERVAL 0.3f
 #define SMG_TURRET_DETECT_RADIUS 400
-#define SMG_TURRET_SHOT_DELAY 0.1f
-#define SMG_TURRET_DAMAGE 6
+#define SMG_TURRET_SHOT_DELAY 0.11f
+#define SMG_TURRET_DAMAGE 5
 
 #define TURRET_ACQUIRE_TARGET_SND	"Turret.AcquirePlayer"
 #define TURRET_LOSE_TARGET_SND		"Turret.LosePlayer"

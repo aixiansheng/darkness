@@ -74,7 +74,7 @@ void CExpMineEntity::DetectThink(void) {
 
 	SetNextThink(gpGlobals->curtime + EXPMINE_THINK_INTERVAL);
 	
-	UTIL_TraceLine(GetAbsOrigin(), endpos, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+	UTIL_TraceLine(GetAbsOrigin(), endpos, MASK_SOLID, this, COLLISION_GROUP_NONE, &tr);
 	
 	if (tr.DidHit() && 
 		tr.endpos != endpos && 
@@ -95,6 +95,10 @@ void CExpMineEntity::DetectThink(void) {
 			NULL
 		);
 
+		if (laser) {
+			UTIL_Remove(laser);
+		}
+
 		UTIL_Remove(this);
 	}
 }
@@ -108,7 +112,7 @@ void CExpMineEntity::SetupThink(void) {
 
 	endpos = GetAbsOrigin() + (surfaceNorm * 4096);
 
-	UTIL_TraceLine(GetAbsOrigin(), endpos, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+	UTIL_TraceLine(GetAbsOrigin(), endpos, MASK_SOLID, this, COLLISION_GROUP_DEBRIS, &tr);
 
 	laser = CBeam::BeamCreate( MINE_BEAM_SPRITE, MINE_BEAM_WIDTH );
 	if (laser == NULL) {

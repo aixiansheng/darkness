@@ -57,8 +57,6 @@ void CTeleporterEntity::Spawn(void) {
 	spawnpoint->SetAbsOrigin(GetAbsOrigin());
 	spawnpoint->SetAbsAngles(GetAbsAngles());
 	spawnpoint->SetParent(this);
-
-	EnableEntity();
 }
 
 //
@@ -73,7 +71,7 @@ void CTeleporterEntity::StartTouch(CBaseEntity *e) {
 	if (mat) {
 		t = dynamic_cast<CTeleporterEntity *>(mat);
 		if (t) {
-			// the bottom-mose teleporter wins
+			// the bottom-most teleporter wins
 			if (t->GetAbsOrigin().z < GetAbsOrigin().z)
 				return;
 		}
@@ -152,14 +150,17 @@ void CTeleporterEntity::SpawnSound(void) {
 }
 
 void CTeleporterEntity::EnableEntity(void) {
-	//DispatchParticleEffect(TELEPORTER_SPRITE, GetAbsOrigin(), GetAbsAngles(), this);
-	GetTeam()->AddSpawnpoint(SpawnPoint());
-	BaseClass::EnableEntity();
+	if (active == false) {
+		GetTeam()->AddSpawnpoint(SpawnPoint());
+		BaseClass::EnableEntity();
+	}
 }
 
 void CTeleporterEntity::DisableEntity(void) {
-	GetTeam()->RemoveSpawnpoint(SpawnPoint());
-	BaseClass::DisableEntity();
+	if (active == true) {
+		GetTeam()->RemoveSpawnpoint(SpawnPoint());
+		BaseClass::DisableEntity();
+	}
 }
 
 #else

@@ -46,7 +46,7 @@ public:
 	void	SetTimer( float detonateDelay, float warnDelay );
 	void	SetVelocity( const Vector &velocity, const AngularImpulse &angVelocity );
 	int		OnTakeDamage( const CTakeDamageInfo &inputInfo );
-	void	BlipSound() { EmitSound( "Grenade.Blip" ); }
+	void	BlipSound() {}
 	void	DelayThink(void);
 	void	SpewThink(void);
 	void	VPhysicsUpdate( IPhysicsObject *pPhysics );

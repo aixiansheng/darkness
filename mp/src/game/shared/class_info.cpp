@@ -40,22 +40,22 @@ static HL2MPViewVectors breeder_vectors(
 );
 
 static HL2MPViewVectors hatchy_vectors(
-	Vector( 0, 0, 11 ),       //VEC_VIEW (m_vView) 
+	Vector( 0, 0, 13 ),       //VEC_VIEW (m_vView) 
 							  
-	Vector(-13, -13, 0 ),	  //VEC_HULL_MIN (m_vHullMin)
-	Vector( 13,  13,  13 ),	  //VEC_HULL_MAX (m_vHullMax)
+	Vector(-15, -15, 0 ),	  //VEC_HULL_MIN (m_vHullMin)
+	Vector( 15,  15,  15 ),	  //VEC_HULL_MAX (m_vHullMax)
 							  					
-	Vector(-13, -13, 0 ),	  //VEC_DUCK_HULL_MIN (m_vDuckHullMin)
-	Vector( 13,  13,  13 ),	  //VEC_DUCK_HULL_MAX	(m_vDuckHullMax)
-	Vector( 0, 0, 11 ),		  //VEC_DUCK_VIEW		(m_vDuckView)
+	Vector(-15, -15, 0 ),	  //VEC_DUCK_HULL_MIN (m_vDuckHullMin)
+	Vector( 15,  15,  15 ),	  //VEC_DUCK_HULL_MAX	(m_vDuckHullMax)
+	Vector( 0, 0, 13 ),		  //VEC_DUCK_VIEW		(m_vDuckView)
 							  					
-	Vector(-13, -13, -13 ),	  //VEC_OBS_HULL_MIN	(m_vObsHullMin)
-	Vector( 13,  13,  13 ),	  //VEC_OBS_HULL_MAX	(m_vObsHullMax)
+	Vector(-15, -15, -15 ),	  //VEC_OBS_HULL_MIN	(m_vObsHullMin)
+	Vector( 15,  15,  15 ),	  //VEC_OBS_HULL_MAX	(m_vObsHullMax)
 							  					
-	Vector( 0, 0, 11 ),		  //VEC_DEAD_VIEWHEIGHT (m_vDeadViewHeight)
+	Vector( 0, 0, 13 ),		  //VEC_DEAD_VIEWHEIGHT (m_vDeadViewHeight)
 
-	Vector(-13, -13, 0 ),	  //VEC_CROUCH_TRACE_MIN (m_vCrouchTraceMin)
-	Vector( 13,  13,  13 )	  //VEC_CROUCH_TRACE_MAX (m_vCrouchTraceMax)
+	Vector(-15, -15, 0 ),	  //VEC_CROUCH_TRACE_MIN (m_vCrouchTraceMin)
+	Vector( 15,  15,  15 )	  //VEC_CROUCH_TRACE_MAX (m_vCrouchTraceMax)
 );
 
 static HL2MPViewVectors drone_vectors(

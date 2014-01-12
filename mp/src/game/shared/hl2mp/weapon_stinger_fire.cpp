@@ -196,7 +196,7 @@ void CWeaponStingerFire::PrimaryAttack(void) {
 
 	owner->EyeVectors(&fwd, &right, &up);
 	muzzle = owner->Weapon_ShootPosition() + fwd * 12.0f;
-	muzzle.z -= 20.0f;
+	muzzle.z -= 8.0f;
 
 	VectorAngles(fwd, angles);
 

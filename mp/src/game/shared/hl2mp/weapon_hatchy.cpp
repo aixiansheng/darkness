@@ -34,9 +34,9 @@
 #define BOLT_MODEL			"models/crossbow_bolt.mdl"
  
 #define BOLT_VELOCITY		3000
-#define PLAYER_FLY_VELOCITY	600
+#define PLAYER_FLY_VELOCITY	650
 #define PLAYER_SLOW_FLY		200
-#define MIN_DISTANCE		25.0
+#define MIN_DISTANCE		30.0f
 
 #define KAMI_DAMAGE			500
 #define KAMI_RADIUS			500

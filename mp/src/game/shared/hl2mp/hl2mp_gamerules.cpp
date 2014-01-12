@@ -387,7 +387,7 @@ void CHL2MPRules::Think( void )
 			CBasePlayer *p = UTIL_PlayerByIndex(i);
 			int team;
 
-			if (p && !(p->IsDead())) {
+			if (p && p->IsAlive()) {
 				team = p->GetTeamNumber();
 				if (team == TEAM_SPIDERS)
 					num_spiders++;
