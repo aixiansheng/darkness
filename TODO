@@ -1,40 +1,30 @@
 ROADMAP
 =================
 
-[[[[ 1.4 ]]]]
+Release 1.5:
 
-- only check in VPC files
+	- only check in VPC files
+	- hatchy sees thru stairs
+	= refactor OnTakeDamage, also random buff/nerfs =
+	- wraith			(12h)
+	- medic + flare			(12h)
+	- need a small map
 
-- hatchy sees thru stairs
+Release 1.6:
 
-= refactor OnTakeDamage, also random buff/nerfs =
+	- Spectator mode crash?
+	- Player quit crash?
+	- contact valvetime after release
+	- gameplay videos
+	- make guardian infestation use ragdolls
+	- humans glow better
+	- fix player animations, remove aim_yaw/aim_pitch negation in hl2mp_player_shared.cpp
+	- better textures for models (bump maps, etc)
+	- HUD font size too big
+	- more maps
 
-- wraith			(12h)
-- medic + flare			(12h)
+Release 1.7:
 
-- need a small map
+	- make better use of VPC to add files to projects
+	  so that the repo becomes more portable
 
-[[[[ REL 1.5 ]]]]
-
-- Spectator mode crash?
-- Player quit crash?
-
-- contact valvetime after release
-- gameplay videos
-
-- make guardian infestation use ragdolls
-- humans glow better
-- fix player animations, remove aim_yaw/aim_pitch negation in hl2mp_player_shared.cpp
-- better textures for models (bump maps, etc)
-
-- HUD font size too big
-
-- more maps
-
-[[[[ REL 1.6 ]]]]
-
-- make better use of VPC to add files to projects
-  so that the repo becomes more portable
-
-
-[[[[ REL X.Y ]]]]
