@@ -1,8 +1,25 @@
 ROADMAP
 =================
 
+- Credits button (when more than one person)
+- Guardian stealth indicator (screen fade?)
+- mech crush hachy/kami w/out landing on them (Dot prod at touch: fwd x dir, must be on ground)
+- hatchy = 1 shot by pistol
+- hatchy = 2 shot by smg (done?)
+- bunny hopping
+
+
+BUGS:
+- jump/crouch view glitching on laggy server?
+- video mode change crash
+- video mode change = crosshair messed up
+- change server w/out disconnect crash
+- acid/smoke causing lag on slow systems
+
+
 Release 1.5:
 
+	- add Create Server link on main menu
 	- detector glowing effect
 	- only check in VPC files
 	- hatchy sees thru stairs

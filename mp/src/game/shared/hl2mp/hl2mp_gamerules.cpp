@@ -837,14 +837,15 @@ void CHL2MPRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 		}
 		else
 		{
-			if ( Q_stristr( szModelName, "models/human") )
-			{
-				pHL2Player->ChangeTeam( TEAM_HUMANS );
-			}
-			else
-			{
-				pHL2Player->ChangeTeam( TEAM_SPIDERS );
-			}
+			pHL2Player->ChangeTeam(TEAM_UNASSIGNED);
+			//if ( Q_stristr( szModelName, "models/human") )
+			//{
+			//	pHL2Player->ChangeTeam( TEAM_HUMANS );
+			//}
+			//else
+			//{
+			//	pHL2Player->ChangeTeam( TEAM_SPIDERS );
+			//}
 		}
 	}
 	if ( sv_report_client_settings.GetInt() == 1 )

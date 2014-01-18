@@ -61,6 +61,7 @@ CClassMenu::CClassMenu(IViewPort *pViewPort) : Frame(NULL, PANEL_CLASS)
 	m_pViewPort = pViewPort;
 	m_iScoreBoardKey = BUTTON_CODE_INVALID; // this is looked up in Activate()
 	m_iTeam = 0;
+	m_iPoints = 0;
 
 	// initialize dialog
 	SetTitle("", true);
@@ -120,9 +121,9 @@ void CClassMenu::OnCommand( const char *command )
 		// They entered a command to change their class, kill them so they spawn with 
 		// the new class right away
 
-		if ( hud_classautokill.GetBool() ) {
-            engine->ClientCmd( "kill" );
-		}
+		//if ( hud_classautokill.GetBool() ) {
+  //          engine->ClientCmd( "kill" );
+		//}
 #endif // !CSTRIKE_DLL && !TF_CLIENT_DLL
 	}
 
@@ -282,13 +283,16 @@ void CClassMenu::SetLabelText(const char *textEntryName, const char *text) {
 
 void CClassMenu::OnThink(void) {
 	int team;
+	int points;
 	C_HL2MP_Player *player;
 
 	player = C_HL2MP_Player::GetLocalHL2MPPlayer();
 	if (player) {
 		team = player->GetTeamNumber();
-		if (team != m_iTeam) {
+		points = player->GetPlayerPoints();
+		if (team != m_iTeam || points != m_iPoints) {
 			m_iTeam = team;
+			m_iPoints = points;
 			if (IsVisible()) {
 				Update();
 			}

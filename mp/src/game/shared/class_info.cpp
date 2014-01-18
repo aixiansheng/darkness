@@ -390,7 +390,7 @@ class_info_t dk_spider_classes[NUM_SPIDER_CLASSES] = {
 		WEAPON_NULL,
 		GRENADE_ACID,
 		WEAPON_ACID_GREN,
-		2, 
+		3, 
 		STINGER_SPEED, 
 		STINGER_NAME,
 		STINGER_MODEL,

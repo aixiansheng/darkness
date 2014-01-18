@@ -13,7 +13,8 @@
 	#include "team.h"
 #endif
 
-#define OBSTACLE_DMG_VALUE 200.0f
+#define OBSTACLE_DMG_VALUE 100.0f
+#define OBSTACLE_TOUCH_INT 0.2f
 
 class CObstacleEntity : public CSpiderMateriel {
 	public:
@@ -32,6 +33,8 @@ class CObstacleEntity : public CSpiderMateriel {
 
 	private:
 		CUtlVector<EHANDLE> touching;
+
+		float m_flNextTouch;
 #endif
 
 };

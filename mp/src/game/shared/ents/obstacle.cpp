@@ -36,6 +36,7 @@ void CObstacleEntity::Spawn(void) {
 	
 	//AddSolidFlags(FSOLID_TRIGGER);
 	touching.Purge();
+	m_flNextTouch = 0.0f;
 }
 
 void CObstacleEntity::ObsTouch(CBaseEntity *e) {
@@ -48,13 +49,17 @@ void CObstacleEntity::ObsTouch(CBaseEntity *e) {
 	p = dynamic_cast<CHL2MP_Player *>(e);
 
 	if (p) {
-		endpos = p->GetAbsOrigin();
-		dir = endpos - GetAbsOrigin();
 
-		CTakeDamageInfo info(this, this, OBSTACLE_DMG_VALUE, DMG_GENERIC|DMG_ALWAYSGIB);
-		CalculateMeleeDamageForce(&info, dir, endpos, 0.01f);
-		p->DispatchTraceAttack(info, Vector(0,0,1), &tr);
-		ApplyMultiDamage();
+		if (m_flNextTouch < gpGlobals->curtime) {
+			m_flNextTouch = gpGlobals->curtime + OBSTACLE_TOUCH_INT;
+			endpos = p->GetAbsOrigin();
+			dir = endpos - GetAbsOrigin();
+
+			CTakeDamageInfo info(this, this, OBSTACLE_DMG_VALUE, DMG_GENERIC|DMG_ALWAYSGIB);
+			CalculateMeleeDamageForce(&info, dir, endpos, 0.01f);
+			p->DispatchTraceAttack(info, Vector(0,0,1), &tr);
+			ApplyMultiDamage();
+		}
 	}
 
 }

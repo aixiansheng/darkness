@@ -72,6 +72,7 @@ void CHealerEntity::HealThink(void) {
 				before = p->GetHealth();
 				p->TakeHealth(HEALER_HEAL_VALUE, DMG_GENERIC);
 				after = p->GetHealth();
+				p->RefilAmmo(false);
 
 				if (after - before > 0) {
 					healed_total += (after - before);

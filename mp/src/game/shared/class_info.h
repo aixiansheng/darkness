@@ -46,7 +46,7 @@ typedef struct class_info_t class_info_t;
 #define NUM_SPIDER_CLASSES	7
 
 #define HATCHY_DAMAGE		60.0f
-#define HATCHY_HIT_RATE		0.5f
+#define HATCHY_HIT_RATE		0.4f
 
 // WRAITH / MEDIC?
 

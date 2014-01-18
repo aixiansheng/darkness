@@ -213,6 +213,7 @@ public:
 
 	virtual void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper);
 
+	void GivePackItem(int item);
 	void TogglePackIdx(void);
 	void UsePackItem(void);
 	void UseItem(int idx);
@@ -268,6 +269,8 @@ private:
 
 	float m_flNextHitTime;
 	float last_spit_hit;
+
+	float m_flNextRefilTime;
 
 	float m_flNextGrenadeTime;
 	CNetworkVar(int, grenade_type);

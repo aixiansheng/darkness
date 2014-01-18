@@ -13,7 +13,7 @@
 
 
 
-#define DRONE_SPIT_TIME		1.0f
+#define DRONE_SPIT_TIME		0.7f
 #define DRONE_SPIT_CTX		"drone_spit_ctx"
 
 

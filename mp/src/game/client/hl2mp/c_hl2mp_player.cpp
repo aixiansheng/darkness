@@ -281,7 +281,8 @@ void C_HL2MP_Player::UpdateLookAt( void )
 void C_HL2MP_Player::ClientThink( void )
 {
 	bool bFoundViewTarget = false;
-	
+	C_HL2MP_Player *local;
+
 	Vector vForward;
 	AngleVectors( GetLocalAngles(), &vForward );
 
@@ -319,7 +320,8 @@ void C_HL2MP_Player::ClientThink( void )
 
 	UpdateIDTarget();
 
-	if (bugGlow) {
+	local = GetLocalHL2MPPlayer();
+	if (bugGlow && local && local == this) {
 		dlight_t *dl = effects->CL_AllocDlight(index);
 		dl->origin = GetAbsOrigin();
 		dl->color.r = 10;

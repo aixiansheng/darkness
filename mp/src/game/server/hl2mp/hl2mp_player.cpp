@@ -94,6 +94,7 @@ IMPLEMENT_SERVERCLASS_ST(CHL2MP_Player, DT_HL2MP_Player)
 //	SendPropExclude( "DT_AnimTimeMustBeFirst" , "m_flAnimTime" ),
 
 	SendPropInt( SENDINFO( grenade_type ), 6 ),
+	SendPropInt( SENDINFO( m_iPlayerPoints ), 4, SPROP_UNSIGNED),
 	
 	SendPropInt( SENDINFO( m_iClassNumber), 5),
 	SendPropBool( SENDINFO( stopped) ),
@@ -712,6 +713,8 @@ void CHL2MP_Player::GiveAllItems( void )
 	
 }
 
+#define GRENADE_REFIL_TIMEOUT 20.0f
+
 //
 // small = engy fix hit
 // not small = ammo crate/etc
@@ -732,13 +735,22 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 		if (Q_strcmp(dk_spider_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
 			CBasePlayer::GiveAmmo(999, dk_spider_classes[m_iClassNumber].sec_ammo);
 
-		if (Q_strcmp(dk_spider_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
-			CBasePlayer::GiveAmmo(dk_spider_classes[m_iClassNumber].max_grenades, dk_spider_classes[m_iClassNumber].grenade_type);
+		if (m_flNextRefilTime < gpGlobals->curtime) {
+			m_flNextRefilTime = gpGlobals->curtime + GRENADE_REFIL_TIMEOUT;
+
+			if (Q_strcmp(dk_spider_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
+				CBasePlayer::GiveAmmo(dk_spider_classes[m_iClassNumber].max_grenades, dk_spider_classes[m_iClassNumber].grenade_type);
+		}
 
 		break;
 
 	case TEAM_HUMANS:
 		if (small == false) {
+
+			//
+			// This is an ammo crate use
+			//
+
 			if (m_iClassNumber != CLASS_EXTERMINATOR_IDX) { // plasma isn't given
 
 				if (m_iClassNumber == CLASS_MECH_IDX) {
@@ -756,13 +768,19 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 			if (Q_strcmp(dk_human_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
 				CBasePlayer::GiveAmmo(999, dk_human_classes[m_iClassNumber].sec_ammo);
 
-			if (Q_strcmp(dk_human_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
-				CBasePlayer::GiveAmmo(dk_human_classes[m_iClassNumber].max_grenades, dk_human_classes[m_iClassNumber].grenade_type);
+			if (m_flNextRefilTime < gpGlobals->curtime) {
+				m_flNextRefilTime = gpGlobals->curtime + GRENADE_REFIL_TIMEOUT;
 
-			// shock trooper's extra shells are special :)
-			if (m_iClassNumber == CLASS_SHOCK_IDX) {
-				if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
-					CBasePlayer::GiveAmmo(3, "xp_shells");
+				if (Q_strcmp(dk_human_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
+					CBasePlayer::GiveAmmo(dk_human_classes[m_iClassNumber].max_grenades, dk_human_classes[m_iClassNumber].grenade_type);
+
+				// shock trooper's extra shells are special :)
+				if (m_iClassNumber == CLASS_SHOCK_IDX) {
+					if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
+						CBasePlayer::GiveAmmo(3, "xp_shells");
+				}
+
+				GivePackItem(PACK_ITEM_TYPE_HEALTH);
 			}
 
 		} else {
@@ -823,9 +841,9 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 void CHL2MP_Player::GiveDefaultItems( void ) {
 	EquipSuit();
 
-	pack_item_0 = 0;
-	pack_item_1 = 0;
-	pack_item_2 = 0;
+	pack_item_0 = -1;
+	pack_item_1 = -1;
+	pack_item_2 = -1;
 	pack_item_idx = -1;
 
 	pri_weapon = NULL;
@@ -897,8 +915,7 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 			CBasePlayer::GiveAmmo(3, "xp_shells");
 		}
 
-		pack_item_0 = PACK_ITEM_TYPE_HEALTH;
-		pack_item_idx = 0;
+		GivePackItem(PACK_ITEM_TYPE_HEALTH);
 
 		break;
 
@@ -927,6 +944,11 @@ bool CHL2MP_Player::ShowSpawnHint(void) {
 //-----------------------------------------------------------------------------
 void CHL2MP_Player::Spawn(void)
 {
+	pack_item_0 = -1;
+	pack_item_1 = -1;
+	pack_item_2 = -1;
+	pack_item_idx = -1;
+
 	showSpawnHint = true;
 	next_ammo_pickup = 0.0f;
 	m_flNextModelChangeTime = 0.0f;
@@ -1008,6 +1030,8 @@ void CHL2MP_Player::Spawn(void)
 
 	next_infestation = 0.0f;
 	attackMotion = false;
+
+	m_flNextRefilTime = 0.0f;
 
 	CSingleUserRecipientFilter user(this);
 	UserMessageBegin(user, "Points");
@@ -1234,20 +1258,27 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 	Slash(other, false);
 
 	if (other == GetGroundEntity()) {
-		if (other->IsPlayer() &&
-			GetTeamNumber() == TEAM_SPIDERS &&
-			other->GetTeamNumber() == TEAM_HUMANS &&
-			m_iClassNumber == CLASS_STALKER_IDX &&
-			IsAlive()) {
+		if (other->IsPlayer() && IsAlive() &&
+			(
+				(GetTeamNumber() == TEAM_SPIDERS &&
+				other->GetTeamNumber() == TEAM_HUMANS &&
+				m_iClassNumber == CLASS_STALKER_IDX) 
+			||
+
+				(GetTeamNumber() == TEAM_HUMANS &&
+				other->GetTeamNumber() == TEAM_SPIDERS &&
+				m_iClassNumber == CLASS_MECH_IDX)
+			)
+			) {
 				
 				//
-				// stalkers crush players they stand on
+				// stalkers/mechs crush players they stand on
 				//
 				Vector crushDir = Vector(0,0,-1);
 				trace_t tr;
 
 				ClearMultiDamage();
-				CTakeDamageInfo dmg(this, this, 1400, DMG_CRUSH);
+				CTakeDamageInfo dmg(this, this, 1500, DMG_CRUSH);
 				CalculateMeleeDamageForce(&dmg,crushDir, GetAbsOrigin(), 0.05f);
 				other->DispatchTraceAttack(dmg, crushDir, &tr);
 				ApplyMultiDamage();
@@ -2025,6 +2056,10 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 		if (ShouldRunRateLimitedCommand(args)) {
 			int iTeam = atoi( args[1] );
 			HandleCommand_JoinTeam( iTeam );
+
+			chose_class = false;
+			choosing_class = false;
+			m_flDeathTime = gpGlobals->curtime;
 		}
 		return true;
 
@@ -2033,7 +2068,7 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 	} else if (FStrEq(args[0], "switchclass")) {
 		int classNum;
 
-		if (IsDead()) {
+		if (ShouldRunRateLimitedCommand(args)) {
 			if (args.ArgC() < 2)
 				return true;
 		
@@ -2050,11 +2085,16 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 							chose_class = true;
 							m_iClassNumber = classNum;
 							SubtractPlayerPoints(dk_spider_classes[classNum].cost);
+
+							if (IsAlive()) {
+								CommitSuicide(true, true);
+								AddPlayerPoints(1);
+							}
+
+							return true;
 						}
 					}
 				}
-
-				return true;
 
 			} else if (GetTeamNumber() == TEAM_HUMANS) {
 				if (classNum < NUM_HUMAN_CLASSES && classNum >= 0) {
@@ -2063,16 +2103,24 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 							chose_class = true;
 							m_iClassNumber = classNum;
 							SubtractPlayerPoints(dk_human_classes[classNum].cost);
+
+							if (IsAlive()) {
+								CommitSuicide(true, true);
+								AddPlayerPoints(1);
+							}
+
+							return true;
 						}
 					}
 				}
-
-				return true;
 			}
 
 			choosing_class = true;
 			ShowViewPortPanel(PANEL_CLASS, true, NULL);
 		}
+
+		return true;
+
 	} else if (FStrEq(args[0], "toggle_pack_item")) {
 		if (GetTeamNumber() != TEAM_HUMANS) {
 			pack_item_idx = -1;
@@ -2241,6 +2289,20 @@ void CHL2MP_Player::UsePackItem(void) {
 	}
 
 	TogglePackIdx();
+}
+
+void CHL2MP_Player::GivePackItem(int item) {
+	if (pack_item_0 == -1) {
+		pack_item_0 = item;
+	} else if (pack_item_1 == -1) {
+		pack_item_1 = item;
+	} else if (pack_item_2 == -1) {
+		pack_item_2 = item;
+	}
+
+	if (pack_item_idx == -1) {
+		TogglePackIdx();
+	}
 }
 
 void CHL2MP_Player::TogglePackIdx(void) {
@@ -2686,7 +2748,11 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 		player = ToHL2MPPlayer(pAttacker);
 		if (player) {
 			if (player->GetTeamNumber() != GetTeamNumber()) {
-				player->AddPlayerPoints(1);
+				if ((player->GetTeamNumber() == TEAM_HUMANS && player->m_iClassNumber != CLASS_MECH_IDX) ||
+					(player->GetTeamNumber() == TEAM_SPIDERS && player->m_iClassNumber != CLASS_STALKER_IDX)) {
+					
+					player->AddPlayerPoints(1);
+				}
 				GetGlobalTeam( pAttacker->GetTeamNumber() )->AddScore( iScoreToAdd );
 			} else {
 				player->SubtractPlayerPoints(1);
