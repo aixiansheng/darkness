@@ -1,8 +1,6 @@
 ROADMAP
 =================
 
-- Credits button (when more than one person)
-- Guardian stealth indicator (screen fade?)
 - mech crush hachy/kami w/out landing on them (Dot prod at touch: fwd x dir, must be on ground)
 - hatchy = 1 shot by pistol
 - hatchy = 2 shot by smg (done?)
@@ -19,7 +17,6 @@ BUGS:
 
 Release 1.5:
 
-	- add Create Server link on main menu
 	- detector glowing effect
 	- only check in VPC files
 	- hatchy sees thru stairs
@@ -30,6 +27,7 @@ Release 1.5:
 
 Release 1.6:
 
+	- Credits button (when more than one person)
 	- Spectator mode crash?
 	- Player quit crash?
 	- contact valvetime after release

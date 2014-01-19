@@ -1037,6 +1037,9 @@ void CHL2MP_Player::Spawn(void)
 	UserMessageBegin(user, "Points");
 		WRITE_BYTE((unsigned char)m_iPlayerPoints);
 	MessageEnd();
+	UserMessageBegin(user, "GuardianHide");
+		WRITE_BYTE((unsigned char)false);
+	MessageEnd();
 
 
 	if (!IsObserver() && IsAlive()) {
@@ -1154,6 +1157,7 @@ void CHL2MP_Player::ShowDetailedHint(void) {
 //
 void CHL2MP_Player::MovementThink(void) {
 	float spd;
+	CSingleUserRecipientFilter user(this);
 
 	SetNextThink(gpGlobals->curtime + 0.1f);
 
@@ -1187,6 +1191,9 @@ void CHL2MP_Player::MovementThink(void) {
 		if (m_nSkin == 0) {
 			if (GetTeamNumber() == TEAM_SPIDERS && m_iClassNumber == CLASS_GUARDIAN_IDX) {
 				m_nSkin = 1;
+				UserMessageBegin(user, "GuardianHide");
+					WRITE_BYTE((unsigned char)true);
+				MessageEnd();
 			}
 
 			ResetGuardianArmorRecharge();
@@ -1197,6 +1204,10 @@ void CHL2MP_Player::MovementThink(void) {
 		if (m_nSkin == 1) {
 			if (GetTeamNumber() == TEAM_SPIDERS && m_iClassNumber == CLASS_GUARDIAN_IDX) {
 				m_nSkin = 0;
+
+				UserMessageBegin(user, "GuardianHide");
+					WRITE_BYTE((unsigned char)false);
+				MessageEnd();
 			}
 		}
 
@@ -2779,6 +2790,11 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 
 	RemoveEffects( EF_NODRAW );	// still draw player body
 	StopZooming();
+
+	CSingleUserRecipientFilter user(this);
+	UserMessageBegin(user, "GuardianHide");
+		WRITE_BYTE((unsigned char)false);
+	MessageEnd();
 }
 
 int CHL2MP_Player::OnTakeDamage( const CTakeDamageInfo &inputInfo ) {

@@ -3739,6 +3739,12 @@
     <ClCompile Include="nv_screeneffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hud_guardian.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hud_spawns.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

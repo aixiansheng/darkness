@@ -54,6 +54,9 @@ public:
 
 private:
 	int		m_iPoints;
+
+protected:
+	void ApplySchemeSettings(vgui::IScheme *pScheme);
 };	
 
 DECLARE_HUDELEMENT( CHudSpawns );
@@ -64,6 +67,12 @@ CHudSpawns::CHudSpawns( const char *pElementName ) : CHudElement( pElementName )
 
 void CHudSpawns::Init() {
 	Reset();
+}
+
+void CHudSpawns::ApplySchemeSettings(vgui::IScheme *pScheme) {
+	BaseClass::ApplySchemeSettings(pScheme);
+	m_hTextFont = pScheme->GetFont("Default", true);
+	m_hNumberFont = pScheme->GetFont("HudHintTextLarge", true);
 }
 
 void CHudSpawns::Reset() {

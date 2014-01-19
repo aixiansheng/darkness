@@ -954,9 +954,11 @@ exit 1
     <ClCompile Include="game_controls\buildmenu.cpp" />
     <ClCompile Include="game_controls\classmenu.cpp" />
     <ClCompile Include="hud_assets.cpp" />
+    <ClCompile Include="hud_guardian.cpp" />
     <ClCompile Include="hud_iteminfo.cpp" />
     <ClCompile Include="hud_pack_item.cpp" />
     <ClCompile Include="hud_points.cpp" />
+    <ClCompile Include="hud_spawns.cpp" />
     <ClCompile Include="mp3player.cpp" />
     <ClCompile Include="nv_screeneffect.cpp" />
     <ClCompile Include="replay\cdll_replay.cpp" />

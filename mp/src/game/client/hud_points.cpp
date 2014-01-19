@@ -42,6 +42,9 @@ public:
 
 private:
 	int		m_iPoints;
+
+protected:
+	void ApplySchemeSettings(vgui::IScheme *pScheme);
 };	
 
 DECLARE_HUDELEMENT( CHudPoints );
@@ -59,6 +62,12 @@ void CHudPoints::Init()
 {
 	HOOK_HUD_MESSAGE( CHudPoints, Points );
 	Reset();
+}
+
+void CHudPoints::ApplySchemeSettings(vgui::IScheme *pScheme) {
+	BaseClass::ApplySchemeSettings(pScheme);
+	m_hTextFont = pScheme->GetFont("Default", true);
+	m_hNumberFont = pScheme->GetFont("HudHintTextLarge", true);
 }
 
 void CHudPoints::Reset() {

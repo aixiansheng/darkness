@@ -17,6 +17,7 @@
 
 void RegisterUserMessages( void )
 {
+	usermessages->Register( "GuardianHide", 1);
 	usermessages->Register( "ShowBuildMenu", 1);
 	usermessages->Register( "Points", 1);
 	usermessages->Register( "ItemInfo", 4 );
