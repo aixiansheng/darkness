@@ -3,6 +3,7 @@ DIST := darkness
 gamedir:
 	rsync $(BINDIR)/gameinfo.txt	$(GAMEDST)/gameinfo.txt
 	rsync $(BINDIR)/darkness.fgd	$(GAMEDST)/darkness.fgd
+	rsync $(BINDIR)/lights.rad	$(GAMEDST)/lights.rad
 	rsync -r $(BINDIR)/cfg/		$(GAMEDST)/cfg
 	rsync -r $(BINDIR)/scripts/	$(GAMEDST)/scripts
 	rsync -r $(BINDIR)/resource/	$(GAMEDST)/resource

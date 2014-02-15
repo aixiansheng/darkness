@@ -204,7 +204,7 @@ void CWeaponEngy::MakeItem(int idx) {
 	VectorAngles(fwd, turned);
 	autokill = false;
 
-	dst = p->GetAbsOrigin() + (fwd * 60) + Vector(0, 0, 60);
+	dst = p->GetAbsOrigin() + (fwd * 60);
 	QAngle ang(0, p->GetAbsAngles().y - 90, 0);
 
 	if (p->GetTeamNumber() == TEAM_HUMANS) {
@@ -214,10 +214,15 @@ void CWeaponEngy::MakeItem(int idx) {
 			//
 			// trace the largest unit's hull size to prevent stuck spawns
 			//
-			UTIL_TraceHull(dst, dst, dk_human_classes[CLASS_MECH_IDX].vectors->m_vHullMin, dk_human_classes[CLASS_MECH_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
+			UTIL_TraceHull(dst + Vector(0,0,10), dst + Vector(0,0,10), dk_human_classes[CLASS_MECH_IDX].vectors->m_vHullMin, dk_human_classes[CLASS_MECH_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
 			if (tr.DidHit()) {
-				autokill = true;
-				if (tr.m_pEnt && tr.m_pEnt->IsPlayer()) {
+				// can't create a valid spawn here
+				// see if the player is trying to climb by putting a teleporter half-way into
+				// a world structure
+				UTIL_TraceHull(dst + Vector(0,0,60), dst + Vector(0,0,60), TELEPORTER_HULL_MIN, TELEPORTER_HULL_MAX, MASK_SOLID, NULL, &tr);
+				if (tr.DidHit() && tr.m_pEnt && tr.m_pEnt->IsWorld()) {
+					autokill = true;
+				} else {
 					WeaponSound(EMPTY);
 					break;
 				}
@@ -235,7 +240,7 @@ void CWeaponEngy::MakeItem(int idx) {
 						return;
 					}
 
-					tele->SetAbsOrigin(dst);
+					tele->SetAbsOrigin(dst + Vector(0,0,60));
 					tele->SetAbsAngles(ang);
 					tele->SetCreator(p);
 					DispatchSpawn(tele);

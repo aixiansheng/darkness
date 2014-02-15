@@ -96,7 +96,7 @@ void CTeamSpawnPoint::SpawnPlayer(CBasePlayer *p) {
 
 	nextSpawnTime = gpGlobals->curtime + cycleTime;
 
-	spawnOrigin = GetAbsOrigin() + Vector(0,0,40);
+	spawnOrigin = GetAbsOrigin() + Vector(0,0,10);
 
 	spawnee = ToHL2MPPlayer(p);
 	if (!spawnee)

@@ -55,7 +55,7 @@ typedef struct class_info_t class_info_t;
 #define ENGINEER_SPEED		(NORMAL_SPEED)
 #define GRUNT_SPEED			(NORMAL_SPEED)
 #define SHOCK_SPEED			(NORMAL_SPEED)
-#define HEAVY_SPEED			(NORMAL_SPEED * 0.85f)
+#define HEAVY_SPEED			(NORMAL_SPEED * 0.8f)
 #define COMMANDO_SPEED		(NORMAL_SPEED * 1.15f)
 #define EXTERM_SPEED		(NORMAL_SPEED * 0.9f)
 #define MECH_SPEED			(NORMAL_SPEED * 0.8f)

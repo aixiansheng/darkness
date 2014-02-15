@@ -1685,6 +1685,13 @@ void CFuncTrackTrain::Blocked( CBaseEntity *pOther )
 		{
 			pOther->ApplyAbsVelocityImpulse( Vector(0,0,deltaSpeed) );
 		}
+
+		if ( m_flBlockDamage <= 0 )
+			return;
+
+		// hurt this the blocker
+		pOther->TakeDamage( CTakeDamageInfo( this, this, m_flBlockDamage, DMG_CRUSH ) );
+
 		return;
 	}
 	else

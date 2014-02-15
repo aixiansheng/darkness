@@ -4,7 +4,7 @@
     <LocalDebuggerCommand>C:\Program Files (x86)\Steam\SteamApps\common\Source SDK Base 2013 Multiplayer\hl2.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-windowed -allowdebug -nop4 -novid -dev -console +map geofusion  -game $(SolutionDir)\..\game\mod_hl2mp</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-windowed -allowdebug -nop4 -novid -dev -console +map spacewreck  -game $(SolutionDir)\..\game\mod_hl2mp</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
