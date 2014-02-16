@@ -3,7 +3,7 @@
 #include "class_info.h"
 #include "item_info.h"
 
-CMateriel::CMateriel(int team = TEAM_HUMANS, struct item_info_t *info = &human_items[0]) : CBaseAnimating() {
+CMateriel::CMateriel(int team, struct item_info_t *info) : CBaseAnimating() {
 	ChangeTeam(team);
 	item_info = info;
 	active = false;
