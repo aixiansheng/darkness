@@ -873,7 +873,9 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 		if (Q_strcmp(dk_spider_classes[m_iClassNumber].pri_weapon, WEAPON_NULL)) {
 			GiveNamedItem(dk_spider_classes[m_iClassNumber].pri_weapon);
 			pri_weapon = Weapon_OwnsThisType(dk_spider_classes[m_iClassNumber].pri_weapon);
-			Weapon_Switch(pri_weapon);
+			if (pri_weapon) {
+				Weapon_Switch(pri_weapon);
+			}
 		}
 
 		break;
@@ -904,7 +906,9 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 		if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_weapon, WEAPON_NULL)) {
 			GiveNamedItem(dk_human_classes[m_iClassNumber].pri_weapon);
 			pri_weapon = Weapon_OwnsThisType(dk_human_classes[m_iClassNumber].pri_weapon);
-			Weapon_Switch(pri_weapon);
+			if (pri_weapon) {
+				Weapon_Switch(pri_weapon);
+			}
 		}
 
 		//if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {

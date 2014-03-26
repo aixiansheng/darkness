@@ -42,7 +42,11 @@ END_NETWORK_TABLE()
 CMSLTurretHead::CMSLTurretHead() {}
 CMSLTurretHead::~CMSLTurretHead() {}
 
-CSeekerMissile::CSeekerMissile() {}
+CSeekerMissile::CSeekerMissile() {
+#ifndef CLIENT_DLL
+	target = NULL;
+#endif
+}
 CSeekerMissile::~CSeekerMissile() {
 #ifndef CLIENT_DLL
 	StopSound(SEEKER_MISSILE_SOUND);
