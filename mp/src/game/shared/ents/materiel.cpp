@@ -5,20 +5,10 @@
 
 CMateriel::CMateriel(int team, struct item_info_t *info) : CBaseAnimating() {
 	ChangeTeam(team);
-	
 	item_info = info;
-	
 	active = false;
-
-	last_dmg_sprite = 0.0f;
-	
 	dmg_sprite = NULL;
-	gib1 = NULL;
-	gib2 = NULL;
-	gib3 = NULL;
-	gib4 = NULL;
-	gib5 = NULL;
-
+	last_dmg_sprite = 0.0f;
 #ifndef CLIENT_DLL
 	creator.Term();
 #endif
