@@ -27,7 +27,7 @@ ipch
 *.DS_Store
 #*.mak
 #*.mak.vpc_crc
-*.xcodeproj/
+#*.xcodeproj/
 obj*/
 !devtools/*.mak
 !utils/smdlexp/smdlexp.mak
