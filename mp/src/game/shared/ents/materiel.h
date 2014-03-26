@@ -22,7 +22,7 @@ public:
 	DECLARE_CLASS (CMateriel, CBaseAnimating);
 	DECLARE_NETWORKCLASS();
 
-	CMateriel(int team = TEAM_HUMANS, struct item_info_t *info = &human_items[0]);
+	CMateriel(int team, struct item_info_t *info);
 	~CMateriel(void);
 
 	struct item_info_t *item_info;
