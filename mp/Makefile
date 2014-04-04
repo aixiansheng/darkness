@@ -9,9 +9,11 @@ gamedir:
 	rsync -r $(BINDIR)/resource/	$(GAMEDST)/resource
 
 gamedir_bigfiles:
+	rsync -r $(BINDIR)/particles/	$(GAMEDST)/particles
 	rsync -r $(BINDIR)/materials/	$(GAMEDST)/materials
 	rsync -r $(BINDIR)/models/	$(GAMEDST)/models
 	rsync -r $(BINDIR)/maps/	$(GAMEDST)/maps
+	rsync -r $(BINDIR)/shaders/	$(GAMEDST)/shaders
 
 updatebin:
 	rsync $(GAMEDST)/bin/*.dll	$(BINDIR)/bin/
