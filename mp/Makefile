@@ -14,6 +14,7 @@ gamedir_bigfiles:
 	rsync -r $(BINDIR)/models/	$(GAMEDST)/models
 	rsync -r $(BINDIR)/maps/	$(GAMEDST)/maps
 	rsync -r $(BINDIR)/shaders/	$(GAMEDST)/shaders
+	rsync -r $(BINDIR)/sound/	$(GAMEDST)/sound
 
 updatebin:
 	rsync $(GAMEDST)/bin/*.dll	$(BINDIR)/bin/
