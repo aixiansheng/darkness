@@ -9,10 +9,11 @@ ROADMAP
 
 BUGS:
 - jump/crouch view glitching on laggy server?
-- video mode change crash
-- video mode change = crosshair messed up
-- change server w/out disconnect crash
 - acid/smoke causing lag on slow systems
+
+FIXED? - change server w/out disconnect crash
+FIXED? - video mode change crash
+FIXED? - video mode change = crosshair messed up
 
 
 Release 1.5:

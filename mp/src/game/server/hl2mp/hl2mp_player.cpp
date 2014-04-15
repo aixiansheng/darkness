@@ -40,6 +40,7 @@
 #include "grenade_acid.h"
 #include "usermessages.h"
 #include "weapon_plasma_canon.h"
+#include "physics_prop_ragdoll.h"
 
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -51,6 +52,12 @@
 #define GRENADE_THROW_INTERVAL 1.5f
 
 #define DRONE_SPIT_RECOVER_TIME	1.0f
+
+#define DEFAULT_RAGDOLL_FADE 120.0f
+#define DEFAULT_RAGDOLL_FADE_DURATION 3.0f
+#define RAGDOLL_SLEEP_TIME 10.0f
+#define RAGDOLL_HEALTH 150
+
 int g_iLastCitizenModel = 0;
 int g_iLastCombineModel = 0;
 
@@ -275,18 +282,43 @@ void CHL2MP_Player::ResetGuardianArmorRecharge(void) {
 	}
 }
 
+#define INFEST_CORPSE_RANGE 128.0f
+
 void CHL2MP_Player::InfestCorpse(void) {
 	CInfestedCorpse *c;
+	CBaseEntity *ent;
+	Vector dir;
+	Vector start;
+	Vector end;
+	trace_t tr;
 
 	next_infestation = gpGlobals->curtime + GUARDIAN_INFESTATION_INTERVAL;
 
-	c = (CInfestedCorpse *)CreateEntityByName("ent_infested_corpse");
-	if (c) {
-		c->SetAbsOrigin(GetAbsOrigin() + Vector(0,0,7));
-		c->SetAbsAngles(GetAbsAngles());
-		c->SetCreator(this);
-		DispatchSpawn(c);
+	dir = ToBasePlayer(this)->GetAutoaimVector(0);
+	start = Weapon_ShootPosition();
+	end = start + (dir * INFEST_CORPSE_RANGE);
+
+	UTIL_TraceLine(start, end, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+
+	ent = tr.m_pEnt;
+
+	if (ent) {
+		Warning("Got ent\n");
+		CRagdollProp *r = dynamic_cast<CRagdollProp *>(ent);
+		if (r) {
+			Warning("got ragdoll\n");
+		}
+	} else {
+		Warning("No ent\n");
 	}
+
+	//c = (CInfestedCorpse *)CreateEntityByName("ent_infested_corpse");
+	//if (c) {
+	//	c->SetAbsOrigin(GetAbsOrigin() + Vector(0,0,7));
+	//	c->SetAbsAngles(GetAbsAngles());
+	//	c->SetCreator(this);
+	//	DispatchSpawn(c);
+	//}
 }
 
 void CHL2MP_Player::StartJetPack(void) {
@@ -2483,6 +2515,17 @@ void CHL2MP_Player::SetPlayerClass(int c) {
 				grenade_type = GetAmmoDef()->Index(dk_human_classes[c].grenade_type);
 			}
 
+			switch (m_iClassNumber) {
+			case CLASS_GRUNT_IDX:
+			case CLASS_SHOCK_IDX:
+			case CLASS_HEAVY_IDX:
+			case CLASS_COMMANDO_IDX:
+				m_bForceServerRagdoll = true;
+				break;
+			default:
+				m_bForceServerRagdoll = false;
+			}
+
 		}
 
 		break;
@@ -2556,6 +2599,29 @@ void CHL2MP_Player::CreateViewModel( int index /*=0*/ )
 	}
 }
 
+bool CHL2MP_Player::BecomeRagdoll(const CTakeDamageInfo &info, const Vector &forceVector) {
+	CRagdollProp *ragdoll;
+
+	if (m_bForceServerRagdoll && num_server_ragdolls < MAX_SERVER_RAGDOLLS) {
+
+		ragdoll = (CRagdollProp *)CreateServerRagdoll(this, m_nForceBone, info, COLLISION_GROUP_DEBRIS_TRIGGER, true);
+		if (ragdoll) {
+			FixupBurningServerRagdoll(ragdoll);
+			PhysSetEntityGameFlags(ragdoll, FVPHYSICS_NO_SELF_COLLISIONS);
+
+			ragdoll->SetOwnerEntity(NULL);
+			ragdoll->SetParent(NULL);
+			ragdoll->SetMaxHealth(RAGDOLL_HEALTH);
+			ragdoll->SetHealth(RAGDOLL_HEALTH);
+
+			ragdoll->SetSleepThink(RAGDOLL_SLEEP_TIME);
+			ragdoll->FadeOut(DEFAULT_RAGDOLL_FADE, DEFAULT_RAGDOLL_FADE_DURATION);
+		}
+	}
+
+	return true;
+}
+
 bool CHL2MP_Player::BecomeRagdollOnClient( const Vector &force )
 {
 	return true;
@@ -2600,34 +2666,39 @@ END_SEND_TABLE()
 
 void CHL2MP_Player::CreateRagdollEntity( void )
 {
-	if ( m_hRagdoll )
-	{
-		UTIL_RemoveImmediate( m_hRagdoll );
-		m_hRagdoll = NULL;
-	}
+	if (m_bForceServerRagdoll == false || num_server_ragdolls >= MAX_SERVER_RAGDOLLS) {
+		if ( m_hRagdoll ) {
+			UTIL_RemoveImmediate( m_hRagdoll );
+			m_hRagdoll = NULL;
+		}
 
-	// If we already have a ragdoll, don't make another one.
-	CHL2MPRagdoll *pRagdoll = dynamic_cast< CHL2MPRagdoll* >( m_hRagdoll.Get() );
+		// If we already have a ragdoll, don't make another one.
+		CHL2MPRagdoll *pRagdoll = dynamic_cast< CHL2MPRagdoll* >( m_hRagdoll.Get() );
 	
-	if ( !pRagdoll )
-	{
-		// create a new one
-		pRagdoll = dynamic_cast< CHL2MPRagdoll* >( CreateEntityByName( "hl2mp_ragdoll" ) );
+		if ( !pRagdoll ) {
+			// create a new one
+			pRagdoll = dynamic_cast< CHL2MPRagdoll* >( CreateEntityByName( "hl2mp_ragdoll" ) );
+		}
+
+		if ( pRagdoll ) {
+			pRagdoll->m_hPlayer = this;
+			pRagdoll->m_vecRagdollOrigin = GetAbsOrigin();
+			pRagdoll->m_vecRagdollVelocity = GetAbsVelocity();
+			pRagdoll->m_nModelIndex = m_nModelIndex;
+			pRagdoll->m_nForceBone = m_nForceBone;
+			pRagdoll->m_vecForce = m_vecTotalBulletForce;
+			pRagdoll->SetAbsOrigin( GetAbsOrigin() );
+		}
+
+		// ragdolls will be removed on round restart automatically
+		m_hRagdoll = pRagdoll;
 	}
 
-	if ( pRagdoll )
-	{
-		pRagdoll->m_hPlayer = this;
-		pRagdoll->m_vecRagdollOrigin = GetAbsOrigin();
-		pRagdoll->m_vecRagdollVelocity = GetAbsVelocity();
-		pRagdoll->m_nModelIndex = m_nModelIndex;
-		pRagdoll->m_nForceBone = m_nForceBone;
-		pRagdoll->m_vecForce = m_vecTotalBulletForce;
-		pRagdoll->SetAbsOrigin( GetAbsOrigin() );
-	}
-
-	// ragdolls will be removed on round restart automatically
-	m_hRagdoll = pRagdoll;
+	//
+	// else BecomeRagdoll will handle this when the BaseCombatCharacter
+	// Event_Killed() is called, so there's no need to do anything
+	// right here
+	//
 }
 
 //-----------------------------------------------------------------------------

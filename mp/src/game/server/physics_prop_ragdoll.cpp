@@ -20,9 +20,12 @@
 #include "AI_Criteria.h"
 #include "ragdoll_shared.h"
 #include "hierarchy.h"
+#include "gib.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+unsigned int num_server_ragdolls = 0;
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -36,6 +39,7 @@ const char *GetMassEquivalent(float flMass);
 //-----------------------------------------------------------------------------
 const char *s_pFadeOutContext = "RagdollFadeOutContext";
 const char *s_pDebrisContext = "DebrisContext";
+const char *s_pSetSleepContext = "RagdollSleepContext";
 
 const float ATTACHED_DAMPING_SCALE = 50.0f;
 
@@ -275,6 +279,13 @@ CRagdollProp::CRagdollProp( void )
 	m_allAsleep = false;
 	m_flFadeScale = 1;
 	m_flDefaultFadeScale = 1;
+
+	gib1 = "models/Gibs/Antlion_gib_small_2.mdl";
+	gib2 = "models/Gibs/AGIBS.mdl";
+	gib3 = "models/Gibs/Antlion_gib_small_1.mdl";
+	gib4 = "models/Gibs/Antlion_gib_small_3.mdl";
+	gib5 = "models/Gibs/Antlion_gib_medium_2.mdl";
+
 }
 
 CRagdollProp::~CRagdollProp( void )
@@ -687,7 +698,7 @@ void CRagdollProp::InitRagdoll( const Vector &forceVector, int forceBone, const 
 	SetMoveType( MOVETYPE_VPHYSICS );
 	SetSolid( SOLID_VPHYSICS );
 	AddSolidFlags( FSOLID_CUSTOMRAYTEST | FSOLID_CUSTOMBOXTEST );
-	m_takedamage = DAMAGE_EVENTS_ONLY;
+	m_takedamage = DAMAGE_YES;
 
 	ragdollparams_t params;
 	params.pGameData = static_cast<void *>( static_cast<CBaseEntity *>(this) );
@@ -1044,7 +1055,7 @@ void CRagdollProp::VPhysicsUpdate( IPhysicsObject *pPhysics )
 			}
 		}
 	}
-
+	
 	SetAbsOrigin( m_ragPos[0] );
 	SetAbsAngles( vec3_angle );
 	const Vector &vecOrigin = CollisionProp()->GetCollisionOrigin();
@@ -1110,6 +1121,56 @@ bool CRagdollProp::IsFading()
 	return ( GetNextThink( s_pFadeOutContext ) >= gpGlobals->curtime );
 }
 
+void CRagdollProp::SetSleepThink(float flDelay) {
+	SetContextThink( &CRagdollProp::SetSleep, gpGlobals->curtime + flDelay, s_pSetSleepContext);
+}
+
+void CRagdollProp::SetSleep(void) {
+	DisableMotion();
+}
+
+#define CORPSE_GIB_SOUND	"Egg.Die"
+
+void CRagdollProp::Event_Killed(const CTakeDamageInfo &info) {
+	Vector origin;
+	CSoundParameters params;
+	CRecipientFilter filter;
+	EmitSound_t ep;
+
+	if (GetParametersForSound( CORPSE_GIB_SOUND, params, NULL )) {
+		origin = GetAbsOrigin();
+
+		filter.AddRecipientsByPAS( origin );
+
+		ep.m_nChannel = params.channel;
+		ep.m_pSoundName = params.soundname;
+		ep.m_flVolume = params.volume;
+		ep.m_SoundLevel = params.soundlevel;
+		ep.m_nFlags = 0;
+		ep.m_nPitch = params.pitch;
+		ep.m_pOrigin = &origin;
+
+		EmitSound( filter, entindex(), ep );
+	}
+
+	if (gib1 != NULL)
+		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib1, 10);
+	if (gib2 != NULL)
+		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib2, 10);
+	if (gib3 != NULL)
+		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib3, 15);
+	if (gib4 != NULL)
+		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib4, 10);
+	if (gib5 != NULL)
+		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib5, 15);
+
+	BaseClass::Event_Killed(info);
+
+	num_server_ragdolls--;
+
+	UTIL_Remove(this);
+}
+
 void CRagdollProp::FadeOutThink(void) 
 {
 	float dt = gpGlobals->curtime - m_flFadeOutStartTime;
@@ -1131,9 +1192,12 @@ void CRagdollProp::FadeOutThink(void)
 		// Necessary to cause it to do the appropriate death cleanup
 		// Yeah, the player may have nothing to do with it, but
 		// passing NULL to TakeDamage causes bad things to happen
-		CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-		CTakeDamageInfo info( pPlayer, pPlayer, 10000.0, DMG_GENERIC );
-		TakeDamage( info );
+		//CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+		//CTakeDamageInfo info( pPlayer, pPlayer, 10000.0, DMG_GENERIC );
+		//TakeDamage( info );
+		
+		num_server_ragdolls--;
+
 		UTIL_Remove( this );
 	}
 }
@@ -1440,6 +1504,8 @@ CBaseEntity *CreateServerRagdoll( CBaseAnimating *pAnimating, int forceBone, con
 	mins = pAnimating->CollisionProp()->OBBMins();
 	maxs = pAnimating->CollisionProp()->OBBMaxs();
 	pRagdoll->CollisionProp()->SetCollisionBounds( mins, maxs );
+
+	num_server_ragdolls++;
 
 	return pRagdoll;
 }

@@ -19,6 +19,7 @@ class CHL2MP_Player;
 #include "hl2mp_player_shared.h"
 #include "hl2mp_gamerules.h"
 #include "utldict.h"
+#include "physics_prop_ragdoll.h"
 
 #define MAX_PLAYER_POINTS 10
 #define HEAL_SOUND_INTERVAL 5.0f
@@ -82,6 +83,7 @@ public:
 	virtual void DeathSound( const CTakeDamageInfo &info );
 	virtual CBaseEntity* EntSelectSpawnPoint( void );
 
+	virtual bool BecomeRagdoll(const CTakeDamageInfo &info, const Vector &forceVector);
 	void MovementThink(void);
 	bool IsStopped(void);
 	void DropC4OnHit(bool value);
@@ -155,7 +157,7 @@ public:
 	Vector m_vecTotalBulletForce;	//Accumulator for bullet force in a single frame
 
 	// Tracks our ragdoll entity.
-	CNetworkHandle( CBaseEntity, m_hRagdoll );	// networked entity handle 
+	CNetworkHandle( CBaseEntity, m_hRagdoll );	// networked entity handle
 
 	virtual bool	CanHearAndReadChatFrom( CBasePlayer *pPlayer );
 

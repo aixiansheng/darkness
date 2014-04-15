@@ -13,6 +13,8 @@
 #include "ragdoll_shared.h"
 #include "player_pickup.h"
 
+#define MAX_SERVER_RAGDOLLS 5
+extern unsigned int num_server_ragdolls;
 
 //-----------------------------------------------------------------------------
 // Purpose: entity class for simple ragdoll physics
@@ -105,6 +107,11 @@ public:
 	void			InputTurnOff( inputdata_t &inputdata );
 	void			InputFadeAndRemove( inputdata_t &inputdata );
 
+	void		SetSleepThink(float flDelay);
+	void		SetSleep(void);
+
+	virtual void Event_Killed(const CTakeDamageInfo &info);
+
 	DECLARE_DATADESC();
 
 protected:
@@ -112,6 +119,12 @@ protected:
 	ragdoll_t			m_ragdoll;
 
 private:
+	const char *gib1;
+	const char *gib2;
+	const char *gib3;
+	const char *gib4;
+	const char *gib5;
+
 	void UpdateNetworkDataFromVPhysics( IPhysicsObject *pPhysics, int index );
 	void FadeOutThink();
 
@@ -135,7 +148,6 @@ private:
 	float					m_flLastPhysicsInfluenceTime;
 	float				m_flFadeOutStartTime;
 	float				m_flFadeTime;
-
 
 	string_t			m_strSourceClassName;
 	bool				m_bHasBeenPhysgunned;
