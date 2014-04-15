@@ -67,7 +67,7 @@ extern CBaseEntity				*g_pLastSpawn;
 
 #define HL2MP_COMMAND_MAX_RATE 0.3
 
-#define GUARDIAN_INFESTATION_INTERVAL 30.0f
+#define GUARDIAN_INFESTATION_INTERVAL 5.0f
 #define GUARDIAN_MAX_INFESTED 15
 
 #define GUARDIAN_ARMOR_CTX "guardArmorRecharge"
