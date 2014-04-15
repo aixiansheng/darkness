@@ -1098,6 +1098,10 @@ void CRagdollProp::UpdateNetworkDataFromVPhysics( IPhysicsObject *pPhysics, int 
 	}
 }
 
+void CRagdollProp::RemoveServerRagdoll(void) {
+	num_server_ragdolls--;
+	UTIL_Remove(this);
+}
 
 //-----------------------------------------------------------------------------
 // Fade out due to the LRU telling it do
@@ -1166,9 +1170,7 @@ void CRagdollProp::Event_Killed(const CTakeDamageInfo &info) {
 
 	BaseClass::Event_Killed(info);
 
-	num_server_ragdolls--;
-
-	UTIL_Remove(this);
+	RemoveServerRagdoll();
 }
 
 void CRagdollProp::FadeOutThink(void) 
@@ -1196,9 +1198,7 @@ void CRagdollProp::FadeOutThink(void)
 		//CTakeDamageInfo info( pPlayer, pPlayer, 10000.0, DMG_GENERIC );
 		//TakeDamage( info );
 		
-		num_server_ragdolls--;
-
-		UTIL_Remove( this );
+		RemoveServerRagdoll();
 	}
 }
 

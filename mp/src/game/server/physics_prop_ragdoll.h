@@ -109,6 +109,7 @@ public:
 
 	void		SetSleepThink(float flDelay);
 	void		SetSleep(void);
+	void		RemoveServerRagdoll(void);
 
 	virtual void Event_Killed(const CTakeDamageInfo &info);
 

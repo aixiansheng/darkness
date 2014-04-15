@@ -286,10 +286,12 @@ void CHL2MP_Player::ResetGuardianArmorRecharge(void) {
 
 void CHL2MP_Player::InfestCorpse(void) {
 	CInfestedCorpse *c;
-	CBaseEntity *ent;
+	CRagdollProp *raggy;
 	Vector dir;
 	Vector start;
 	Vector end;
+	QAngle bodyAngles;
+	Vector bodyPos;
 	trace_t tr;
 
 	next_infestation = gpGlobals->curtime + GUARDIAN_INFESTATION_INTERVAL;
@@ -300,25 +302,25 @@ void CHL2MP_Player::InfestCorpse(void) {
 
 	UTIL_TraceLine(start, end, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
 
-	ent = tr.m_pEnt;
+	if (tr.m_pEnt == NULL)
+		return;
 
-	if (ent) {
-		Warning("Got ent\n");
-		CRagdollProp *r = dynamic_cast<CRagdollProp *>(ent);
-		if (r) {
-			Warning("got ragdoll\n");
-		}
-	} else {
-		Warning("No ent\n");
+	raggy = dynamic_cast<CRagdollProp *>(tr.m_pEnt);
+	if (raggy == NULL)
+		return;
+
+	bodyPos = raggy->GetAbsOrigin();
+	bodyAngles = raggy->GetAbsAngles();
+
+	raggy->RemoveServerRagdoll();
+
+	c = (CInfestedCorpse *)CreateEntityByName("ent_infested_corpse");
+	if (c) {
+		c->SetAbsOrigin(bodyPos);
+		c->SetAbsAngles(bodyAngles);
+		c->SetCreator(this);
+		DispatchSpawn(c);
 	}
-
-	//c = (CInfestedCorpse *)CreateEntityByName("ent_infested_corpse");
-	//if (c) {
-	//	c->SetAbsOrigin(GetAbsOrigin() + Vector(0,0,7));
-	//	c->SetAbsAngles(GetAbsAngles());
-	//	c->SetCreator(this);
-	//	DispatchSpawn(c);
-	//}
 }
 
 void CHL2MP_Player::StartJetPack(void) {
