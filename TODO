@@ -33,7 +33,6 @@ Release 1.6:
 	- Player quit crash?
 	- contact valvetime after release
 	- gameplay videos
-	- make guardian infestation use ragdolls
 	- humans glow better
 	- fix player animations, remove aim_yaw/aim_pitch negation in hl2mp_player_shared.cpp
 	- better textures for models (bump maps, etc)
