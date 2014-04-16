@@ -331,6 +331,8 @@ public:
 
 	bool PrefetchSequence( int iSequence );
 
+	CNetworkVar(bool, shouldDetectGlow);
+
 private:
 	void LockStudioHdr();
 	void UnlockStudioHdr();

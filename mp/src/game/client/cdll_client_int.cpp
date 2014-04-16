@@ -284,6 +284,7 @@ static CGlobalVarsBase dummyvars( true );
 // Once the engine calls Init on this DLL, this pointer gets assigned to the shared data in the engine
 CGlobalVarsBase *gpGlobals = &dummyvars;
 IMaterial *overlayMaterial = NULL;
+IMaterial *detectorMaterial = NULL;
 
 class CHudChat;
 class CViewRender;

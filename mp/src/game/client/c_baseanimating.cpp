@@ -199,7 +199,8 @@ IMPLEMENT_CLIENTCLASS_DT(C_BaseAnimating, DT_BaseAnimating, CBaseAnimating)
 
 	RecvPropFloat( RECVINFO( m_fadeMinDist ) ), 
 	RecvPropFloat( RECVINFO( m_fadeMaxDist ) ), 
-	RecvPropFloat( RECVINFO( m_flFadeScale ) ), 
+	RecvPropFloat( RECVINFO( m_flFadeScale ) ),
+	RecvPropBool( RECVINFO( shouldDetectGlow ) ),
 
 END_RECV_TABLE()
 
@@ -728,6 +729,14 @@ C_BaseAnimating::C_BaseAnimating() :
 		 if (!IsErrorMaterial(overlayMaterial)) {
 			 overlayMaterial->IncrementReferenceCount();
 		 }
+	}
+
+	shouldDetectGlow = false;
+	if (detectorMaterial == NULL) {
+		detectorMaterial = materials->FindMaterial("detectorglow", TEXTURE_GROUP_CLIENT_EFFECTS);
+		if (!IsErrorMaterial(detectorMaterial)) {
+			detectorMaterial->IncrementReferenceCount();
+		}
 	}
 
 	m_boneIndexAttached = -1;
@@ -3126,8 +3135,15 @@ int C_BaseAnimating::DrawModel( int flags )
 		}
 	}
 
-	if (shouldGlow) {
-		modelrender->ForcedMaterialOverride(overlayMaterial);
+	if (shouldGlow || shouldDetectGlow) {
+		IMaterial *mat;
+
+		if (shouldDetectGlow)
+			mat = detectorMaterial;
+		else
+			mat = overlayMaterial;
+
+		modelrender->ForcedMaterialOverride(mat);
 
 		/////////////////////////////////////
 		/// COPIED FROM ABOVE FOR 2ND PASS

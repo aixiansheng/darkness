@@ -1,46 +1,14 @@
 ROADMAP
 =================
 
+- fix all crashes (video mode change, change server)
+
 - mech crush hachy/kami w/out landing on them (Dot prod at touch: fwd x dir, must be on ground)
+
 - hatchy = 1 shot by pistol
 - hatchy = 2 shot by smg (done?)
-- bunny hopping
 
-
-BUGS:
-- jump/crouch view glitching on laggy server?
-- acid/smoke causing lag on slow systems
-
-FIXED? - change server w/out disconnect crash
-FIXED? - video mode change crash
-FIXED? - video mode change = crosshair messed up
-
-
-Release 1.5:
-
-	- detector glowing effect
-	- only check in VPC files
-	- hatchy sees thru stairs
-	= refactor OnTakeDamage, also random buff/nerfs =
-	- wraith			(12h)
-	- medic + flare			(12h)
-	- need a small map
-
-Release 1.6:
-
-	- Credits button (when more than one person)
-	- Spectator mode crash?
-	- Player quit crash?
-	- contact valvetime after release
-	- gameplay videos
-	- humans glow better
-	- fix player animations, remove aim_yaw/aim_pitch negation in hl2mp_player_shared.cpp
-	- better textures for models (bump maps, etc)
-	- HUD font size too big
-	- more maps
-
-Release 1.7:
-
-	- make better use of VPC to add files to projects
-	  so that the repo becomes more portable
-
+- medic w/flare
+- wraith
+- credits button
+- acid/smoke grenade lag

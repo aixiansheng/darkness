@@ -67,7 +67,7 @@ extern CBaseEntity				*g_pLastSpawn;
 
 #define HL2MP_COMMAND_MAX_RATE 0.3
 
-#define GUARDIAN_INFESTATION_INTERVAL 5.0f
+#define GUARDIAN_INFESTATION_INTERVAL 2.0f
 #define GUARDIAN_MAX_INFESTED 15
 
 #define GUARDIAN_ARMOR_CTX "guardArmorRecharge"
@@ -75,6 +75,9 @@ extern CBaseEntity				*g_pLastSpawn;
 
 #define GUARDIAN_ATTACK_MOTION_CTX "guardAttackMotion"
 #define GUARDIAN_ATTACK_MOTION_INT 1.5f
+
+#define UNDETECT_CTX "unDetect"
+#define UNDETECT_INT 2.5f
 
 void DropPrimedFragGrenade( CHL2MP_Player *pPlayer, CBaseCombatWeapon *pGrenade );
 void DropPrimedSmkGrenGrenade( CHL2MP_Player *pPlayer, CBaseCombatWeapon *pGrenade );
@@ -121,6 +124,7 @@ BEGIN_DATADESC( CHL2MP_Player )
 	DEFINE_THINKFUNC(RechargeThink),
 	DEFINE_THINKFUNC(JetIgniteThink),
 	DEFINE_THINKFUNC(JetOnThink),
+	DEFINE_THINKFUNC(UnDetectThink),
 END_DATADESC()
 
 #define MAX_COMBINE_MODELS 4
@@ -210,6 +214,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	RegisterThinkContext(GUARDIAN_ATTACK_MOTION_CTX);
 	RegisterThinkContext(HINT_THINK_CTX);
 	RegisterThinkContext(PLASMA_SHIELD_CTX);
+	RegisterThinkContext(UNDETECT_CTX);
 
 	BaseClass::ChangeTeam( 0 );
 }
@@ -280,6 +285,15 @@ void CHL2MP_Player::ResetGuardianArmorRecharge(void) {
 			SetContextThink(&CHL2MP_Player::GuardianArmorRechargeThink, gpGlobals->curtime + GUARDIAN_ARMOR_RECHARGE_INT, GUARDIAN_ARMOR_CTX);
 
 	}
+}
+
+void CHL2MP_Player::Detected(void) {
+	shouldDetectGlow = true;
+	SetContextThink(&CHL2MP_Player::UnDetectThink, gpGlobals->curtime + UNDETECT_INT, UNDETECT_CTX);
+}
+
+void CHL2MP_Player::UnDetectThink(void) {
+	shouldDetectGlow = false;
 }
 
 #define INFEST_CORPSE_RANGE 128.0f
@@ -1109,6 +1123,7 @@ void CHL2MP_Player::Spawn(void)
 	}
 
 	bugGlow = false;
+	shouldDetectGlow = false;
 }
 
 void CHL2MP_Player::SpawnHackPowerArmorUpdateThink(void) {
@@ -2222,10 +2237,6 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 				if (next_infestation < gpGlobals->curtime) {
 					InfestCorpse();
-				} else {
-					char buf[64];
-					Q_snprintf(buf, sizeof(buf), "%.0f seconds before next infestation!\n", next_infestation - gpGlobals->curtime);
-					UTIL_SayText(buf, this);
 				}
 
 				return true;

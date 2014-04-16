@@ -1,6 +1,10 @@
 #include "cbase.h"
 #include "detector.h"
 
+#ifndef CLIENT_DLL
+#include "hl2mp_player.h"
+#endif
+
 
 #define DETECTOR_SOLID_CTX "solidThink"
 #define DETECTOR_SOLID_THINK_INT 0.2f
@@ -62,6 +66,7 @@ void CDetectorEntity::SolidThink(void) {
 
 void CDetectorEntity::DetectThink(void) {
 	CBaseEntity *ent;
+	CHL2MP_Player *p;
 	trace_t tr;
 	CSoundParameters params;
 	CRecipientFilter filter;
@@ -90,6 +95,11 @@ void CDetectorEntity::DetectThink(void) {
 				ep.m_pOrigin = &origin;
 
 				EmitSound( filter, entindex(), ep );
+			}
+
+			p = ToHL2MPPlayer(ent);
+			if (p) {
+				p->Detected();
 			}
 		}
 	}

@@ -231,6 +231,9 @@ public:
 	void SendPowerArmorUpdate(void);
 	void SpawnHackPowerArmorUpdateThink(void);
 
+	void Detected(void);
+	void UnDetectThink(void);
+
 	CNetworkVar(bool, stopped);
 
 private:

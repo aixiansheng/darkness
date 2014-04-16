@@ -52,6 +52,7 @@ typedef unsigned short MDLHandle_t;
 
 extern ConVar vcollide_wireframe;
 extern IMaterial *overlayMaterial;
+extern IMaterial *detectorMaterial;
 
 
 struct ClientModelRenderInfo_t : public ModelRenderInfo_t
@@ -494,6 +495,7 @@ public:
 	CSequenceTransitioner			m_SequenceTransitioner;
 
 	bool shouldGlow;
+	bool shouldDetectGlow;
 
 protected:
 	CIKContext						*m_pIk;
