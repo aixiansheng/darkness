@@ -64,6 +64,10 @@ public:
 	
 	int charging;
 
+#ifndef CLIENT_DLL
+	void Spawn(void);
+#endif
+
 private:
 
 #ifndef CLIENT_DLL

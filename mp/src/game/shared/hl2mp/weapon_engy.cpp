@@ -214,7 +214,7 @@ void CWeaponEngy::MakeItem(int idx) {
 			//
 			// trace the largest unit's hull size to prevent stuck spawns
 			//
-			UTIL_TraceHull(dst + Vector(0,0,10), dst + Vector(0,0,10), dk_human_classes[CLASS_MECH_IDX].vectors->m_vHullMin, dk_human_classes[CLASS_MECH_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
+			UTIL_TraceHull(dst + Vector(0,0,10), dst + Vector(0,0,10), dk_classes[CLASS_MECH_IDX].vectors->m_vHullMin, dk_classes[CLASS_MECH_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
 			if (tr.DidHit()) {
 				// can't create a valid spawn here
 				// see if the player is trying to climb by putting a teleporter half-way into

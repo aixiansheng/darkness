@@ -624,8 +624,8 @@ void C_HL2MP_Player::PostDataUpdate( DataUpdateType_t updateType )
 
 			switch(m_iTeamNumCache) {
 			case TEAM_SPIDERS:
-				if (m_iClassNumber < NUM_SPIDER_CLASSES && m_iClassNumber >= 0)
-					classVectors = dk_spider_classes[m_iClassNumber].vectors;
+				if (m_iClassNumber < NUM_CLASSES && m_iClassNumber >= 0)
+					classVectors = dk_classes[m_iClassNumber].vectors;
 
 				if (bugv && bugv->IsEnabled() == false) {
 					g_pScreenSpaceEffects->EnableScreenSpaceEffect(bugv);
@@ -634,8 +634,8 @@ void C_HL2MP_Player::PostDataUpdate( DataUpdateType_t updateType )
 				break;
 
 			case TEAM_HUMANS:
-				if (m_iClassNumber < NUM_HUMAN_CLASSES && m_iClassNumber >= 0)
-					classVectors = dk_human_classes[m_iClassNumber].vectors;
+				if (m_iClassNumber < NUM_CLASSES && m_iClassNumber >= 0)
+					classVectors = dk_classes[m_iClassNumber].vectors;
 
 				if (bugv && bugv->IsEnabled()) {
 					g_pScreenSpaceEffects->DisableScreenSpaceEffect(bugv);
@@ -653,7 +653,7 @@ void C_HL2MP_Player::PostDataUpdate( DataUpdateType_t updateType )
 					g_pScreenSpaceEffects->DisableScreenSpaceEffect("bugvision");
 				}
 
-				classVectors = dk_human_classes[0].vectors;
+				classVectors = dk_classes[0].vectors;
 				break;
 			}
 		}

@@ -163,6 +163,13 @@ void CWeaponStingerFire::ItemPostFrame( void ) {
 
 }
 
+#ifndef CLIENT_DLL
+void CWeaponStingerFire::Spawn(void) {
+	BaseClass::Spawn();
+	SetAmmoType(GetAmmoDef()->Index("stinger_slash"));
+}
+#endif
+
 
 //////////////////////////////////////////////
 // Secondary attack = slash
@@ -309,6 +316,8 @@ void CStingerFire::FlameTouch( CBaseEntity *pOther ) {
 
 	if( tr.fraction == 1.0 || !(tr.surface.flags & SURF_SKY) ) {
 		CTakeDamageInfo info(m_hOwner, this, GetDamage(), DMG_BURN);
+		info.SetAmmoType(GetAmmoDef()->Index("stingerfire"));
+
 		pOther->DispatchTraceAttack(info, forward, &tr);
 		ApplyMultiDamage();
 	}

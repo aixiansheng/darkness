@@ -213,6 +213,8 @@ void CWeaponPlasmaRifle::FireRailgun(void) {
 	hit = tr.m_pEnt;
 	if (!(tr.DidHitWorld() && !(tr.surface.flags & SURF_SKY))) {
 		CTakeDamageInfo info(this, pPlayer, RAILGUN_DMG, DMG_PLASMA);
+		info.SetAmmoType(GetAmmoDef()->Index("plasma_railgun"));
+
 		CalculateBulletDamageForce(&info, m_iPrimaryAmmoType, fwd, tr.endpos, 4.0f);
 		hit->DispatchTraceAttack(info, fwd, &tr);
 	}

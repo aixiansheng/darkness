@@ -2492,24 +2492,11 @@ bool CGameMovement::CheckJumpButton( void )
 		teamNum = p->GetTeamNumber();
 		classNum = p->m_iClassNumber;
 
-		switch(teamNum) {
-		case TEAM_SPIDERS:
-			if (classNum < NUM_SPIDER_CLASSES && classNum >= 0) {
-				classFactor = dk_spider_classes[classNum].jump_factor;
-			}
 
-			break;
-
-		case TEAM_HUMANS:
-			if (classNum < NUM_HUMAN_CLASSES && classNum >= 0) {
-				classFactor = dk_human_classes[classNum].jump_factor;
-			}
-
-			break;
-
-		default:
-			break;
+		if (classNum < NUM_CLASSES && classNum >= 0) {
+			classFactor = dk_classes[classNum].jump_factor;
 		}
+
 
 		flMul *= classFactor;
 	}

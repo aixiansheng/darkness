@@ -290,7 +290,7 @@ void CWeaponBreeder::MakeItem(int idx) {
 			//
 			// trace largest unit's hull to avoid stuck spawns
 			//
-			UTIL_TraceHull(dst, dst, dk_spider_classes[CLASS_STALKER_IDX].vectors->m_vHullMin, dk_spider_classes[CLASS_STALKER_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
+			UTIL_TraceHull(dst, dst, dk_classes[CLASS_STALKER_IDX].vectors->m_vHullMin, dk_classes[CLASS_STALKER_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
 			if (tr.DidHit()) {
 				WeaponSound(EMPTY);
 				break;

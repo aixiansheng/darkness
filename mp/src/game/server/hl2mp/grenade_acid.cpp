@@ -12,6 +12,7 @@
 #include "SpriteTrail.h"
 #include "soundent.h"
 #include "particle_parse.h"
+#include "ammodef.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -339,6 +340,8 @@ void CGrenadeAcid::SpewThink(void) {
 
 	Vector vecReported = thrower ? thrower->GetAbsOrigin() : vec3_origin;
 	CTakeDamageInfo info( this, thrower, GetBlastForce(), GetAbsOrigin(), m_flDamage, DMG_ACID);
+	info.SetAmmoType(GetAmmoDef()->Index("grenade_acid"));
+
 	RadiusDamage( info, GetAbsOrigin(), m_DmgRadius, CLASS_NONE, NULL );
 
 	SetNextThink(gpGlobals->curtime + 0.1);

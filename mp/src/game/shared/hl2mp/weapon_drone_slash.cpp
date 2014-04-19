@@ -362,6 +362,11 @@ void CWeaponDroneSlash::ItemPostFrame( void ) {
 
 #ifndef CLIENT_DLL
 
+void CWeaponDroneSlash::Spawn(void) {
+	BaseClass::Spawn();
+	SetAmmoType(GetAmmoDef()->Index("drone_slash"));
+}
+
 void CWeaponDroneSlash::HandleAnimEventMeleeHit( animevent_t *pEvent, CBaseCombatCharacter *pOperator )
 {
 	// Trace up or down based on where the enemy is...

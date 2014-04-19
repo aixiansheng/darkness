@@ -45,6 +45,7 @@ static const Vector g_bludgeonMaxs(BLUDGEON_HULL_DIM,BLUDGEON_HULL_DIM,BLUDGEON_
 CBaseHL2MPBludgeonWeapon::CBaseHL2MPBludgeonWeapon()
 {
 	m_bFiresUnderwater = true;
+	bludgeon_ammo_type = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -275,6 +276,9 @@ void CBaseHL2MPBludgeonWeapon::ImpactEffect( trace_t &traceHit )
 	UTIL_ImpactTrace( &traceHit, DMG_CLUB );
 }
 
+void CBaseHL2MPBludgeonWeapon::SetAmmoType(int type) {
+	bludgeon_ammo_type = type;
+}
 
 //------------------------------------------------------------------------------
 // Purpose : Starts the swing of the weapon and determines the animation
@@ -301,6 +305,9 @@ void CBaseHL2MPBludgeonWeapon::Swing( int bIsSecondary )
 #ifndef CLIENT_DLL
 	// Like bullets, bludgeon traces have to trace against triggers.
 	CTakeDamageInfo triggerInfo( GetOwner(), GetOwner(), GetDamageForActivity( nHitActivity ), DMG_CLUB );
+	if (bludgeon_ammo_type != -1) {
+		triggerInfo.SetAmmoType(bludgeon_ammo_type);
+	}
 	TraceAttackToTriggers( triggerInfo, traceHit.startpos, traceHit.endpos, vec3_origin );
 #endif
 

@@ -50,17 +50,20 @@ public:
 	virtual	float	GetFireRate( void )								{	return	0.2f;	}
 	virtual float	GetRange( void )								{	return	32.0f;	}
 	virtual	float	GetDamageForActivity( Activity hitActivity )	{	return	1.0f;	}
+	virtual void	SetAmmoType(int type);
 
 	CBaseHL2MPBludgeonWeapon( const CBaseHL2MPBludgeonWeapon & );
 
 protected:
 	virtual	void	ImpactEffect( trace_t &trace );
-
+	
 private:
 	bool			ImpactWater( const Vector &start, const Vector &end );
 	void			Swing( int bIsSecondary );
 	void			Hit( trace_t &traceHit, Activity nHitActivity );
 	Activity		ChooseIntersectionPointAndActivity( trace_t &hitTrace, const Vector &mins, const Vector &maxs, CBasePlayer *pOwner );
+
+	int bludgeon_ammo_type;
 };
 
 #endif

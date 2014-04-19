@@ -75,6 +75,8 @@ CClassMenu::CClassMenu(IViewPort *pViewPort) : Frame(NULL, PANEL_CLASS)
 	SetTitleBarVisible( false );
 	SetProportional(true);
 
+
+
 	// info window about this class
 	m_pPanel = new EditablePanel( this, "ClassInfo" );
 
@@ -148,7 +150,7 @@ void CClassMenu::Update(void) {
 	}
 
 	if (!player) {
-		ShowClasses(NULL, 0);
+		ClearClassButtons();
 		return;
 	}
 
@@ -160,15 +162,69 @@ void CClassMenu::Update(void) {
 	}
 
 	m_iTeam = player->GetTeamNumber();
+	ClearClassButtons();
 	if (m_iTeam == TEAM_SPIDERS) {
-		ShowClasses(dk_spider_classes, NUM_SPIDER_CLASSES);
+		ShowClassButton(0, CLASS_BREEDER_IDX);
+		ShowClassButton(1, CLASS_HATCHY_IDX);
+		ShowClassButton(2, CLASS_DRONE_IDX);
+		ShowClassButton(3, CLASS_KAMI_IDX);
+		ShowClassButton(4, CLASS_STINGER_IDX);
+		ShowClassButton(5, CLASS_GUARDIAN_IDX);
+		ShowClassButton(6, CLASS_STALKER_IDX);
 	} else if (m_iTeam == TEAM_HUMANS) {
-		ShowClasses(dk_human_classes, NUM_HUMAN_CLASSES);
-	} else {
-		ShowClasses(NULL, 0);
-		return;
+		ShowClassButton(0, CLASS_ENGINEER_IDX);
+		ShowClassButton(1, CLASS_GRUNT_IDX);
+		ShowClassButton(2, CLASS_SHOCK_IDX);
+		ShowClassButton(3, CLASS_HEAVY_IDX);
+		ShowClassButton(4, CLASS_COMMANDO_IDX);
+		ShowClassButton(5, CLASS_EXTERMINATOR_IDX);
+		ShowClassButton(6, CLASS_MECH_IDX);
 	}
+}
 
+
+#define BUTTON_STR		"switchclass"
+#define BUTTON_FMT_STR	BUTTON_STR "%d"
+
+// see ClassMenu.res for max...
+#define MAX_BUTTONS 9
+
+void CClassMenu::ClearClassButtons(void) {
+	int i;
+	char buf[sizeof(BUTTON_STR) + 1];
+	Button *b;
+	
+	for (i = 0; i < MAX_BUTTONS; i++) {
+		Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
+		b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
+		if (b) {
+			b->SetText("None");
+			b->SetVisible(false);
+		}
+	}
+}
+
+void CClassMenu::ShowClassButton(int buttonNum, int classNum) {
+	char buttonName[32];
+	char commandStr[32];
+	char buttonText[32];
+	const char *name;
+	int cost;
+	Button *b;
+
+	name = dk_classes[classNum].name;
+	cost = dk_classes[classNum].cost;
+
+	Q_snprintf(buttonName, sizeof(buttonName), "switchclass%d", buttonNum);
+	Q_snprintf(commandStr, sizeof(commandStr), "switchclass %d", classNum);
+	Q_snprintf(buttonText, sizeof(buttonText), "%d. %s [%d points]", buttonNum + 1, name, cost);
+
+	b = dynamic_cast<Button *>(FindChildByName((const char *)buttonName));
+	if (b) {
+		b->SetText(buttonText);
+		b->SetVisible(true);
+		b->SetCommand(commandStr);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -186,7 +242,7 @@ void CClassMenu::ShowPanel(bool bShow) {
 		return;
 
 	if (!player) {
-		ShowClasses(NULL, 0);
+		ClearClassButtons();
 		return;
 	}
 
@@ -199,13 +255,23 @@ void CClassMenu::ShowPanel(bool bShow) {
 
 
 	m_iTeam = player->GetTeamNumber();
+	ClearClassButtons();
 	if (m_iTeam == TEAM_SPIDERS) {
-		ShowClasses(dk_spider_classes, NUM_SPIDER_CLASSES);
+		ShowClassButton(0, CLASS_BREEDER_IDX);
+		ShowClassButton(1, CLASS_HATCHY_IDX);
+		ShowClassButton(2, CLASS_DRONE_IDX);
+		ShowClassButton(3, CLASS_KAMI_IDX);
+		ShowClassButton(4, CLASS_STINGER_IDX);
+		ShowClassButton(5, CLASS_GUARDIAN_IDX);
+		ShowClassButton(6, CLASS_STALKER_IDX);
 	} else if (m_iTeam == TEAM_HUMANS) {
-		ShowClasses(dk_human_classes, NUM_HUMAN_CLASSES);
-	} else {
-		ShowClasses(NULL, 0);
-		return;
+		ShowClassButton(0, CLASS_ENGINEER_IDX);
+		ShowClassButton(1, CLASS_GRUNT_IDX);
+		ShowClassButton(2, CLASS_SHOCK_IDX);
+		ShowClassButton(3, CLASS_HEAVY_IDX);
+		ShowClassButton(4, CLASS_COMMANDO_IDX);
+		ShowClassButton(5, CLASS_EXTERMINATOR_IDX);
+		ShowClassButton(6, CLASS_MECH_IDX);
 	}
 	
 	if ( bShow ) {
@@ -217,54 +283,6 @@ void CClassMenu::ShowPanel(bool bShow) {
 	}
 	
 	m_pViewPort->ShowBackGround( bShow );
-}
-
-#define BUTTON_STR		"switchclass"
-#define BUTTON_FMT_STR	BUTTON_STR "%d"
-
-// see ClassMenu.res for max...
-#define MAX_BUTTONS 9
-
-
-void CClassMenu::ShowClasses(class_info_t *infos, int num) {
-	int i;
-	char buf[sizeof(BUTTON_STR) + 1];
-	char dispBuf[32];
-	Button *b;
-	
-	if (infos == NULL || num == 0) {
-		for (i = 0; i < MAX_BUTTONS; i++) {
-			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
-			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
-			if (b) {
-				b->SetText("None");
-				b->SetVisible(false);
-			}
-		}
-	}
-
-	// num > 9 = bad... so don't do it :D
-	for (i = 0; i < num; i++) {
-		Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
-		b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
-		if (b) {
-			Q_snprintf(dispBuf, sizeof(dispBuf), "&%d. %s  [%d points]", i + 1, infos[i].name, infos[i].cost);
-			b->SetText(dispBuf);
-			b->SetVisible(true);
-		}
-	}
-
-	if (i < MAX_BUTTONS - 1) {
-		for (; i < MAX_BUTTONS; i++) {
-			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
-			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
-			if (b) {
-				b->SetText("None");
-				b->SetVisible(false);
-
-			}
-		}
-	}
 }
 
 void CClassMenu::SetData(KeyValues *data) {

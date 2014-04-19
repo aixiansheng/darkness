@@ -107,7 +107,7 @@ static const char *s_pChunkModelName[CHOPPER_MAX_CHUNKS] =
 
 #define BULLRUSH_IDLE_PLAYER_FIRE_TIME 6.0f
 
-#define DRONE_SPEED	sk_helicopter_drone_speed.GetFloat()
+#define HELI_DRONE_SPEED	sk_helicopter_drone_speed.GetFloat()
 
 #define SF_HELICOPTER_LOUD_ROTOR_SOUND		0x00010000
 #define SF_HELICOPTER_ELECTRICAL_DRONE		0x00020000
@@ -1390,7 +1390,7 @@ void CNPC_AttackHelicopter::InitializeRotorSound( void )
 float CNPC_AttackHelicopter::GetMaxSpeed()
 {
 	if ( HasSpawnFlags(SF_HELICOPTER_ELECTRICAL_DRONE) )
-		return DRONE_SPEED;
+		return HELI_DRONE_SPEED;
 
 	if ( ( m_nAttackMode == ATTACK_MODE_BULLRUSH_VEHICLE ) && IsInSecondaryMode( BULLRUSH_MODE_DROP_BOMBS_FIXED_SPEED ) )
 		return CHOPPER_BULLRUSH_ENEMY_BOMB_SPEED;
@@ -1404,7 +1404,7 @@ float CNPC_AttackHelicopter::GetMaxSpeed()
 float CNPC_AttackHelicopter::GetMaxSpeedFiring()
 {
 	if ( HasSpawnFlags(SF_HELICOPTER_ELECTRICAL_DRONE) )
-		return DRONE_SPEED;
+		return HELI_DRONE_SPEED;
 
 	if ( ( m_nAttackMode == ATTACK_MODE_BULLRUSH_VEHICLE ) && IsInSecondaryMode( BULLRUSH_MODE_DROP_BOMBS_FIXED_SPEED ) )
 		return CHOPPER_BULLRUSH_ENEMY_BOMB_SPEED;

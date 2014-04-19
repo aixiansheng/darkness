@@ -102,6 +102,8 @@ protected:
 
 	float scale;
 
+	int ammo_type;
+
 #else
 
 public:

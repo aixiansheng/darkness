@@ -135,7 +135,7 @@ static HL2MPViewVectors large_vectors(
 	Vector( 25,  25,  80 )	  //VEC_CROUCH_TRACE_MAX (m_vCrouchTraceMax)
 );
 
-class_info_t dk_human_classes[NUM_HUMAN_CLASSES] = {
+class_info_t dk_classes[NUM_CLASSES] = {
 	{	
 		CLASS_ENGINEER_IDX, 
 		0, 
@@ -289,10 +289,12 @@ class_info_t dk_human_classes[NUM_HUMAN_CLASSES] = {
 		MECH_JUMP_FACTOR,
 		MECH_SND_TYPE,
 		MECH_TAUNT
-	}
-};
+	},
+	
+	//
+	// SPIDER CLASSES
+	//
 
-class_info_t dk_spider_classes[NUM_SPIDER_CLASSES] = {
 	{ 
 		CLASS_BREEDER_IDX, 
 		0, 

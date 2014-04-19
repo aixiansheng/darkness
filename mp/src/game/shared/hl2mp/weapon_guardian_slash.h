@@ -52,6 +52,7 @@ public:
 
 #ifndef CLIENT_DLL
 
+	virtual void Spawn(void);
 	virtual void Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 	void HandleAnimEventMeleeHit( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 	int WeaponMeleeAttack1Condition( float flDot, float flDist );

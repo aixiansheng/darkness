@@ -25,6 +25,7 @@ struct class_info_t {
 	int snd_type_idx;
 	const char *taunt_sound;
 };
+
 typedef struct class_info_t class_info_t;
 
 #define CLASS_ENGINEER_IDX	0
@@ -34,19 +35,39 @@ typedef struct class_info_t class_info_t;
 #define CLASS_COMMANDO_IDX	4
 #define CLASS_EXTERMINATOR_IDX	5
 #define CLASS_MECH_IDX		6
-#define NUM_HUMAN_CLASSES	7
 
-#define CLASS_BREEDER_IDX	0
-#define CLASS_HATCHY_IDX	1
-#define CLASS_DRONE_IDX		2
-#define CLASS_KAMI_IDX		3
-#define CLASS_STINGER_IDX	4
-#define CLASS_GUARDIAN_IDX	5
-#define CLASS_STALKER_IDX	6
-#define NUM_SPIDER_CLASSES	7
+#define CLASS_BREEDER_IDX	7
+#define CLASS_HATCHY_IDX	8
+#define CLASS_DRONE_IDX		9
+#define CLASS_KAMI_IDX		10
+#define CLASS_STINGER_IDX	11
+#define CLASS_GUARDIAN_IDX	12
+#define CLASS_STALKER_IDX	13
+
+//#define NUM_HUMAN_CLASSES	7
+//#define NUM_SPIDER_CLASSES	7
+#define NUM_CLASSES			14
 
 #define HATCHY_DAMAGE		60.0f
 #define HATCHY_HIT_RATE		0.4f
+
+#define IS_SPIDER_CLASS(C) (\
+	CLASS_BREEDER_IDX == C || \
+	CLASS_HATCHY_IDX == C || \
+	CLASS_DRONE_IDX == C || \
+	CLASS_KAMI_IDX == C || \
+	CLASS_STINGER_IDX == C || \
+	CLASS_GUARDIAN_IDX == C || \
+	CLASS_STALKER_IDX == C)
+
+#define IS_HUMAN_CLASS(C) (\
+	CLASS_ENGINEER_IDX == C || \
+	CLASS_GRUNT_IDX == C || \
+	CLASS_SHOCK_IDX == C || \
+	CLASS_HEAVY_IDX == C || \
+	CLASS_COMMANDO_IDX == C || \
+	CLASS_EXTERMINATOR_IDX == C || \
+	CLASS_MECH_IDX == C)
 
 // WRAITH / MEDIC?
 
@@ -221,7 +242,6 @@ typedef struct class_info_t class_info_t;
 #define GUARDIAN_TAUNT	"Guardian.Taunt"
 #define STALKER_TAUNT	"Stalker.Taunt"
 
-extern class_info_t dk_human_classes[NUM_HUMAN_CLASSES];
-extern class_info_t dk_spider_classes[NUM_SPIDER_CLASSES];
+extern class_info_t dk_classes[NUM_CLASSES];
 
 #endif

@@ -221,7 +221,11 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 
 	if (GetTeamNumber() == TEAM_SPIDERS) {
 
-		if (item_info->armored == 0) {
+		switch (item_info->armored) {
+		case 0:
+			//
+			// unarmored spider materiel (most)
+			//
 			if (dmgtype & DMG_BLAST ||
 				dmgtype & DMG_PLASMA ||
 				dmgtype & DMG_SHOCK ||
@@ -235,11 +239,30 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 					}
 					
 					ret = BaseClass::OnTakeDamage(newinfo);
-
 			}
-		} else {
+
+			break;
+
+		case 1:
 			//
-			// armored spider materiel (eggs)
+			// lightly armored spider materiel (egg)
+			//
+			if (dmgtype & DMG_BLAST ||
+				dmgtype & DMG_SHOCK ||
+				(dmgtype & DMG_PLASMA && dmgtype & DMG_ALWAYSGIB) ||
+				(dmgtype & DMG_BULLET && dmgtype & DMG_ALWAYSGIB)) {
+
+					ret = BaseClass::OnTakeDamage(info);
+			} else {
+					newinfo.ScaleDamage(0.8f);
+					ret = BaseClass::OnTakeDamage(newinfo);
+			}
+
+			break;
+
+		case 2:
+			//
+			// heavily armored spider materiel (none)
 			//
 			if (dmgtype & DMG_BLAST ||
 				dmgtype & DMG_SHOCK ||
@@ -249,11 +272,18 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 					ret = BaseClass::OnTakeDamage(info);
 
 			}
+
+			break;
+
+		default:
+			Warning("Unknown armor value %d\n", item_info->armored);
+			break;
 		}
 
 	} else {
 
-		if (item_info->armored == 0) {
+		switch (item_info->armored) {
+		case 0:
 			if (dmgtype & DMG_BLAST ||
 				dmgtype & DMG_ACID ||
 				dmgtype & DMG_BURN ||
@@ -272,10 +302,30 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 					}
 
 					ret = BaseClass::OnTakeDamage(newinfo);
-			}
-		} else {
+				}
+
+			break;
+
+		case 1:
 			//
-			// armored human materiel (teleporters)
+			// lightly armored human materiel (turrets)
+			//
+			if (dmgtype & DMG_ACID) {
+				newinfo.ScaleDamage(0.75f);
+				ret = BaseClass::OnTakeDamage(newinfo);
+			} else if (dmgtype & DMG_BURN) {
+				newinfo.ScaleDamage(0.75f);
+				ret = BaseClass::OnTakeDamage(newinfo);
+			} else {
+				newinfo.ScaleDamage(0.80f);
+				ret = BaseClass::OnTakeDamage(newinfo);
+			}
+
+			break;
+
+		case 2:
+			//
+			// heavily armored human materiel (teleporters)
 			//
 			if (dmgtype & DMG_BLAST ||
 				(dmgtype & DMG_SLASH && dmgtype & DMG_ALWAYSGIB) ||
@@ -300,6 +350,12 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 
 				}
 			}
+
+			break;
+
+		default:
+			Warning("Unknown armor value (human) %d\n", item_info->armored);
+			break;
 		}
 
 	}

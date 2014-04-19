@@ -78,7 +78,9 @@ protected:
 	vgui::EditablePanel *m_pPanel;
 
 	CUtlVector< MouseOverPanelButton * > m_mouseoverButtons;
-	void ShowClasses(class_info_t *infos, int num);
+
+	void ShowClassButton(int buttonNum, int classNum);
+	void ClearClassButtons(void);
 };
 
 

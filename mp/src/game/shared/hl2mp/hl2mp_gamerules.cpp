@@ -959,28 +959,36 @@ CAmmoDef *GetAmmoDef()
 	{
 		bInitted = true;
 
-		def.AddAmmoType("AR2",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			60,			BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("AR2AltFire",		DMG_DISSOLVE,				TRACER_NONE,			0,			0,			3,			0,				0 );
-		def.AddAmmoType("Pistol",			DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			36,			BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("SMG1",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			100,		BULLET_IMPULSE(200, 1225),		0 );
-		def.AddAmmoType("357",				DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,			0,			12,			BULLET_IMPULSE(800, 5000),	0 );
-		def.AddAmmoType("XBowBolt",			DMG_BULLET,					TRACER_LINE,			0,			0,			10,			BULLET_IMPULSE(800, 8000),	0 );
-		def.AddAmmoType("Buckshot",			DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,			0,			0,			12,			BULLET_IMPULSE(400, 1200),	0 );
-		def.AddAmmoType("RPG_Round",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,				0 );
-		def.AddAmmoType("SMG1_Grenade",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,				0 );
-		def.AddAmmoType("Grenade",			DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,				0 );
-		def.AddAmmoType("slam",				DMG_BURN,					TRACER_NONE,			0,			0,			1,			0,				0 );
-		def.AddAmmoType("grenade_smk",		DMG_BURN,					TRACER_NONE,			0,			0,			2,			0,				0 );
-		def.AddAmmoType("grenade_spike",	DMG_BULLET,					TRACER_NONE,			0,			0,			3,			0,				0 );
-		def.AddAmmoType("grenade_guardian",	DMG_BULLET,					TRACER_NONE,			0,			0,			4,			0,				0 );
-		def.AddAmmoType("grenade_acid",		DMG_ACID,					TRACER_NONE,			0,			0,			3,			0,				0 );
-		def.AddAmmoType("stingerfire",		DMG_BURN,					TRACER_NONE,			0,			0,			10,			0, 				0 );
-		def.AddAmmoType("spike",			DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,			0,			20,			BULLET_IMPULSE(800, 4000), 	0 );
-		def.AddAmmoType("grenade_c4",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,				0 );
-		def.AddAmmoType("plasma_bolt",		DMG_PLASMA,					TRACER_LINE,			0,			0,			150,		0, 				0 );
-		def.AddAmmoType("plasma",			DMG_PLASMA | DMG_ALWAYSGIB,	TRACER_LINE,			0,			0,			200,		BULLET_IMPULSE(200, 1000), 0 );
-		def.AddAmmoType("xp_shells",		DMG_BLAST,					TRACER_LINE,			0,			0,			3,			0, 				0 );
-		def.AddAmmoType("dronespit",		DMG_BURN,					TRACER_NONE,			0,			0,			7,			0, 				0 );
+		def.AddAmmoType("AR2",				WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	60,	BULLET_IMPULSE(200, 1225),	0 );
+		def.AddAmmoType("AR2AltFire",		WPN_DEFAULT,		DMG_DISSOLVE,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("Pistol",			WPN_PISTOL,			DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	36,	BULLET_IMPULSE(200, 1225),	0 );
+		def.AddAmmoType("SMG1",				WPN_SMG,			DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	100,	BULLET_IMPULSE(200, 1225),	0 );
+		def.AddAmmoType("357",				WPN_357,			DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,	0,	12,	BULLET_IMPULSE(800, 5000),	0 );
+		def.AddAmmoType("XBowBolt",			WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE,		0,	0,	10,	BULLET_IMPULSE(800, 8000),	0 );
+		def.AddAmmoType("Buckshot",			WPN_SHOTGUN_BUCK,	DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,		0,	0,	12,	BULLET_IMPULSE(400, 1200),	0 );
+		def.AddAmmoType("RPG_Round",		WPN_RPG,			DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("SMG1_Grenade",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("Grenade",			WPN_FRAG,			DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("slam",				WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	1,	0,				0 );
+		def.AddAmmoType("grenade_smk",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	2,	0,				0 );
+		def.AddAmmoType("grenade_spike",	WPN_STALKER_GREN,	DMG_BULLET,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("grenade_guardian",	WPN_GUARDIAN_SPIKE,	DMG_BULLET,			TRACER_NONE,		0,	0,	4,	0,				0 );
+		def.AddAmmoType("grenade_acid",		WPN_ACID_GREN,		DMG_ACID,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("stingerfire",		WPN_STINGER_FIRE,	DMG_BURN,			TRACER_NONE,		0,	0,	10,	0, 				0 );
+		def.AddAmmoType("spike",			WPN_SPIKER,			DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,	0,	20,	BULLET_IMPULSE(800, 4000), 	0 );
+		def.AddAmmoType("grenade_c4",		WPN_C4,				DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("plasma",			WPN_PLASMA_RIFLE,	DMG_PLASMA,			TRACER_LINE,		0,	0,	150,	0, 				0 );
+		def.AddAmmoType("plasma_bolt",		WPN_PLASMA_CANON,	DMG_PLASMA | DMG_ALWAYSGIB,	TRACER_LINE,		0,	0,	200,	BULLET_IMPULSE(200, 1000), 	0 );
+		def.AddAmmoType("xp_shells",		WPN_SHOTGUN_XP,		DMG_BLAST,			TRACER_LINE,		0,	0,	3,	0, 				0 );
+		def.AddAmmoType("dronespit",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	7,	0, 				0 );
+		def.AddAmmoType("stinger_slash",	WPN_STINGER_SLASH,	DMG_CLUB,			TRACER_NONE,		0,  0,	1,	0,				0 );
+		def.AddAmmoType("stalker_slash",	WPN_STALKER_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
+		def.AddAmmoType("stalker_spike",	WPN_STALKER_SPIKE,	DMG_CLUB,			TRACER_NONE,		0,	0,	20,	0,				0 );
+		def.AddAmmoType("drone_slash",		WPN_DRONE_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
+		def.AddAmmoType("SSMG1",			WPN_SILENCED_SMG,	DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	100,	BULLET_IMPULSE(200, 1225),	0 );
+		def.AddAmmoType("plasma_railgun",	WPN_RAILGUN,		DMG_PLASMA,			TRACER_NONE,		0,	0,	1,	0,				0 );
+		def.AddAmmoType("hatchy_slash",		WPN_HATCHY_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
+		def.AddAmmoType("guardian_slash",	WPN_GUARDIAN_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
 	}
 
 	return &def;

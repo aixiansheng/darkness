@@ -94,6 +94,11 @@ void CWeaponStalkerSlash::AddViewKick(void) {
 
 #ifndef CLIENT_DLL
 
+void CWeaponStalkerSlash::Spawn(void) {
+	BaseClass::Spawn();
+	SetAmmoType(GetAmmoDef()->Index("stalker_slash"));
+}
+
 void CWeaponStalkerSlash::RechargeThink(void) {
 	CHL2MP_Player *p;
 

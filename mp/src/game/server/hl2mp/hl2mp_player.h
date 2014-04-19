@@ -183,6 +183,7 @@ public:
 	bool ShowSpawnHint(void);
 	void DisableSpawnHint(void);
 	void DropC4Pack(void);
+	void ParalyzePlayer(void);
 
 	CNetworkVar (int, m_iClassNumber);
 	
@@ -191,6 +192,8 @@ public:
 
 	void NoClipSpawn(CBaseEntity *spawn);
 	
+	float DmgTypeFactor(int dmgtype);
+
 	void PlasmaOn(void);
 	void PlasmaOff(void);
 	bool PlasmaReady(void);
@@ -315,6 +318,8 @@ private:
 	void InfestCorpse(void);
 
 	bool showSpawnHint;
+
+	int hatchy_ammo_type;
 };
 
 inline CHL2MP_Player *ToHL2MPPlayer( CBaseEntity *pEntity )

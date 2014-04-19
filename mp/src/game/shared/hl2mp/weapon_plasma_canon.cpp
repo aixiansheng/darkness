@@ -234,6 +234,8 @@ void CPlasmaBolt::Spawn(void) {
 	m_takedamage = DAMAGE_NO;
 	m_bloodColor = DONT_BLEED;
 
+	ammo_type = GetAmmoDef()->Index("plasma_bolt");
+
 	AddEffects(EF_BRIGHTLIGHT);
 }
 
@@ -277,6 +279,7 @@ void CPlasmaBolt::BoltTouch( CBaseEntity *pOther ) {
 	SetSolid(SOLID_NONE);
 
 	CTakeDamageInfo info(m_hOwner, GetOwnerEntity(), GetDamage(), DMG_PLASMA | DMG_ALWAYSGIB);
+	info.SetAmmoType(ammo_type);
 	
 	if ( tr.fraction == 1.0 || !(tr.surface.flags & SURF_SKY) ) {
 		pOther->DispatchTraceAttack(info, forward, &tr);

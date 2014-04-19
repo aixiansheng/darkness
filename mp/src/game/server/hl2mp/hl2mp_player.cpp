@@ -684,11 +684,8 @@ void CHL2MP_Player::Precache( void )
 	BaseClass::Precache();
 
 	PrecacheModel ( "sprites/glow01.vmt" );
-	for (i = 0; i < NUM_SPIDER_CLASSES; i++)
-		PrecacheModel(dk_spider_classes[i].model);
-
-	for (i = 0; i < NUM_HUMAN_CLASSES; i++)
-		PrecacheModel(dk_human_classes[i].model);
+	for (i = 0; i < NUM_CLASSES; i++)
+		PrecacheModel(dk_classes[i].model);
 
 	PrecacheFootStepSounds();
 
@@ -777,17 +774,17 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 
 	switch(GetTeamNumber()) {
 	case TEAM_SPIDERS:
-		if (Q_strcmp(dk_spider_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
-			CBasePlayer::GiveAmmo(999, dk_spider_classes[m_iClassNumber].pri_ammo);
+		if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
+			CBasePlayer::GiveAmmo(999, dk_classes[m_iClassNumber].pri_ammo);
 
-		if (Q_strcmp(dk_spider_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
-			CBasePlayer::GiveAmmo(999, dk_spider_classes[m_iClassNumber].sec_ammo);
+		if (Q_strcmp(dk_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
+			CBasePlayer::GiveAmmo(999, dk_classes[m_iClassNumber].sec_ammo);
 
 		if (m_flNextRefilTime < gpGlobals->curtime) {
 			m_flNextRefilTime = gpGlobals->curtime + GRENADE_REFIL_TIMEOUT;
 
-			if (Q_strcmp(dk_spider_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
-				CBasePlayer::GiveAmmo(dk_spider_classes[m_iClassNumber].max_grenades, dk_spider_classes[m_iClassNumber].grenade_type);
+			if (Q_strcmp(dk_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
+				CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type);
 		}
 
 		break;
@@ -809,22 +806,22 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 					amt = 200;
 				}
 
-				if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
-					CBasePlayer::GiveAmmo(amt, dk_human_classes[m_iClassNumber].pri_ammo);
+				if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
+					CBasePlayer::GiveAmmo(amt, dk_classes[m_iClassNumber].pri_ammo);
 			}
 
-			if (Q_strcmp(dk_human_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
-				CBasePlayer::GiveAmmo(999, dk_human_classes[m_iClassNumber].sec_ammo);
+			if (Q_strcmp(dk_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
+				CBasePlayer::GiveAmmo(999, dk_classes[m_iClassNumber].sec_ammo);
 
 			if (m_flNextRefilTime < gpGlobals->curtime) {
 				m_flNextRefilTime = gpGlobals->curtime + GRENADE_REFIL_TIMEOUT;
 
-				if (Q_strcmp(dk_human_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
-					CBasePlayer::GiveAmmo(dk_human_classes[m_iClassNumber].max_grenades, dk_human_classes[m_iClassNumber].grenade_type);
+				if (Q_strcmp(dk_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
+					CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type);
 
 				// shock trooper's extra shells are special :)
 				if (m_iClassNumber == CLASS_SHOCK_IDX) {
-					if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
+					if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
 						CBasePlayer::GiveAmmo(3, "xp_shells");
 				}
 
@@ -841,36 +838,36 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 			//
 			// nobody gets grenades from engy
 			//
-			if (Q_strcmp(dk_human_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
-				CBasePlayer::GiveAmmo(999, dk_human_classes[m_iClassNumber].sec_ammo);
+			if (Q_strcmp(dk_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
+				CBasePlayer::GiveAmmo(999, dk_classes[m_iClassNumber].sec_ammo);
 
 			switch (m_iClassNumber) {
 			case CLASS_GRUNT_IDX:
 			case CLASS_COMMANDO_IDX:
 				// give the grunt/cmndo about a clip at a time
-				if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
-					CBasePlayer::GiveAmmo(25, dk_human_classes[m_iClassNumber].pri_ammo);
+				if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
+					CBasePlayer::GiveAmmo(25, dk_classes[m_iClassNumber].pri_ammo);
 
 				break;
 
 			case CLASS_SHOCK_IDX:
 				// give shock 2 shells at a time
-				if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
-					CBasePlayer::GiveAmmo(2, dk_human_classes[m_iClassNumber].pri_ammo);
+				if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
+					CBasePlayer::GiveAmmo(2, dk_classes[m_iClassNumber].pri_ammo);
 
 				break;
 
 			case CLASS_HEAVY_IDX:
 				// give heavy 1 rocket at a time
-				if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
-					CBasePlayer::GiveAmmo(1, dk_human_classes[m_iClassNumber].pri_ammo);
+				if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
+					CBasePlayer::GiveAmmo(1, dk_classes[m_iClassNumber].pri_ammo);
 
 				break;
 
 			case CLASS_MECH_IDX:
 				// give the mech 10 bolts at a time
-				if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
-					CBasePlayer::GiveAmmo(10, dk_human_classes[m_iClassNumber].pri_ammo);
+				if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
+					CBasePlayer::GiveAmmo(10, dk_classes[m_iClassNumber].pri_ammo);
 
 				break;
 
@@ -899,50 +896,33 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 	gren_weapon = NULL;
 	spec_weapon = NULL;
 
-	// give primary, secondary, grenades (and ammo)
+	//
+	// give primary, secondary, grenades (and ammo) to all
+	//
 
-	switch(GetTeamNumber()) {
-	case TEAM_SPIDERS:
+	if (Q_strcmp(dk_classes[m_iClassNumber].sec_weapon, WEAPON_NULL)) {
+		GiveNamedItem(dk_classes[m_iClassNumber].sec_weapon);
+		sec_weapon = Weapon_OwnsThisType(dk_classes[m_iClassNumber].sec_weapon);
+	}
 
-		if (Q_strcmp(dk_spider_classes[m_iClassNumber].sec_weapon, WEAPON_NULL)) {
-			GiveNamedItem(dk_spider_classes[m_iClassNumber].sec_weapon);
-			sec_weapon = Weapon_OwnsThisType(dk_spider_classes[m_iClassNumber].sec_weapon);
-		}
-
-		if (Q_strcmp(dk_spider_classes[m_iClassNumber].grenade_type, GRENADE_NULL)) {
-			CBasePlayer::GiveAmmo(dk_spider_classes[m_iClassNumber].max_grenades, dk_spider_classes[m_iClassNumber].grenade_type);
-		}
+	if (Q_strcmp(dk_classes[m_iClassNumber].grenade_type, GRENADE_NULL)) {
+		CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type);
+	}
 	
-		if (Q_strcmp(dk_spider_classes[m_iClassNumber].grenade_weapon, WEAPON_NULL)) {
-			GiveNamedItem(dk_spider_classes[m_iClassNumber].grenade_weapon);
-			gren_weapon = Weapon_OwnsThisType(dk_spider_classes[m_iClassNumber].grenade_weapon);
-		}
+	if (Q_strcmp(dk_classes[m_iClassNumber].grenade_weapon, WEAPON_NULL)) {
+		GiveNamedItem(dk_classes[m_iClassNumber].grenade_weapon);
+		gren_weapon = Weapon_OwnsThisType(dk_classes[m_iClassNumber].grenade_weapon);
+	}
 
-		if (Q_strcmp(dk_spider_classes[m_iClassNumber].pri_weapon, WEAPON_NULL)) {
-			GiveNamedItem(dk_spider_classes[m_iClassNumber].pri_weapon);
-			pri_weapon = Weapon_OwnsThisType(dk_spider_classes[m_iClassNumber].pri_weapon);
-			if (pri_weapon) {
-				Weapon_Switch(pri_weapon);
-			}
+	if (Q_strcmp(dk_classes[m_iClassNumber].pri_weapon, WEAPON_NULL)) {
+		GiveNamedItem(dk_classes[m_iClassNumber].pri_weapon);
+		pri_weapon = Weapon_OwnsThisType(dk_classes[m_iClassNumber].pri_weapon);
+		if (pri_weapon) {
+			Weapon_Switch(pri_weapon);
 		}
+	}
 
-		break;
-
-	case TEAM_HUMANS:
-
-		if (Q_strcmp(dk_human_classes[m_iClassNumber].sec_weapon, WEAPON_NULL)) {
-			GiveNamedItem(dk_human_classes[m_iClassNumber].sec_weapon);
-			sec_weapon = Weapon_OwnsThisType(dk_human_classes[m_iClassNumber].sec_weapon);
-		}
-
-		if (Q_strcmp(dk_human_classes[m_iClassNumber].grenade_type, GRENADE_NULL)) {
-			CBasePlayer::GiveAmmo(dk_human_classes[m_iClassNumber].max_grenades, dk_human_classes[m_iClassNumber].grenade_type);
-		}
-		
-		if (Q_strcmp(dk_human_classes[m_iClassNumber].grenade_weapon, WEAPON_NULL)) {
-			GiveNamedItem(dk_human_classes[m_iClassNumber].grenade_weapon);
-			gren_weapon = Weapon_OwnsThisType(dk_human_classes[m_iClassNumber].grenade_weapon);
-		}
+	if (GetTeamNumber() == TEAM_HUMANS) {
 
 		// give commando C4
 		if (m_iClassNumber == CLASS_COMMANDO_IDX) {
@@ -950,29 +930,12 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 			GiveNamedItem("weapon_c4");
 			spec_weapon = Weapon_OwnsThisType("weapon_c4");
 		}
-		
-		if (Q_strcmp(dk_human_classes[m_iClassNumber].pri_weapon, WEAPON_NULL)) {
-			GiveNamedItem(dk_human_classes[m_iClassNumber].pri_weapon);
-			pri_weapon = Weapon_OwnsThisType(dk_human_classes[m_iClassNumber].pri_weapon);
-			if (pri_weapon) {
-				Weapon_Switch(pri_weapon);
-			}
-		}
-
-		//if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
-		//	PlasmaOn();
-		//}
 
 		if (m_iClassNumber == CLASS_SHOCK_IDX) {
 			CBasePlayer::GiveAmmo(3, "xp_shells");
 		}
 
 		GivePackItem(PACK_ITEM_TYPE_HEALTH);
-
-		break;
-
-	default:
-		break;
 	}
 }
 
@@ -1124,6 +1087,8 @@ void CHL2MP_Player::Spawn(void)
 
 	bugGlow = false;
 	shouldDetectGlow = false;
+
+	hatchy_ammo_type = GetAmmoDef()->Index("hatchy_slash");
 }
 
 void CHL2MP_Player::SpawnHackPowerArmorUpdateThink(void) {
@@ -1301,6 +1266,7 @@ void CHL2MP_Player::Slash(CBaseEntity *other, bool force) {
 					endpos = tr.endpos;
 
 					CTakeDamageInfo dmg(this, this, HATCHY_DAMAGE, DMG_SLASH|DMG_NEVERGIB);
+					dmg.SetAmmoType(hatchy_ammo_type);
 
 					CalculateMeleeDamageForce(&dmg, forward, endpos);
 					
@@ -1368,23 +1334,9 @@ void CHL2MP_Player::PickupObject( CBaseEntity *pObject, bool bLimitMassAndSize )
 
 bool CHL2MP_Player::ValidatePlayerModel( const char *pModel )
 {
-	switch(GetTeamNumber()) {
-	case TEAM_SPIDERS:
-		if (m_iClassNumber < NUM_SPIDER_CLASSES) {
-			if (!Q_stricmp(dk_spider_classes[m_iClassNumber].model, pModel))
-				return true;
-		}
-		break;
-
-	case TEAM_HUMANS:
-		if (m_iClassNumber < NUM_HUMAN_CLASSES) {
-			if (!Q_stricmp(dk_human_classes[m_iClassNumber].model, pModel))
-				return true;
-		}
-		break;
-
-	default:
-		break;
+	if (m_iClassNumber < NUM_CLASSES) {
+		if (!Q_stricmp(dk_classes[m_iClassNumber].model, pModel))
+			return true;
 	}
 
 	return false;
@@ -2142,39 +2094,21 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 			// don't actually set class properties here
 			// do that upon Spawn()
 
-			if (GetTeamNumber() == TEAM_SPIDERS) {
-				if (classNum < NUM_SPIDER_CLASSES && classNum >= 0) {
-					if (m_iPlayerPoints >= dk_spider_classes[classNum].cost) {
-						if (chose_class == false) {
-							chose_class = true;
-							m_iClassNumber = classNum;
-							SubtractPlayerPoints(dk_spider_classes[classNum].cost);
+			if ((GetTeamNumber() == TEAM_SPIDERS && IS_SPIDER_CLASS(classNum)) ||
+				(GetTeamNumber() == TEAM_HUMANS && IS_HUMAN_CLASS(classNum))) {
 
-							if (IsAlive()) {
-								CommitSuicide(true, true);
-								AddPlayerPoints(1);
-							}
+				if (m_iPlayerPoints >= dk_classes[classNum].cost) {
+					if (chose_class == false) {
+						chose_class = true;
+						m_iClassNumber = classNum;
+						SubtractPlayerPoints(dk_classes[classNum].cost);
 
-							return true;
+						if (IsAlive()) {
+							CommitSuicide(true, true);
+							AddPlayerPoints(1);
 						}
-					}
-				}
 
-			} else if (GetTeamNumber() == TEAM_HUMANS) {
-				if (classNum < NUM_HUMAN_CLASSES && classNum >= 0) {
-					if (m_iPlayerPoints >= dk_human_classes[classNum].cost) {
-						if (chose_class == false) {
-							chose_class = true;
-							m_iClassNumber = classNum;
-							SubtractPlayerPoints(dk_human_classes[classNum].cost);
-
-							if (IsAlive()) {
-								CommitSuicide(true, true);
-								AddPlayerPoints(1);
-							}
-
-							return true;
-						}
+						return true;
 					}
 				}
 			}
@@ -2473,80 +2407,47 @@ int CHL2MP_Player::GetMaxArmor(void) {
 }
 
 void CHL2MP_Player::SetPlayerClass(int c) {
-	
+	int team;
+
+	team = GetTeamNumber();
 	taunt_sound = NULL;
-
-	switch (GetTeamNumber()) {
-	case TEAM_SPIDERS:
-		if (c < NUM_SPIDER_CLASSES) {
-			m_iClassNumber = c;
-			max_armor = dk_spider_classes[c].armor;
-			taunt_sound = dk_spider_classes[c].taunt_sound;
-			SetArmorValue(dk_spider_classes[c].armor);
-			SetMaxSpeed(dk_spider_classes[c].max_speed);
-			SetMaxHealth(dk_spider_classes[c].health);
-			SetHealth(dk_spider_classes[c].health);
-			SetModel(dk_spider_classes[c].model);
-			SetupPlayerSounds(dk_spider_classes[c].snd_type_idx);
-			SetDefaultFOV(dk_spider_classes[c].fov);
-			SetVectors(dk_spider_classes[c].vectors);
-			//m_Local.m_bDrawViewmodel = true;
-			grenade_weapon_type = dk_spider_classes[c].grenade_weapon;
-			
-			if (Q_strcmp(dk_spider_classes[c].grenade_type, GRENADE_NULL)) {
-				grenade_type = GetAmmoDef()->Index(dk_spider_classes[c].grenade_type);
-			}
-
-			if (c == CLASS_KAMI_IDX) {
-				m_nSkin = 1;
-			} else {
-				m_nSkin = 0;
-			}
-		}
-
-		break;
-
-	case TEAM_HUMANS:
-		m_nSkin = 0;
-
-		if (c < NUM_HUMAN_CLASSES) {
-			m_iClassNumber = c;
-			max_armor = dk_human_classes[c].armor;
-			taunt_sound = dk_human_classes[c].taunt_sound;
-			SetArmorValue(dk_human_classes[c].armor);
-			SetMaxSpeed(dk_human_classes[c].max_speed);
-			SetMaxHealth(dk_human_classes[c].health);
-			SetHealth(dk_human_classes[c].health);
-			SetModel(dk_human_classes[c].model);
-			SetupPlayerSounds(dk_human_classes[c].snd_type_idx);
-			SetDefaultFOV(dk_human_classes[c].fov);
-			SetVectors(dk_human_classes[c].vectors);
-			//m_Local.m_bDrawViewmodel = true;
-			grenade_weapon_type = dk_human_classes[c].grenade_weapon;
-
-			if (Q_strcmp(dk_human_classes[c].grenade_type, GRENADE_NULL)) {
-				grenade_type = GetAmmoDef()->Index(dk_human_classes[c].grenade_type);
-			}
-
-			switch (m_iClassNumber) {
-			case CLASS_GRUNT_IDX:
-			case CLASS_SHOCK_IDX:
-			case CLASS_HEAVY_IDX:
-			case CLASS_COMMANDO_IDX:
-				m_bForceServerRagdoll = true;
-				break;
-			default:
-				m_bForceServerRagdoll = false;
-			}
-
-		}
-
-		break;
-
-	default:
-		break;
+	m_nSkin = 0;
+	m_bForceServerRagdoll = false;
+	
+	if (team == TEAM_HUMANS && !IS_HUMAN_CLASS(c) ||
+		team == TEAM_SPIDERS && !IS_SPIDER_CLASS(c)) {
+			return;
 	}
 
+	m_iClassNumber = c;
+	max_armor = dk_classes[c].armor;
+	taunt_sound = dk_classes[c].taunt_sound;
+	SetArmorValue(dk_classes[c].armor);
+	SetMaxSpeed(dk_classes[c].max_speed);
+	SetMaxHealth(dk_classes[c].health);
+	SetHealth(dk_classes[c].health);
+	SetModel(dk_classes[c].model);
+	SetupPlayerSounds(dk_classes[c].snd_type_idx);
+	SetDefaultFOV(dk_classes[c].fov);
+	SetVectors(dk_classes[c].vectors);
+	grenade_weapon_type = dk_classes[c].grenade_weapon;
+
+	if (Q_strcmp(dk_classes[c].grenade_type, GRENADE_NULL)) {
+		grenade_type = GetAmmoDef()->Index(dk_classes[c].grenade_type);
+	}
+
+	switch (c) {
+		case CLASS_KAMI_IDX:
+			m_nSkin = 1;
+			break;
+
+		case CLASS_GRUNT_IDX:
+		case CLASS_SHOCK_IDX:
+		case CLASS_HEAVY_IDX:
+		case CLASS_COMMANDO_IDX:
+			m_bForceServerRagdoll = true;
+			break;
+	}
 }
 
 void CHL2MP_Player::GivePoints(void) {
@@ -2885,143 +2786,73 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 	MessageEnd();
 }
 
+float CHL2MP_Player::DmgTypeFactor(int dmgtype) {
+	int team;
+
+	team = GetTeamNumber();
+
+	if (dmgtype & DMG_FALL) {
+			switch (m_iClassNumber) {
+				case CLASS_HATCHY_IDX:
+				case CLASS_KAMI_IDX:
+				case CLASS_DRONE_IDX:
+					return 0.0f;
+
+				case CLASS_MECH_IDX:
+					return 6.5f;
+			}
+
+			if (team == TEAM_HUMANS)
+				return 3.0f;
+			else
+				return 0.25f;
+	}
+
+	return 1.0f;
+}
+
+void CHL2MP_Player::ParalyzePlayer(void) {
+	last_spit_hit = gpGlobals->curtime;
+	m_Local.m_bAllowAutoMovement = false;
+	EnableControl(FALSE);
+	SetContextThink(&CHL2MP_Player::SpitUnFreeze, gpGlobals->curtime + DRONE_SPIT_TIME, DRONE_SPIT_CTX);
+}
+
 int CHL2MP_Player::OnTakeDamage( const CTakeDamageInfo &inputInfo ) {
+	int team;
 	int dmgtype;
+	int ammotype;
+	float wpn_factor;
 	CTakeDamageInfo newinfo = inputInfo;
 
-	//
-	// See if the damage was DMG_PARALYZE (drone spit)
-	// and stop player movement for a fixed period of time
-	//
+	// scale damage scale based on the attack weapon's factor for this class
+	ammotype = inputInfo.GetAmmoType();
+	wpn_factor = GetAmmoDef()->DmgFactorForClass(ammotype, m_iClassNumber);
+	newinfo.ScaleDamage(wpn_factor);
 
-
+	team = GetTeamNumber();
 	dmgtype = inputInfo.GetDamageType();
 
-	if (dmgtype & DMG_PARALYZE && GetTeamNumber() == TEAM_HUMANS) {
-		last_spit_hit = gpGlobals->curtime;
-		m_Local.m_bAllowAutoMovement = false;
-		EnableControl(FALSE);
-		SetContextThink(&CHL2MP_Player::SpitUnFreeze, gpGlobals->curtime + DRONE_SPIT_TIME, DRONE_SPIT_CTX);
-		return 0;
+	// take damage type into consideration
+	newinfo.ScaleDamage(DmgTypeFactor(dmgtype));
+
+	// only humans can be paralyzed
+	if (dmgtype & DMG_PARALYZE && team == TEAM_HUMANS) {
+		ParalyzePlayer();
 	}
 
-	if (dmgtype == DMG_FALL) {
-		if (GetTeamNumber() == TEAM_SPIDERS) {
-			if (m_iClassNumber == CLASS_HATCHY_IDX ||
-				m_iClassNumber == CLASS_KAMI_IDX ||
-				m_iClassNumber == CLASS_DRONE_IDX) {
-					return 0;
-			} else {
-				newinfo.ScaleDamage(0.25f);
-			}
-		} else {
-			// fall harder if it's a human
-			// particularly if it's a mech
-			if (m_iClassNumber == CLASS_MECH_IDX) {
-				newinfo.ScaleDamage(6.5f);
-			} else {
-				newinfo.ScaleDamage(3.0f);
-			}
-		}
-	}
+	// armor should decrease damage
+	if (ArmorValue() > 0)
+		newinfo.ScaleDamage(0.85f);
 
-	if (dmgtype == DMG_ACID) {
-		if (GetTeamNumber() == TEAM_HUMANS) {
-			if (m_iClassNumber == CLASS_EXTERMINATOR_IDX || m_iClassNumber == CLASS_MECH_IDX) {
-				return 0;
-			}
-		} else {
-			return 0;
-		}
-	}
-
-	//
-	// having armor conveys a bonus
-	//
-	if (dmgtype & DMG_ALWAYSGIB) {
-		if (ArmorValue() > 0) {
-			newinfo.ScaleDamage(0.90f);
-		}
-	} else {
-		if (ArmorValue() > 0 ) {
-			newinfo.ScaleDamage(0.80f);
-		}
-	}
-
-	if (dmgtype & DMG_PLASMA) {
-		if (!(dmgtype & DMG_ALWAYSGIB)) {
-			//
-			// this is exterm plasma (doesn't have alwaysgib set)
-			// so nerf it against stingers
-			// and buff it against guardians
-			//
-
-			//
-			// not having ALWAYSGIB set means that if the player
-			// had armor, the XT's plasma was already weakened by 30%
-			//
-
-			if (GetTeamNumber() == TEAM_SPIDERS) {
-				if (m_iClassNumber == CLASS_STINGER_IDX) {
-					newinfo.ScaleDamage(0.5f);
-				} else if (m_iClassNumber == CLASS_GUARDIAN_IDX) {
-					newinfo.ScaleDamage(1.5f);
-				}
-			}
-		}
-	}
-
-	//
-	// engies and breeders take extra damage
-	// to discourage brave thinking ;)
-	//
-	if ((GetTeamNumber() == TEAM_SPIDERS && m_iClassNumber == CLASS_BREEDER_IDX) ||
-		(GetTeamNumber() == TEAM_HUMANS && m_iClassNumber == CLASS_ENGINEER_IDX)) {
-
-			newinfo.ScaleDamage(1.1f);
-
-	}
-
+	// allow exterm armor to do its job
 	FilterDamage(newinfo);
 
-	if (dmgtype & DMG_BLAST) {
-		return BaseClass::OnTakeDamage(newinfo);
-	}
-
-	// humans and spiders only take explosion damage
-	// from teammates...
-
-	if (inputInfo.GetAttacker()) {
-		if (inputInfo.GetAttacker()->IsPlayer()) {
-			if (inputInfo.GetAttacker()->edict() == edict()) {
-
-				if (dropC4) {
-					DropC4Pack();
-					dropC4 = false;
-				}
-
-				return BaseClass::OnTakeDamage(newinfo);
-			}
-
-			CHL2MP_Player *p = ToHL2MPPlayer(inputInfo.GetAttacker());
-			if (p && p->GetTeamNumber() == TEAM_SPIDERS &&
-				(p->m_iClassNumber == CLASS_HATCHY_IDX || p->m_iClassNumber == CLASS_KAMI_IDX) &&
-				dmgtype & DMG_SLASH) {
-
-					if (GetTeamNumber() == TEAM_HUMANS &&
-						(m_iClassNumber == CLASS_GRUNT_IDX || m_iClassNumber == CLASS_SHOCK_IDX)) {
-
-							// hatchy/kami does extra damage against grunt/shock (light armor)
-							newinfo.ScaleDamage(RandomFloat(1.2f, 1.7f));
-
-					}
-			}
-		}
-
-		if (inputInfo.GetAttacker()->GetTeamNumber() == GetTeamNumber()) {
-			return 0;
-		}
-	}
+	//
+	// return now if there is no damage to prevent C4 drop and damag effects 
+	//
+	if (newinfo.GetDamage() == 0.0f)
+		return 0;
 
 	m_vecTotalBulletForce += inputInfo.GetDamageForce();
 	

@@ -101,6 +101,11 @@ void CWeaponGuardianSlash::PrimaryAttack(void) {
 
 #ifndef CLIENT_DLL
 
+void CWeaponGuardianSlash::Spawn(void) {
+	BaseClass:Spawn();
+	SetAmmoType(GetAmmoDef()->Index("guardian_slash");
+}
+
 void CWeaponGuardianSlash::HandleAnimEventMeleeHit( animevent_t *pEvent, CBaseCombatCharacter *pOperator )
 {
 	// Trace up or down based on where the enemy is...

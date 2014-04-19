@@ -41,7 +41,7 @@ typedef struct item_info_t item_info_t;
 #define ITEM_GASSER_IDX		4
 #define NUM_SPIDER_ITEMS	5
 
-#define EGG_VALUE			40
+#define EGG_VALUE			15
 #define HEALER_VALUE		50
 #define OBSTACLE_VALUE		20
 #define SPIKER_VALUE		30
@@ -50,7 +50,7 @@ typedef struct item_info_t item_info_t;
 #define TELEPORTER_MAX_HEALTH	250
 #define TELEPORTER_INIT_HEALTH	20
 #define TELEPORTER_MIN_HEALTH	100
-#define TELEPORTER_ARMORED		1
+#define TELEPORTER_ARMORED		2
 #define TELEPORTER_DIE_SOUND	"AmmoCrate.Die"
 
 #define DETECTOR_MAX_HEALTH		20
@@ -73,25 +73,25 @@ typedef struct item_info_t item_info_t;
 
 #define MINE_MAX_HEALTH			10
 #define MINE_INIT_HEALTH		10
-#define MINE_ARMORED			1
+#define MINE_ARMORED			2
 #define MINE_INIT_SOUND			"Mine.Init"
 
 #define SMG_TURRET_MAX_HEALTH	140
 #define SMG_TURRET_INIT_HEALTH	10
 #define SMG_TURRET_MIN_HEALTH	80
-#define SMG_TURRET_ARMORED		0
+#define SMG_TURRET_ARMORED		1
 #define SMG_TURRET_INIT_SOUND	"Mine.Init"
 #define SMG_TURRET_DIE_SOUND	AMMO_CRATE_DIE_SOUND
 
 #define MSL_TURRET_MAX_HEALTH	160
 #define MSL_TURRET_INIT_HEALTH	10
 #define MSL_TURRET_MIN_HEALTH	90
-#define MSL_TURRET_ARMORED		0
+#define MSL_TURRET_ARMORED		1
 #define MSL_TURRET_INIT_SOUND	"Mine.Init"
 #define MSL_TURRET_DIE_SOUND	AMMO_CRATE_DIE_SOUND
 
-#define EGG_MAX_HEALTH			250
-#define EGG_INIT_HEALTH			250
+#define EGG_MAX_HEALTH			200
+#define EGG_INIT_HEALTH			200
 #define EGG_ARMORED				1
 #define EGG_DIE_SOUND			"Egg.Die"
 

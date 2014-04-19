@@ -42,6 +42,8 @@ void CSpike::SpikeTouch(CBaseEntity *other) {
 		SetSolid(SOLID_NONE);
 
 		CTakeDamageInfo info(this, GetOwnerEntity(), GetAbsVelocity(), GetAbsOrigin(), spikeDamage, DMG_SLASH | DMG_ALWAYSGIB);
+		info.SetAmmoType(GetAmmoDef()->Index("stalker_spike"));
+
 		CalculateMeleeDamageForce(&info, forward, tr.endpos, 0.5f);
 		other->DispatchTraceAttack(info, forward, &tr);
 		ApplyMultiDamage();
