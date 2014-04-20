@@ -23,7 +23,7 @@
 #define FRAG_GRENADE_GRACE_TIME_AFTER_PICKUP 1.5f
 #define FRAG_GRENADE_WARN_TIME 1.5f
 
-#define ACID_TIME	3.25f
+#define ACID_TIME	3.0f
 #define ACID_DAMAGE	40.0f
 
 const float GRENADE_COEFFICIENT_OF_RESTITUTION = 0.2f;
@@ -325,6 +325,8 @@ void CGrenadeAcid::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t r
 
 void CGrenadeAcid::SpewThink(void) {
 	CBaseEntity *thrower;
+	CBaseEntity *ent;
+	trace_t tr;
 
 	if (gpGlobals->curtime > m_flSpewEndTime) {
 		StopParticleEffects(this);
@@ -339,10 +341,25 @@ void CGrenadeAcid::SpewThink(void) {
 	}
 
 	Vector vecReported = thrower ? thrower->GetAbsOrigin() : vec3_origin;
-	CTakeDamageInfo info( this, thrower, GetBlastForce(), GetAbsOrigin(), m_flDamage, DMG_ACID);
-	info.SetAmmoType(GetAmmoDef()->Index("grenade_acid"));
+	
+	for (CEntitySphereQuery sphere(GetAbsOrigin(), m_DmgRadius); 
+		(ent = sphere.GetCurrentEntity()) != NULL; 
+		sphere.NextEntity()) 
+	{
+		UTIL_TraceLine(GetAbsOrigin(), ent->GetAbsOrigin(), MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+		
+		if (tr.DidHit() && tr.m_pEnt != ent)
+			continue; // something's in the way
 
-	RadiusDamage( info, GetAbsOrigin(), m_DmgRadius, CLASS_NONE, NULL );
+		if (ent->IsPlayer() && ent->GetTeamNumber() == TEAM_HUMANS && ent->IsAlive()) {
+			CTakeDamageInfo info( this, thrower, GetBlastForce(), GetAbsOrigin(), m_flDamage, DMG_ACID);
+			info.SetAmmoType(GetAmmoDef()->Index("grenade_acid"));
+
+			ent->DispatchTraceAttack(info, Vector(0,0,1), &tr);
+			ApplyMultiDamage();
+		}
+	}
+
 
 	SetNextThink(gpGlobals->curtime + 0.1);
 }

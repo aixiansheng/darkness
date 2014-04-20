@@ -132,7 +132,7 @@ void CMGTurretHead::Spawn(void) {
 	SetCollisionGroup(COLLISION_GROUP_NONE);
 	SetSolid(SOLID_NONE);
 
-	m_iAmmoType	= GetAmmoDef()->Index("AR2");
+	m_iAmmoType	= GetAmmoDef()->Index("turret_bullet");
 	
 	//SetLocalOrigin( vec3_origin );
 	SetLocalAngles( vec3_angle );
@@ -320,6 +320,8 @@ void CMGTurretHead::ShootAt(CBaseEntity *ent) {
 
 	UTIL_TraceLine(shootpos, endpos, MASK_SOLID, NULL, COLLISION_GROUP_NONE, &tr);
 	CTakeDamageInfo info(this, GetParent(), SMG_TURRET_DAMAGE, DMG_BULLET);
+	info.SetAmmoType(m_iAmmoType);
+
 	CalculateMeleeDamageForce(&info, dir, endpos);
 	ent->DispatchTraceAttack(info, dir, &tr);
 	ApplyMultiDamage();

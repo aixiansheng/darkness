@@ -23,6 +23,7 @@ void Bot_Think( CHL2MP_Player *pBot );
 
 #ifdef DEBUG
 
+ConVar bot_teamclass("bot_teamclass", "", 0, "bot will change team/class" );
 ConVar bot_forcefireweapon( "bot_forcefireweapon", "", 0, "Force bots with the specified weapon to fire." );
 ConVar bot_forceattack2( "bot_forceattack2", "0", 0, "When firing, use attack2." );
 ConVar bot_forceattackon( "bot_forceattackon", "0", 0, "When firing, don't tap fire, hold it down." );
@@ -31,7 +32,7 @@ ConVar bot_defend( "bot_defend", "0", 0, "Set to a team number, and that team wi
 ConVar bot_changeclass( "bot_changeclass", "0", 0, "Force all bots to change to the specified class." );
 ConVar bot_zombie( "bot_zombie", "0", 0, "Brraaaaaiiiins." );
 static ConVar bot_mimic_yaw_offset( "bot_mimic_yaw_offset", "0", 0, "Offsets the bot yaw." );
-ConVar bot_attack( "bot_attack", "1", 0, "Shoot!" );
+ConVar bot_attack( "bot_attack", "0", 0, "Shoot!" );
 
 ConVar bot_sendcmd( "bot_sendcmd", "", 0, "Forces bots to send the specified command." );
 
@@ -40,7 +41,7 @@ ConVar bot_crouch( "bot_crouch", "0", 0, "Bot crouches" );
 #ifdef NEXT_BOT
 extern ConVar bot_mimic;
 #else
-ConVar bot_mimic( "bot_mimic", "0", 0, "Bot uses usercmd of player by index." );
+ConVar bot_mimic( "bot_mimic", "1", 0, "Bot uses usercmd of player by index." );
 #endif
 
 static int BotNumber = 1;
@@ -72,7 +73,7 @@ static botdata_t g_BotData[ MAX_PLAYERS ];
 // Purpose: Create a new Bot and put it in the game.
 // Output : Pointer to the new Bot, or NULL if there's no free clients.
 //-----------------------------------------------------------------------------
-CBasePlayer *BotPutInServer( bool bFrozen, int iTeam )
+CHL2MP_Player *BotPutInServer( bool bFrozen, int iTeam )
 {
 	g_iNextBotTeam = iTeam;
 
@@ -102,6 +103,8 @@ CBasePlayer *BotPutInServer( bool bFrozen, int iTeam )
 
 	g_BotData[pPlayer->entindex()-1].m_WantedTeam = iTeam;
 	g_BotData[pPlayer->entindex()-1].m_flJoinTeamTime = gpGlobals->curtime + 0.3;
+
+	pPlayer->AddPlayerPoints(10);
 
 	return pPlayer;
 }
@@ -376,24 +379,53 @@ void Bot_Think( CHL2MP_Player *pBot )
 
 			bot_sendcmd.SetValue("");
 		}
+
+		
+		if (strlen( bot_teamclass.GetString() ) > 0) {
+			int team;
+			int classNum;
+			CCommand args;
+
+			args.Tokenize( bot_teamclass.GetString());
+
+			team = atoi(args.Arg(0));
+			classNum = atoi(args.Arg(1));
+
+			Warning("Changing team/class %d %d\n", team, classNum);
+			bot_teamclass.SetValue("");
+
+			pBot->BotTeamClass(team, classNum);
+		}
+
 	}
 	else
 	{
 		// Wait for Reinforcement wave
 		if ( !pBot->IsAlive() )
 		{
-			// Try hitting my buttons occasionally
-			if ( random->RandomInt( 0, 100 ) > 80 )
-			{
-				// Respawn the bot
-				if ( random->RandomInt( 0, 1 ) == 0 )
-				{
-					buttons |= IN_JUMP;
-				}
-				else
-				{
-					buttons = 0;
-				}
+			if (strlen( bot_sendcmd.GetString() ) > 0) {
+				//send the cmd from this bot
+				CCommand args;
+				args.Tokenize( bot_sendcmd.GetString() );
+				pBot->ClientCommand( args );
+
+				bot_sendcmd.SetValue("");
+			}
+
+			if (strlen( bot_teamclass.GetString() ) > 0) {
+				int team;
+				int classNum;
+				CCommand args;
+
+				args.Tokenize( bot_teamclass.GetString());
+
+				team = atoi(args.Arg(0));
+				classNum = atoi(args.Arg(1));
+
+				Warning("Changing team/class %d %d\n", team, classNum);
+				bot_teamclass.SetValue("");
+
+				pBot->BotTeamClass(team, classNum);
 			}
 		}
 	}

@@ -329,7 +329,7 @@ void CWeaponGrapple::PrimaryAttack( void ) {
 void CWeaponGrapple::SecondaryAttack( void ) {
 #ifndef CLIENT_DLL
 	ExplosionCreate(GetAbsOrigin(), GetAbsAngles(), GetOwnerEntity(), KAMI_DAMAGE, KAMI_RADIUS,
-		SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, GetOwnerEntity());
+		SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, this);
 #endif
 }
 

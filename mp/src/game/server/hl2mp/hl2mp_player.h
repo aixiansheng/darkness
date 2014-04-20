@@ -59,6 +59,10 @@ public:
 	DECLARE_SERVERCLASS();
 	DECLARE_DATADESC();
 
+#ifdef DEBUG
+	void BotTeamClass(int team, int classNum);
+#endif
+
 	virtual void Precache( void );
 	virtual void Spawn( void );
 	virtual void PostThink( void );

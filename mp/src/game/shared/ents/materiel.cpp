@@ -2,6 +2,7 @@
 #include "materiel.h"
 #include "class_info.h"
 #include "item_info.h"
+#include "ammodef.h"
 
 CMateriel::CMateriel(int team, struct item_info_t *info) : CBaseAnimating() {
 	ChangeTeam(team);
@@ -172,7 +173,7 @@ void CMateriel::Event_Killed(const CTakeDamageInfo &info) {
 		player = ToHL2MPPlayer(attacker);
 		if (player) {
 			if (player->GetTeamNumber() != GetTeamNumber()) {
-				if (item_info->armored == 1) {
+				if (item_info->team_dmg == 1) {
 					// only eggs and teles give points
 					player->AddPlayerPoints(1);
 				}
@@ -210,155 +211,85 @@ void CMateriel::Event_Killed(const CTakeDamageInfo &info) {
 int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 	int ret;
 	int health;
-	int dmgtype;
+	int attack_weapon;
 	float hull_height;
 	CHL2MP_Player *p;
 	CTakeDamageInfo newinfo = info;
 
 	ret = 0;
-	dmgtype = info.GetDamageType();
-	p = NULL;
+	attack_weapon = GetAmmoDef()->AttackWeapon(info.GetAmmoType());
+	p = ToHL2MPPlayer(info.GetAttacker());
 
-	if (GetTeamNumber() == TEAM_SPIDERS) {
-
-		switch (item_info->armored) {
-		case 0:
-			//
-			// unarmored spider materiel (most)
-			//
-			if (dmgtype & DMG_BLAST ||
-				dmgtype & DMG_PLASMA ||
-				dmgtype & DMG_SHOCK ||
-				dmgtype & DMG_BURN ||
-				dmgtype & DMG_CLUB ||
-				dmgtype & DMG_SLASH ||
-				dmgtype & DMG_BULLET) {
-
-					if (dmgtype & DMG_NEVERGIB) {
-						newinfo.ScaleDamage(0.5f);
-					}
-					
-					ret = BaseClass::OnTakeDamage(newinfo);
-			}
-
-			break;
-
-		case 1:
-			//
-			// lightly armored spider materiel (egg)
-			//
-			if (dmgtype & DMG_BLAST ||
-				dmgtype & DMG_SHOCK ||
-				(dmgtype & DMG_PLASMA && dmgtype & DMG_ALWAYSGIB) ||
-				(dmgtype & DMG_BULLET && dmgtype & DMG_ALWAYSGIB)) {
-
-					ret = BaseClass::OnTakeDamage(info);
-			} else {
-					newinfo.ScaleDamage(0.8f);
-					ret = BaseClass::OnTakeDamage(newinfo);
-			}
-
-			break;
-
-		case 2:
-			//
-			// heavily armored spider materiel (none)
-			//
-			if (dmgtype & DMG_BLAST ||
-				dmgtype & DMG_SHOCK ||
-				(dmgtype & DMG_PLASMA && dmgtype & DMG_ALWAYSGIB) ||
-				(dmgtype & DMG_BULLET && dmgtype & DMG_ALWAYSGIB)) {
-
-					ret = BaseClass::OnTakeDamage(info);
-
-			}
-
-			break;
-
-		default:
-			Warning("Unknown armor value %d\n", item_info->armored);
-			break;
-		}
-
-	} else {
-
-		switch (item_info->armored) {
-		case 0:
-			if (dmgtype & DMG_BLAST ||
-				dmgtype & DMG_ACID ||
-				dmgtype & DMG_BURN ||
-				dmgtype & DMG_CLUB ||
-				dmgtype & DMG_SLASH ||
-				dmgtype & DMG_SHOCK ||
-				dmgtype & DMG_BULLET ||
-				(dmgtype & DMG_BULLET && dmgtype & DMG_ALWAYSGIB)) {
-					
-					if (dmgtype & DMG_NEVERGIB ||
-						dmgtype & DMG_BURN ||
-						dmgtype & DMG_ACID) {
-
-						// human structures less vulnerable to acid, burn, and weak stuff
-						newinfo.ScaleDamage(0.5f);
-					}
-
-					ret = BaseClass::OnTakeDamage(newinfo);
-				}
-
-			break;
-
-		case 1:
-			//
-			// lightly armored human materiel (turrets)
-			//
-			if (dmgtype & DMG_ACID) {
-				newinfo.ScaleDamage(0.75f);
-				ret = BaseClass::OnTakeDamage(newinfo);
-			} else if (dmgtype & DMG_BURN) {
-				newinfo.ScaleDamage(0.75f);
-				ret = BaseClass::OnTakeDamage(newinfo);
-			} else {
-				newinfo.ScaleDamage(0.80f);
-				ret = BaseClass::OnTakeDamage(newinfo);
-			}
-
-			break;
-
-		case 2:
-			//
-			// heavily armored human materiel (teleporters)
-			//
-			if (dmgtype & DMG_BLAST ||
-				(dmgtype & DMG_SLASH && dmgtype & DMG_ALWAYSGIB) ||
-				(dmgtype & DMG_BULLET && dmgtype & DMG_ALWAYSGIB)) {
-
-					if (dmgtype & DMG_BLAST) {
-						newinfo.ScaleDamage(1.3f);
-					}
-
-					ret = BaseClass::OnTakeDamage(newinfo);
-
-			} else if (dmgtype & DMG_CLUB || dmgtype & DMG_SLASH) {
-				if (info.GetAttacker() && 
-					info.GetAttacker()->GetTeamNumber() == TEAM_SPIDERS) {
-
-					if ((p = dynamic_cast<CHL2MP_Player *>(info.GetAttacker())) != NULL) {
-						// only larger bugs can slash damage armored human materiel
-						if (p->m_iClassNumber == CLASS_DRONE_IDX || p->m_iClassNumber >= CLASS_STINGER_IDX) {
-							ret = BaseClass::OnTakeDamage(info);
-						}
-					}
-
-				}
-			}
-
-			break;
-
-		default:
-			Warning("Unknown armor value (human) %d\n", item_info->armored);
-			break;
-		}
-
+	//
+	// even items that don't take team damage should be
+	// damaged by explosions
+	//
+  	if (p && p->GetTeamNumber() == GetTeamNumber() && item_info->team_dmg == 0) {
+		if (!(info.GetDamageType() & DMG_BLAST))
+			return 0;
 	}
+
+	newinfo.ScaleDamage(item_info->armor_factor);
+
+	if (GetTeamNumber() == TEAM_HUMANS) {
+		switch (attack_weapon) {
+			case WPN_ENGY:
+			case WPN_PISTOL:
+			case WPN_SMG:
+			case WPN_SHOTGUN_BUCK:
+			case WPN_PLASMA_RIFLE:
+				if (item_info->idx == ITEM_TELEPORTER_IDX)
+					return 0;
+				break;
+
+			case WPN_RPG:
+			case WPN_FRAG:
+			case WPN_KAMI_XP:
+			case WPN_SHOTGUN_XP:
+				newinfo.ScaleDamage(1.3f);
+				break;
+
+			case WPN_ACID_GREN:
+			case WPN_GASSER:
+			case WPN_STINGER_FIRE:
+				newinfo.ScaleDamage(0.5f);
+				break;
+		}
+	} else {
+		switch (attack_weapon) {
+			case WPN_RPG:
+			case WPN_FRAG:
+			case WPN_KAMI_XP:
+			case WPN_SHOTGUN_XP:
+			case WPN_PLASMA_CANON:
+			case WPN_357:
+				newinfo.ScaleDamage(0.8f);
+				break;
+
+			case WPN_HATCHY_SLASH:
+			case WPN_KAMI_SLASH:
+			case WPN_DRONE_SLASH:
+			case WPN_STINGER_SLASH:
+			case WPN_GUARDIAN_SLASH:
+			case WPN_STALKER_SLASH:
+			case WPN_STALKER_SPIKE:
+			case WPN_GUARDIAN_SPIKE:
+			case WPN_STINGER_FIRE:
+			case WPN_RAILGUN:
+				if (item_info->idx == ITEM_EGG_IDX)
+					newinfo.ScaleDamage(0.2f);
+				break;
+
+			case WPN_ACID_GREN:
+			case WPN_GASSER:
+			case WPN_SPIKER:
+			case WPN_INFESTED:
+				return 0;
+				break;
+		}
+	}
+
+	ret = BaseClass::OnTakeDamage(newinfo);
 
 	health = GetHealth();
 

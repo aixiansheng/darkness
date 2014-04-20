@@ -17,6 +17,7 @@
 #include "ammodef.h"
 #include "weapon_shotgun.h"
 #include "weapon_rpg.h"
+#include "weapon_hatchy.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -338,9 +339,15 @@ void CEnvExplosion::InputExplode( inputdata_t &inputdata )
 		CTakeDamageInfo info( m_hInflictor ? m_hInflictor : this, pAttacker, m_iMagnitude, iDamageType );
 
 		if (m_hInflictor) {
-			CGrenadeC4 *c4 = dynamic_cast<CGrenadeC4 *>(m_hInflictor.Get());
-			CWeaponShotgun *sg = dynamic_cast<CWeaponShotgun *>(m_hInflictor.Get());
-			CMissile *ms = dynamic_cast<CMissile *>(m_hInflictor.Get());
+			CGrenadeC4 *c4;
+			CWeaponShotgun *sg;
+			CMissile *ms;
+			CWeaponGrapple *gr; 
+
+			c4 = dynamic_cast<CGrenadeC4 *>(m_hInflictor.Get());
+			sg = dynamic_cast<CWeaponShotgun *>(m_hInflictor.Get());
+			ms = dynamic_cast<CMissile *>(m_hInflictor.Get());
+			gr = dynamic_cast<CWeaponGrapple *>(m_hInflictor.Get());
 
 			if (c4) {
 				info.SetAmmoType(GetAmmoDef()->Index("grenade_c4"));
@@ -348,7 +355,9 @@ void CEnvExplosion::InputExplode( inputdata_t &inputdata )
 				info.SetAmmoType(GetAmmoDef()->Index("xp_shells"));
 			} else if (ms) {
 				info.SetAmmoType(GetAmmoDef()->Index("RPG_Round"));
-			}
+			} else if (gr) {
+				info.SetAmmoType(GetAmmoDef()->Index("kami_xp"));
+			};
 		}
 
 		if( HasSpawnFlags( SF_ENVEXPLOSION_SURFACEONLY ) )

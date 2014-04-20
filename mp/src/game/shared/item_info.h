@@ -7,13 +7,25 @@ struct item_info_t {
 	int max_health;
 	int initial_health;
 	int min_health;
-	int armored;
+	int team_dmg;
+	float armor_factor;
 	const wchar_t *display_name;
 	const char *ent_name;
 	const char *model;
 	const char *create_sound;
 	const char *killed_sound;
 };
+
+#define ARMOR_NONE		1.0f
+#define ARMOR_LIGHT		0.9f
+#define ARMOR_MEDIUM	0.85f
+#define ARMOR_HEAVY		0.65f
+
+#define ITEM_ARMOR_UNDEF	0
+#define ITEM_ARMOR_NONE		1
+#define ITEM_ARMOR_LIGHT	2
+#define ITEM_ARMOR_MEDIUM	3
+#define ITEM_ARMOR_HEAVY	4
 
 typedef struct item_info_t item_info_t;
 
@@ -50,70 +62,82 @@ typedef struct item_info_t item_info_t;
 #define TELEPORTER_MAX_HEALTH	250
 #define TELEPORTER_INIT_HEALTH	20
 #define TELEPORTER_MIN_HEALTH	100
-#define TELEPORTER_ARMORED		2
+#define TELEPORTER_TEAM_DMG		0
+#define TELEPORTER_ARMOR		ARMOR_HEAVY
 #define TELEPORTER_DIE_SOUND	"AmmoCrate.Die"
 
 #define DETECTOR_MAX_HEALTH		20
 #define DETECTOR_INIT_HEALTH	20
 #define DETECTOR_MIN_HEALTH		0
-#define DETECTOR_ARMORED		0
+#define DETECTOR_TEAM_DMG		1
+#define DETECTOR_ARMOR			ARMOR_NONE
 #define DETECTOR_INIT_SOUND		"Mine.Init"
 
 #define AMMO_CRATE_MAX_HEALTH	180
 #define AMMO_CRATE_INIT_HEALTH	30
 #define AMMO_CRATE_MIN_HEALTH	95
-#define AMMO_CRATE_ARMORED		0
+#define AMMO_CRATE_TEAM_DMG		1
+#define AMMO_CRATE_ARMOR		ARMOR_LIGHT
 #define AMMO_CRATE_DIE_SOUND	"AmmoCrate.Die"
 
 #define MEDIPAD_MAX_HEALTH		150
 #define MEDIPAD_INIT_HEALTH		20
 #define MEDIPAD_MIN_HEALTH		75
-#define MEDIPAD_ARMORED			0
+#define MEDIPAD_TEAM_DMG		1
+#define MEDIPAD_ARMOR			ARMOR_LIGHT
 #define MEDIPAD_DIE_SOUND		"Medipad.Die"
 
 #define MINE_MAX_HEALTH			10
 #define MINE_INIT_HEALTH		10
-#define MINE_ARMORED			2
+#define MINE_TEAM_DMG			0
+#define MINE_ARMOR				ARMOR_NONE
 #define MINE_INIT_SOUND			"Mine.Init"
 
 #define SMG_TURRET_MAX_HEALTH	140
 #define SMG_TURRET_INIT_HEALTH	10
 #define SMG_TURRET_MIN_HEALTH	80
-#define SMG_TURRET_ARMORED		1
+#define SMG_TURRET_TEAM_DMG		1
+#define SMG_TURRET_ARMOR		ARMOR_MEDIUM
 #define SMG_TURRET_INIT_SOUND	"Mine.Init"
 #define SMG_TURRET_DIE_SOUND	AMMO_CRATE_DIE_SOUND
 
 #define MSL_TURRET_MAX_HEALTH	160
 #define MSL_TURRET_INIT_HEALTH	10
 #define MSL_TURRET_MIN_HEALTH	90
-#define MSL_TURRET_ARMORED		1
+#define MSL_TURRET_TEAM_DMG		1
+#define MSL_TURRET_ARMOR		ARMOR_MEDIUM
 #define MSL_TURRET_INIT_SOUND	"Mine.Init"
 #define MSL_TURRET_DIE_SOUND	AMMO_CRATE_DIE_SOUND
 
 #define EGG_MAX_HEALTH			200
 #define EGG_INIT_HEALTH			200
-#define EGG_ARMORED				1
+#define EGG_TEAM_DMG			0
+#define EGG_ARMOR				ARMOR_HEAVY
 #define EGG_DIE_SOUND			"Egg.Die"
 
 #define HEALER_MAX_HEALTH		125
 #define HEALER_INIT_HEALTH		125
-#define HEALER_ARMORED			0
+#define HEALER_TEAM_DMG			1
+#define HEALER_ARMOR			ARMOR_NONE
 #define HEALER_DIE_SOUND		"Healer.Die"
 
 #define OBSTACLE_MAX_HEALTH		750
 #define OBSTACLE_INIT_HEALTH	200
-#define OBSTACLE_ARMORED		0
+#define OBSTACLE_TEAM_DMG		1
+#define OBSTACLE_ARMOR			ARMOR_HEAVY
 #define OBSTACLE_DIE_SOUND		HEALER_DIE_SOUND
 
 #define SPIKER_MAX_HEALTH		175
 #define SPIKER_INIT_HEALTH		175
-#define SPIKER_ARMORED			0
+#define SPIKER_TEAM_DMG			1
+#define SPIKER_ARMOR			ARMOR_MEDIUM
 #define SPIKER_INIT_SOUND		"Spiker.Init"
 #define SPIKER_DIE_SOUND		HEALER_DIE_SOUND
 
 #define GASSER_MAX_HEALTH		20
 #define GASSER_INIT_HEALTH		20
-#define GASSER_ARMORED			0
+#define GASSER_TEAM_DMG			1
+#define GASSER_ARMOR			ARMOR_NONE
 #define GASSER_DIE_SOUND		HEALER_DIE_SOUND
 
 //

@@ -489,7 +489,7 @@ void CHL2MP_Player::DisablePlasma(bool dmg) {
 	SetAmmoCount(0, plasma_ammo_type);
 	plasma_ready = false;
 	if (dmg) {
-		SetContextThink(&CHL2MP_Player::RechargeThink, gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 10.0f, PLASMA_THINK_CTX);
+		SetContextThink(&CHL2MP_Player::RechargeThink, gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 7.0f, PLASMA_THINK_CTX);
 		plasma_recovering = true;
 	} else {
 		SetContextThink(&CHL2MP_Player::RechargeThink, gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 3.0f, PLASMA_THINK_CTX);
@@ -2038,7 +2038,49 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 	SetAnimation( PLAYER_ATTACK1 );
 }
 
+#ifdef DEBUG
 
+extern CHL2MP_Player *bot1;
+
+void CHL2MP_Player::BotTeamClass(int team, int classNum) {
+	if (team != GetTeamNumber()) {
+		HandleCommand_JoinTeam(team);
+		chose_class = false;
+		choosing_class = false;
+		m_flDeathTime = gpGlobals->curtime;
+	}
+
+	choosing_class = false;
+	if ((GetTeamNumber() == TEAM_SPIDERS && IS_SPIDER_CLASS(classNum)) ||
+		(GetTeamNumber() == TEAM_HUMANS && IS_HUMAN_CLASS(classNum))) {
+			chose_class = true;
+			m_iClassNumber = classNum;
+
+			if (IsAlive()) {
+				CommitSuicide(true, true);
+				AddPlayerPoints(1);
+			}
+	}
+}
+
+CON_COMMAND(teleport_bot, "teleport a bot") {
+	CHL2MP_Player *p;
+	Vector fwd;
+	Vector telepos;
+
+	if (bot1 == NULL)
+		return;
+
+	p = ToHL2MPPlayer(UTIL_GetCommandClient());
+	if (!p)
+		return;
+
+	AngleVectors(p->EyeAngles(), &fwd);
+	telepos = p->GetAbsOrigin() + fwd * 256 + Vector(0,0,64);
+	bot1->SetAbsOrigin(telepos);
+}
+
+#endif
 
 bool CHL2MP_Player::ClientCommand( const CCommand &args )
 {

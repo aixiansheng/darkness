@@ -837,7 +837,9 @@ void CHL2MPRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 		}
 		else
 		{
+
 			pHL2Player->ChangeTeam(TEAM_UNASSIGNED);
+	
 			//if ( Q_stristr( szModelName, "models/human") )
 			//{
 			//	pHL2Player->ChangeTeam( TEAM_HUMANS );
@@ -959,17 +961,17 @@ CAmmoDef *GetAmmoDef()
 	{
 		bInitted = true;
 
-		def.AddAmmoType("AR2",				WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	60,	BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("AR2AltFire",		WPN_DEFAULT,		DMG_DISSOLVE,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		//def.AddAmmoType("AR2",				WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	60,	BULLET_IMPULSE(200, 1225),	0 );
+		//def.AddAmmoType("AR2AltFire",		WPN_DEFAULT,		DMG_DISSOLVE,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("Pistol",			WPN_PISTOL,			DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	36,	BULLET_IMPULSE(200, 1225),	0 );
 		def.AddAmmoType("SMG1",				WPN_SMG,			DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	100,	BULLET_IMPULSE(200, 1225),	0 );
 		def.AddAmmoType("357",				WPN_357,			DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,	0,	12,	BULLET_IMPULSE(800, 5000),	0 );
-		def.AddAmmoType("XBowBolt",			WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE,		0,	0,	10,	BULLET_IMPULSE(800, 8000),	0 );
+		//def.AddAmmoType("XBowBolt",			WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE,		0,	0,	10,	BULLET_IMPULSE(800, 8000),	0 );
 		def.AddAmmoType("Buckshot",			WPN_SHOTGUN_BUCK,	DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,		0,	0,	12,	BULLET_IMPULSE(400, 1200),	0 );
 		def.AddAmmoType("RPG_Round",		WPN_RPG,			DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
-		def.AddAmmoType("SMG1_Grenade",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		//def.AddAmmoType("SMG1_Grenade",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("Grenade",			WPN_FRAG,			DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
-		def.AddAmmoType("slam",				WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	1,	0,				0 );
+		//def.AddAmmoType("slam",				WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("grenade_smk",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	2,	0,				0 );
 		def.AddAmmoType("grenade_spike",	WPN_STALKER_GREN,	DMG_BULLET,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("grenade_guardian",	WPN_GUARDIAN_SPIKE,	DMG_BULLET,			TRACER_NONE,		0,	0,	4,	0,				0 );
@@ -989,6 +991,13 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("plasma_railgun",	WPN_RAILGUN,		DMG_PLASMA,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("hatchy_slash",		WPN_HATCHY_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("guardian_slash",	WPN_GUARDIAN_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
+		def.AddAmmoType("kami_xp",			WPN_KAMI_XP,		DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("turret_missile",	WPN_MSL_TURRET,		DMG_BULLET | DMG_ALWAYSGIB, TRACER_NONE,		0,	0,	1,	0,		0 );
+		def.AddAmmoType("turret_bullet",	WPN_MG_TURRET,		DMG_BULLET,			TRACER_NONE,		0,	0,	1,	0,		0 );
+
+		//
+		// make sure you don't hit the 32 item limit without first increasing it :D
+		//
 	}
 
 	return &def;
@@ -1005,28 +1014,35 @@ CAmmoDef *GetAmmoDef()
 #else
 
 #ifdef DEBUG
+	CHL2MP_Player *bot1 = NULL;
 
 	// Handler for the "bot" command.
-	void Bot_f()
+	CHL2MP_Player * Bot_f(int team)
 	{		
-		// Look at -count.
-		int count = 1;
-		count = clamp( count, 1, 16 );
-
-		int iTeam = TEAM_SPIDERS;
+		int iTeam = team;
 				
 		// Look at -frozen.
 		bool bFrozen = false;
 			
-		// Ok, spawn all the bots.
-		while ( --count >= 0 )
-		{
-			BotPutInServer( bFrozen, iTeam );
-		}
+
+		return BotPutInServer( bFrozen, iTeam );
+
 	}
 
+	void bot_spider_f() {
+		bot1 = Bot_f(TEAM_SPIDERS);
+		Warning("spider team = 2\n");
+		Warning("hatchy class = 8\n");
+	}
 
-	ConCommand cc_Bot( "bot", Bot_f, "Add a bot.", FCVAR_CHEAT );
+	void bot_human_f() {
+		bot1 = Bot_f(TEAM_HUMANS);
+		Warning("human team = 3\n");
+		Warning("grunt class = 1\n");
+	}
+
+	ConCommand cc_bot_spider( "bot_spider", bot_spider_f, "Add a spider bot.", FCVAR_CHEAT );
+	ConCommand cc_bot_human( "bot_human", bot_human_f, "Add a huamn bot.", FCVAR_CHEAT );
 
 #endif
 

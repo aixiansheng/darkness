@@ -126,9 +126,10 @@ public:
 	int		MaxCarry(int nAmmoIndex);
 	int		DamageType(int nAmmoIndex);
 	int		TracerType(int nAmmoIndex);
-	float		DamageForce(int nAmmoIndex);
+	float	DamageForce(int nAmmoIndex);
 	int		MinSplashSize(int nAmmoIndex);
 	int		MaxSplashSize(int nAmmoIndex);
+	int		AttackWeapon(int nAmmoIndex);
 	int		Flags(int nAmmoIndex);
 	float	DmgFactorForClass(int nAmmoIndex, int classNum);
 
