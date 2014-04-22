@@ -30,7 +30,7 @@
 
 #define	PLASMA_CANON_REFIRE			0.6f
 #define PLASMA_CANON_STAGGER		0.2f
-#define PLASMA_BOLT_DMG				24.0f
+#define PLASMA_BOLT_DMG				18.0f
 #define PLASMA_BOLT_DURATION		4.0f
 
 #define PLASMA_BOLT_RADIUS			85.0f

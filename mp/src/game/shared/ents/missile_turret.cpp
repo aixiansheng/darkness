@@ -530,7 +530,8 @@ void CSeekerMissile::MissileTouch(CBaseEntity *other) {
 
 		SetSolid(SOLID_NONE);
 
-		CTakeDamageInfo info(GetContainingEntity(INDEXENT(0)), GetParent(), GetAbsVelocity(), GetAbsOrigin(), SEEKER_MISSILE_DMG, DMG_BULLET | DMG_ALWAYSGIB);
+		//CTakeDamageInfo info(GetContainingEntity(INDEXENT(0)), GetParent(), GetAbsVelocity(), GetAbsOrigin(), SEEKER_MISSILE_DMG, DMG_BULLET | DMG_ALWAYSGIB);
+		CTakeDamageInfo info(this, GetOwnerEntity(), GetAbsVelocity(), GetAbsOrigin(), SEEKER_MISSILE_DMG, DMG_BULLET | DMG_ALWAYSGIB);
 		info.SetAmmoType(GetAmmoDef()->Index("turret_missile"));
 
 		other->DispatchTraceAttack(info, forward, &tr);

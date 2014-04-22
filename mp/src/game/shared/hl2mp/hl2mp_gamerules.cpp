@@ -987,7 +987,7 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("stalker_slash",	WPN_STALKER_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("stalker_spike",	WPN_STALKER_SPIKE,	DMG_CLUB,			TRACER_NONE,		0,	0,	20,	0,				0 );
 		def.AddAmmoType("drone_slash",		WPN_DRONE_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
-		def.AddAmmoType("SSMG1",			WPN_SILENCED_SMG,	DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	100,	BULLET_IMPULSE(200, 1225),	0 );
+		def.AddAmmoType("SSMG",				WPN_SILENCED_SMG,	DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	100,	BULLET_IMPULSE(200, 1225),	0 );
 		def.AddAmmoType("plasma_railgun",	WPN_RAILGUN,		DMG_PLASMA,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("hatchy_slash",		WPN_HATCHY_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("guardian_slash",	WPN_GUARDIAN_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );

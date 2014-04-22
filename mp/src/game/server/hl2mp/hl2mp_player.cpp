@@ -48,6 +48,8 @@
 #include "ilagcompensationmanager.h"
 
 
+#define DEFAULT_ARMOR_BONUS 0.8f
+
 #define GRENADE_RADIUS	4.0f
 #define GRENADE_THROW_INTERVAL 1.5f
 
@@ -501,50 +503,79 @@ void CHL2MP_Player::DisablePlasma(bool dmg) {
 }
 
 //
+// generic function to filter damage and decrease armor amount
+//
 // let plasma shield absorb damage by modifying the info's Damage
 // but only if the plasma shield is ready..
 //
-void CHL2MP_Player::FilterDamage(CTakeDamageInfo &info) {
+void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
+	float d;
 	int initial_plasma;
 	float dmg;
+	float armor;
+	float armor_bonus;
 	color32 blue = {0,0,255,70};
 
-	initial_plasma = PlasmaCharge();
-	dmg = info.GetDamage();
+	if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
+		initial_plasma = PlasmaCharge();
+		dmg = info.GetDamage();
 
-	if (PlasmaReady() && powerArmorEnabled) {
-		if (dmg > initial_plasma) {
-			//
-			// shields will be completely drained by the hit
-			// 
+		if (PlasmaReady() && powerArmorEnabled) {
+			if (dmg > (float)initial_plasma) {
+				//
+				// shields will be completely drained by the hit
+				// 
 			
-			info.SetDamage(dmg - initial_plasma);
-			BurnPlasma(dmg);
+				d = dmg - (float)initial_plasma;
+				info.SetDamage(d);
+				BurnPlasma(dmg);
+				info.SetDamage(d);
 			
-		} else {
-			//
-			// shields absorbed the damage alright, so begin recharge think
-			// after a short delay
-			//
-			initial_plasma -= dmg;
-			info.SetDamage(0);
-			BurnPlasma(dmg);
-		}
+			} else {
+				//
+				// shields absorbed the damage alright, so begin recharge think
+				// after a short delay
+				//
+				initial_plasma -= dmg;
+				info.SetDamage(0);
+				BurnPlasma(dmg);
+				info.SetDamage(0.0f);
+			}
 
-		//
-		// play a sound, do a view punch
-		//
+			//
+			// play a sound, do a view punch
+			//
 
-		EmitSound(XT_PLASMA_HIT);
+			EmitSound(XT_PLASMA_HIT);
 		
-		UTIL_ScreenFade( this, blue, 0.2, 0.3, FFADE_MODULATE );
+			UTIL_ScreenFade( this, blue, 0.2, 0.3, FFADE_MODULATE );
 
-		m_Local.m_vecPunchAngle.SetX( RandomFloat( -3, -10 ) );
+			m_Local.m_vecPunchAngle.SetX( RandomFloat( -3, -10 ) );
 
-		CDisablePredictionFiltering foo;
+			CDisablePredictionFiltering foo;
 
-		DispatchParticleEffect(JETPACK_SPARK, GetAbsOrigin() + Vector(0,0,32), GetAbsAngles(), this);
+			DispatchParticleEffect(JETPACK_SPARK, GetAbsOrigin() + Vector(0,0,32), GetAbsAngles(), this);
+		}
 	}
+
+	// plasma first, then normal armor (or all other players)
+	armor = (float)ArmorValue();
+	dmg = info.GetDamage();
+	if (armor <= 0.0f || dmg <= 0.0f)
+		return;
+
+	armor_bonus = DEFAULT_ARMOR_BONUS;
+
+	armor -= armor_bonus * dmg;
+
+	if (armor > 0) {
+		SetArmorValue((int)armor);
+		info.SetDamage(0.0f);
+	} else {
+		info.SetDamage(armor * -1.0f);
+		SetArmorValue(0);
+	}
+
 }
 
 int CHL2MP_Player::PlasmaCharge(void) {
@@ -2076,7 +2107,7 @@ CON_COMMAND(teleport_bot, "teleport a bot") {
 		return;
 
 	AngleVectors(p->EyeAngles(), &fwd);
-	telepos = p->GetAbsOrigin() + fwd * 256 + Vector(0,0,64);
+	telepos = p->GetAbsOrigin() + fwd * 128 + Vector(0,0,32);
 	bot1->SetAbsOrigin(telepos);
 }
 
@@ -2883,12 +2914,9 @@ int CHL2MP_Player::OnTakeDamage( const CTakeDamageInfo &inputInfo ) {
 		ParalyzePlayer();
 	}
 
-	// armor should decrease damage
-	if (ArmorValue() > 0)
-		newinfo.ScaleDamage(0.85f);
-
 	// allow exterm armor to do its job
-	FilterDamage(newinfo);
+	// this may also modify newinfo's damage
+	FilterDamageArmor(newinfo);
 
 	//
 	// return now if there is no damage to prevent C4 drop and damag effects 

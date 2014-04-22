@@ -218,6 +218,7 @@ typedef struct class_info_t class_info_t;
 // ammo types
 #define AMMO_NULL		"none"
 #define AMMO_SMG		"SMG1"
+#define AMMO_SSMG		"SSMG"
 #define AMMO_PISTOL		"Pistol"
 #define AMMO_SHOTGUN	"Buckshot"
 #define AMMO_RPG		"RPG_Round"

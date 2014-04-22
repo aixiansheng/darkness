@@ -34,7 +34,7 @@
 #define STINGER_SLASH_DAMAGE 80.0f
 #define STINGER_SLASH_REFIRE 0.75f
 
-#define STINGER_FLAME_DMG 4.5f
+#define STINGER_FLAME_DMG 15.0f
 #define STINGER_FLAME_DURATION 0.4f
 
 //-----------------------------------------------------------------------------
@@ -315,7 +315,7 @@ void CStingerFire::FlameTouch( CBaseEntity *pOther ) {
 	SetSolid(SOLID_NONE);
 
 	if( tr.fraction == 1.0 || !(tr.surface.flags & SURF_SKY) ) {
-		CTakeDamageInfo info(m_hOwner, this, GetDamage(), DMG_BURN);
+		CTakeDamageInfo info(m_hOwner, this, STINGER_FLAME_DMG, DMG_BURN);
 		info.SetAmmoType(GetAmmoDef()->Index("stingerfire"));
 
 		pOther->DispatchTraceAttack(info, forward, &tr);
@@ -333,7 +333,6 @@ CStingerFire *CStingerFire::Create( const Vector &vecOrigin, const QAngle &vecAn
 	pFlame->SetOwnerEntity( Instance( pentOwner ) );
 	pFlame->Spawn();
 	pFlame->AddEffects( EF_NOSHADOW );
-	pFlame->SetDamage(STINGER_FLAME_DMG);
 	
 	AngleVectors( vecAngles, &vecForward );
 

@@ -240,7 +240,7 @@ class_info_t dk_classes[NUM_CLASSES] = {
 		STANDARD_HEIGHT, 
 		HUMAN_FOV, 
 		&human_vectors, 
-		AMMO_SMG, 
+		AMMO_SSMG, 
 		AMMO_357, 
 		COMMANDO_JUMP_FACTOR,
 		COMMANDO_SND_TYPE,

@@ -24,7 +24,9 @@
 #define FRAG_GRENADE_WARN_TIME 1.5f
 
 #define ACID_TIME	3.0f
-#define ACID_DAMAGE	40.0f
+
+#define ACID_GREN_DMG 6.0f
+#define ACID_GREN_RADIUS 250.0f
 
 const float GRENADE_COEFFICIENT_OF_RESTITUTION = 0.2f;
 
@@ -179,8 +181,9 @@ void CGrenadeAcid::Spawn( void )
 
 	BaseClass::Spawn();
 
-	m_flDamage		= 5.0f;
-	m_DmgRadius		= 250.0f;
+
+	m_flDamage		= ACID_GREN_DMG;
+	m_DmgRadius		= ACID_GREN_RADIUS;
 	m_takedamage	= DAMAGE_NO;
 	m_iHealth		= 1;
 }
@@ -352,7 +355,7 @@ void CGrenadeAcid::SpewThink(void) {
 			continue; // something's in the way
 
 		if (ent->IsPlayer() && ent->GetTeamNumber() == TEAM_HUMANS && ent->IsAlive()) {
-			CTakeDamageInfo info( this, thrower, GetBlastForce(), GetAbsOrigin(), m_flDamage, DMG_ACID);
+			CTakeDamageInfo info( this, thrower, GetBlastForce(), GetAbsOrigin(), ACID_GREN_DMG, DMG_ACID);
 			info.SetAmmoType(GetAmmoDef()->Index("grenade_acid"));
 
 			ent->DispatchTraceAttack(info, Vector(0,0,1), &tr);

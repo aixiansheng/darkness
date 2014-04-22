@@ -1065,8 +1065,6 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	int fcritical;
 	int fTookDamage;
 	int ftrivial;
-	float flRatio;
-	float flBonus;
 	float flHealthPrev = m_iHealth;
 
 	CTakeDamageInfo info = inputInfo;
@@ -1100,23 +1098,6 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	// Early out if there's no damage
 	if ( !info.GetDamage() )
 		return 0;
-
-	if( old_armor.GetBool() )
-	{
-		flBonus = OLD_ARMOR_BONUS;
-		flRatio = OLD_ARMOR_RATIO;
-	}
-	else
-	{
-		flBonus = ARMOR_BONUS;
-		flRatio = ARMOR_RATIO;
-	}
-
-	if ( ( info.GetDamageType() & DMG_BLAST ) && g_pGameRules->IsMultiplayer() )
-	{
-		// blasts damage armor more.
-		flBonus *= 2;
-	}
 
 	// Already dead
 	if ( !IsAlive() )
@@ -1158,42 +1139,6 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = info.GetDamage();
 
-	// Armor. 
-	if (m_ArmorValue && !(info.GetDamageType() & (DMG_FALL | DMG_DROWN | DMG_POISON | DMG_RADIATION)) )// armor doesn't protect against fall or drown damage!
-	{
-		float flNew = info.GetDamage() * flRatio;
-
-		float flArmor;
-
-		flArmor = (info.GetDamage() - flNew) * flBonus;
-
-		if( !old_armor.GetBool() )
-		{
-			if( flArmor < 1.0 )
-			{
-				flArmor = 1.0;
-			}
-		}
-
-		// Does this use more armor than we have?
-		if (flArmor > m_ArmorValue)
-		{
-			flArmor = m_ArmorValue;
-			flArmor *= (1/flBonus);
-			flNew = info.GetDamage() - flArmor;
-			m_DmgSave = m_ArmorValue;
-			m_ArmorValue = 0;
-		}
-		else
-		{
-			m_DmgSave = flArmor;
-			m_ArmorValue -= flArmor;
-		}
-		
-		info.SetDamage( flNew );
-	}
-
-
 #if defined( WIN32 ) && !defined( _X360 )
 	// NVNT if player's client has a haptic device send them a user message with the damage.
 	if(HasHaptics())
@@ -1206,7 +1151,7 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	// NOTENOTE: jdw - We are now capable of retaining the mantissa of this damage value and deferring its application
 	
 	// info.SetDamage( (int)info.GetDamage() );
-
+	
 	// Call up to the base class
 	fTookDamage = BaseClass::OnTakeDamage( info );
 

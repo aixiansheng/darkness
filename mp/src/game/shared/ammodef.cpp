@@ -346,9 +346,9 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_PISTOL][CLASS_MECH_IDX]			= 0.0f;
 	
 	dmg_factors[WPN_PISTOL][CLASS_BREEDER_IDX]		= 1.0f;
-	dmg_factors[WPN_PISTOL][CLASS_HATCHY_IDX]		= 3.0f;
+	dmg_factors[WPN_PISTOL][CLASS_HATCHY_IDX]		= 2.0f;
 	dmg_factors[WPN_PISTOL][CLASS_DRONE_IDX]		= 1.0f;
-	dmg_factors[WPN_PISTOL][CLASS_KAMI_IDX]			= 1.0f;
+	dmg_factors[WPN_PISTOL][CLASS_KAMI_IDX]			= 2.0f;
 	dmg_factors[WPN_PISTOL][CLASS_STINGER_IDX]		= 1.0f;
 	dmg_factors[WPN_PISTOL][CLASS_GUARDIAN_IDX]		= 1.0f;
 	dmg_factors[WPN_PISTOL][CLASS_STALKER_IDX]		= 1.0f;
@@ -362,13 +362,13 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_SMG][CLASS_EXTERMINATOR_IDX]	= 0.0f;
 	dmg_factors[WPN_SMG][CLASS_MECH_IDX]			= 0.0f;
 	
-	dmg_factors[WPN_SMG][CLASS_BREEDER_IDX]			= 1.0f;
-	dmg_factors[WPN_SMG][CLASS_HATCHY_IDX]			= 1.0f;
-	dmg_factors[WPN_SMG][CLASS_DRONE_IDX]			= 0.8f;
-	dmg_factors[WPN_SMG][CLASS_KAMI_IDX]			= 1.0f;
+	dmg_factors[WPN_SMG][CLASS_BREEDER_IDX]			= 0.7f;
+	dmg_factors[WPN_SMG][CLASS_HATCHY_IDX]			= 1.2f;
+	dmg_factors[WPN_SMG][CLASS_DRONE_IDX]			= 0.7f;
+	dmg_factors[WPN_SMG][CLASS_KAMI_IDX]			= 1.2f;
 	dmg_factors[WPN_SMG][CLASS_STINGER_IDX]			= 0.7f;
-	dmg_factors[WPN_SMG][CLASS_GUARDIAN_IDX]		= 1.0f;
-	dmg_factors[WPN_SMG][CLASS_STALKER_IDX]			= 0.8f;
+	dmg_factors[WPN_SMG][CLASS_GUARDIAN_IDX]		= 0.7f;
+	dmg_factors[WPN_SMG][CLASS_STALKER_IDX]			= 0.65f;
 
 	// SHOTGUN BUCK
 	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_ENGINEER_IDX]		= 0.0f;
@@ -380,12 +380,12 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_MECH_IDX]			= 0.0f;
 	
 	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_BREEDER_IDX]		= 1.0f;
-	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_HATCHY_IDX]			= 1.1f;
-	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_DRONE_IDX]			= 1.0f;
-	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_KAMI_IDX]			= 0.9f;
+	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_HATCHY_IDX]			= 1.2f;
+	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_DRONE_IDX]			= 0.9f;
+	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_KAMI_IDX]			= 1.1f;
 	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_STINGER_IDX]		= 0.9f;
-	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_GUARDIAN_IDX]		= 0.8f;
-	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_STALKER_IDX]		= 0.7f;
+	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_GUARDIAN_IDX]		= 0.9f;
+	dmg_factors[WPN_SHOTGUN_BUCK][CLASS_STALKER_IDX]		= 0.9f;
 
 	// SHOTGUN XP
 	dmg_factors[WPN_SHOTGUN_XP][CLASS_ENGINEER_IDX]			= 1.2f;
@@ -401,8 +401,8 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_SHOTGUN_XP][CLASS_DRONE_IDX]			= 1.1f;
 	dmg_factors[WPN_SHOTGUN_XP][CLASS_KAMI_IDX]				= 0.8f;
 	dmg_factors[WPN_SHOTGUN_XP][CLASS_STINGER_IDX]			= 1.0f;
-	dmg_factors[WPN_SHOTGUN_XP][CLASS_GUARDIAN_IDX]			= 1.2f;
-	dmg_factors[WPN_SHOTGUN_XP][CLASS_STALKER_IDX]			= 1.2f;
+	dmg_factors[WPN_SHOTGUN_XP][CLASS_GUARDIAN_IDX]			= 0.7f;
+	dmg_factors[WPN_SHOTGUN_XP][CLASS_STALKER_IDX]			= 1.6f;
 
 	// RPG
 	dmg_factors[WPN_RPG][CLASS_ENGINEER_IDX]		= 1.0f;
@@ -419,7 +419,7 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_RPG][CLASS_KAMI_IDX]			= 0.8f;
 	dmg_factors[WPN_RPG][CLASS_STINGER_IDX]			= 1.0f;
 	dmg_factors[WPN_RPG][CLASS_GUARDIAN_IDX]		= 0.7f;
-	dmg_factors[WPN_RPG][CLASS_STALKER_IDX]			= 1.2f;
+	dmg_factors[WPN_RPG][CLASS_STALKER_IDX]			= 1.3f;
 
 	// SILENCED SMG
 	dmg_factors[WPN_SILENCED_SMG][CLASS_ENGINEER_IDX]		= 0.0f;
@@ -432,11 +432,11 @@ CAmmoDef::CAmmoDef(void)
 	
 	dmg_factors[WPN_SILENCED_SMG][CLASS_BREEDER_IDX]		= 0.8f;
 	dmg_factors[WPN_SILENCED_SMG][CLASS_HATCHY_IDX]			= 0.8f;
-	dmg_factors[WPN_SILENCED_SMG][CLASS_DRONE_IDX]			= 0.8f;
+	dmg_factors[WPN_SILENCED_SMG][CLASS_DRONE_IDX]			= 0.75f;
 	dmg_factors[WPN_SILENCED_SMG][CLASS_KAMI_IDX]			= 0.8f;
-	dmg_factors[WPN_SILENCED_SMG][CLASS_STINGER_IDX]		= 0.7f;
-	dmg_factors[WPN_SILENCED_SMG][CLASS_GUARDIAN_IDX]		= 0.7f;
-	dmg_factors[WPN_SILENCED_SMG][CLASS_STALKER_IDX]		= 0.7f;
+	dmg_factors[WPN_SILENCED_SMG][CLASS_STINGER_IDX]		= 0.6f;
+	dmg_factors[WPN_SILENCED_SMG][CLASS_GUARDIAN_IDX]		= 0.6f;
+	dmg_factors[WPN_SILENCED_SMG][CLASS_STALKER_IDX]		= 0.6f;
 
 	// 357 MAGNUM
 	dmg_factors[WPN_357][CLASS_ENGINEER_IDX]		= 0.0f;
@@ -498,12 +498,12 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_EXTERMINATOR_IDX]		= 0.0f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_MECH_IDX]				= 0.0f;
 	
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_BREEDER_IDX]			= 1.0f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_HATCHY_IDX]				= 1.0f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_DRONE_IDX]				= 1.0f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_KAMI_IDX]				= 1.0f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_STINGER_IDX]			= 0.6f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_GUARDIAN_IDX]			= 1.3f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_BREEDER_IDX]			= 0.5f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_HATCHY_IDX]				= 0.3f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_DRONE_IDX]				= 0.5f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_KAMI_IDX]				= 0.4f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_STINGER_IDX]			= 0.4f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_GUARDIAN_IDX]			= 1.2f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_STALKER_IDX]			= 1.0f;
 
 	// RAILGUN
@@ -532,22 +532,22 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_PLASMA_CANON][CLASS_EXTERMINATOR_IDX]		= 0.0f;
 	dmg_factors[WPN_PLASMA_CANON][CLASS_MECH_IDX]				= 0.0f;
 	
-	dmg_factors[WPN_PLASMA_CANON][CLASS_BREEDER_IDX]			= 1.0f;
-	dmg_factors[WPN_PLASMA_CANON][CLASS_HATCHY_IDX]				= 1.0f;
-	dmg_factors[WPN_PLASMA_CANON][CLASS_DRONE_IDX]				= 1.0f;
-	dmg_factors[WPN_PLASMA_CANON][CLASS_KAMI_IDX]				= 1.0f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_BREEDER_IDX]			= 0.6f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_HATCHY_IDX]				= 0.7f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_DRONE_IDX]				= 0.7f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_KAMI_IDX]				= 0.7f;
 	dmg_factors[WPN_PLASMA_CANON][CLASS_STINGER_IDX]			= 0.8f;
-	dmg_factors[WPN_PLASMA_CANON][CLASS_GUARDIAN_IDX]			= 0.8f;
-	dmg_factors[WPN_PLASMA_CANON][CLASS_STALKER_IDX]			= 0.9f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_GUARDIAN_IDX]			= 1.0f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_STALKER_IDX]			= 0.8f;
 
 	// HATCHY SLASH
 	dmg_factors[WPN_HATCHY_SLASH][CLASS_ENGINEER_IDX]			= 1.0f;
-	dmg_factors[WPN_HATCHY_SLASH][CLASS_GRUNT_IDX]				= 1.0f;
+	dmg_factors[WPN_HATCHY_SLASH][CLASS_GRUNT_IDX]				= 1.3f;
 	dmg_factors[WPN_HATCHY_SLASH][CLASS_SHOCK_IDX]				= 1.0f;
-	dmg_factors[WPN_HATCHY_SLASH][CLASS_HEAVY_IDX]				= 1.0f;
+	dmg_factors[WPN_HATCHY_SLASH][CLASS_HEAVY_IDX]				= 1.2f;
 	dmg_factors[WPN_HATCHY_SLASH][CLASS_COMMANDO_IDX]			= 1.0f;
-	dmg_factors[WPN_HATCHY_SLASH][CLASS_EXTERMINATOR_IDX]		= 1.0f;
-	dmg_factors[WPN_HATCHY_SLASH][CLASS_MECH_IDX]				= 1.0f;
+	dmg_factors[WPN_HATCHY_SLASH][CLASS_EXTERMINATOR_IDX]		= 0.8f;
+	dmg_factors[WPN_HATCHY_SLASH][CLASS_MECH_IDX]				= 1.2f;
 	
 	dmg_factors[WPN_HATCHY_SLASH][CLASS_BREEDER_IDX]			= 0.0f;
 	dmg_factors[WPN_HATCHY_SLASH][CLASS_HATCHY_IDX]				= 0.0f;
@@ -560,11 +560,11 @@ CAmmoDef::CAmmoDef(void)
 	// DRONE SLASH
 	dmg_factors[WPN_DRONE_SLASH][CLASS_ENGINEER_IDX]			= 1.0f;
 	dmg_factors[WPN_DRONE_SLASH][CLASS_GRUNT_IDX]				= 1.0f;
-	dmg_factors[WPN_DRONE_SLASH][CLASS_SHOCK_IDX]				= 1.0f;
-	dmg_factors[WPN_DRONE_SLASH][CLASS_HEAVY_IDX]				= 1.0f;
-	dmg_factors[WPN_DRONE_SLASH][CLASS_COMMANDO_IDX]			= 1.0f;
-	dmg_factors[WPN_DRONE_SLASH][CLASS_EXTERMINATOR_IDX]		= 1.0f;
-	dmg_factors[WPN_DRONE_SLASH][CLASS_MECH_IDX]				= 1.0f;
+	dmg_factors[WPN_DRONE_SLASH][CLASS_SHOCK_IDX]				= 0.7f;
+	dmg_factors[WPN_DRONE_SLASH][CLASS_HEAVY_IDX]				= 1.1f;
+	dmg_factors[WPN_DRONE_SLASH][CLASS_COMMANDO_IDX]			= 1.1f;
+	dmg_factors[WPN_DRONE_SLASH][CLASS_EXTERMINATOR_IDX]		= 0.7f;
+	dmg_factors[WPN_DRONE_SLASH][CLASS_MECH_IDX]				= 1.2f;
 	
 	dmg_factors[WPN_DRONE_SLASH][CLASS_BREEDER_IDX]				= 0.0f;
 	dmg_factors[WPN_DRONE_SLASH][CLASS_HATCHY_IDX]				= 0.0f;
@@ -593,12 +593,12 @@ CAmmoDef::CAmmoDef(void)
 
 	// KAMI SLASH
 	dmg_factors[WPN_KAMI_SLASH][CLASS_ENGINEER_IDX]				= 1.0f;
-	dmg_factors[WPN_KAMI_SLASH][CLASS_GRUNT_IDX]				= 1.0f;
+	dmg_factors[WPN_KAMI_SLASH][CLASS_GRUNT_IDX]				= 1.3f;
 	dmg_factors[WPN_KAMI_SLASH][CLASS_SHOCK_IDX]				= 1.0f;
-	dmg_factors[WPN_KAMI_SLASH][CLASS_HEAVY_IDX]				= 1.0f;
+	dmg_factors[WPN_KAMI_SLASH][CLASS_HEAVY_IDX]				= 1.2f;
 	dmg_factors[WPN_KAMI_SLASH][CLASS_COMMANDO_IDX]				= 1.0f;
-	dmg_factors[WPN_KAMI_SLASH][CLASS_EXTERMINATOR_IDX]			= 1.0f;
-	dmg_factors[WPN_KAMI_SLASH][CLASS_MECH_IDX]					= 1.0f;
+	dmg_factors[WPN_KAMI_SLASH][CLASS_EXTERMINATOR_IDX]			= 0.8f;
+	dmg_factors[WPN_KAMI_SLASH][CLASS_MECH_IDX]					= 1.2f;
 	
 	dmg_factors[WPN_KAMI_SLASH][CLASS_BREEDER_IDX]				= 0.0f;
 	dmg_factors[WPN_KAMI_SLASH][CLASS_HATCHY_IDX]				= 0.0f;
@@ -613,7 +613,7 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_KAMI_XP][CLASS_GRUNT_IDX]					= 1.0f;
 	dmg_factors[WPN_KAMI_XP][CLASS_SHOCK_IDX]					= 1.0f;
 	dmg_factors[WPN_KAMI_XP][CLASS_HEAVY_IDX]					= 1.2f;
-	dmg_factors[WPN_KAMI_XP][CLASS_COMMANDO_IDX]				= 1.0f;
+	dmg_factors[WPN_KAMI_XP][CLASS_COMMANDO_IDX]				= 1.2f;
 	dmg_factors[WPN_KAMI_XP][CLASS_EXTERMINATOR_IDX]			= 1.2f;
 	dmg_factors[WPN_KAMI_XP][CLASS_MECH_IDX]					= 1.0f;
 	
@@ -627,12 +627,12 @@ CAmmoDef::CAmmoDef(void)
 
 	// STINGER SLASH
 	dmg_factors[WPN_STINGER_SLASH][CLASS_ENGINEER_IDX]			= 0.8f;
-	dmg_factors[WPN_STINGER_SLASH][CLASS_GRUNT_IDX]				= 0.8f;
-	dmg_factors[WPN_STINGER_SLASH][CLASS_SHOCK_IDX]				= 1.0f;
-	dmg_factors[WPN_STINGER_SLASH][CLASS_HEAVY_IDX]				= 1.0f;
+	dmg_factors[WPN_STINGER_SLASH][CLASS_GRUNT_IDX]				= 1.0f;
+	dmg_factors[WPN_STINGER_SLASH][CLASS_SHOCK_IDX]				= 0.65f;
+	dmg_factors[WPN_STINGER_SLASH][CLASS_HEAVY_IDX]				= 1.1f;
 	dmg_factors[WPN_STINGER_SLASH][CLASS_COMMANDO_IDX]			= 1.0f;
-	dmg_factors[WPN_STINGER_SLASH][CLASS_EXTERMINATOR_IDX]		= 0.8f;
-	dmg_factors[WPN_STINGER_SLASH][CLASS_MECH_IDX]				= 1.1f;
+	dmg_factors[WPN_STINGER_SLASH][CLASS_EXTERMINATOR_IDX]		= 0.65f;
+	dmg_factors[WPN_STINGER_SLASH][CLASS_MECH_IDX]				= 1.4f;
 	
 	dmg_factors[WPN_STINGER_SLASH][CLASS_BREEDER_IDX]			= 0.0f;
 	dmg_factors[WPN_STINGER_SLASH][CLASS_HATCHY_IDX]			= 0.0f;
@@ -646,10 +646,10 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_STINGER_FIRE][CLASS_ENGINEER_IDX]			= 1.0f;
 	dmg_factors[WPN_STINGER_FIRE][CLASS_GRUNT_IDX]				= 1.0f;
 	dmg_factors[WPN_STINGER_FIRE][CLASS_SHOCK_IDX]				= 1.0f;
-	dmg_factors[WPN_STINGER_FIRE][CLASS_HEAVY_IDX]				= 1.0f;
+	dmg_factors[WPN_STINGER_FIRE][CLASS_HEAVY_IDX]				= 1.2f;
 	dmg_factors[WPN_STINGER_FIRE][CLASS_COMMANDO_IDX]			= 1.0f;
-	dmg_factors[WPN_STINGER_FIRE][CLASS_EXTERMINATOR_IDX]		= 1.1f;
-	dmg_factors[WPN_STINGER_FIRE][CLASS_MECH_IDX]				= 0.7f;
+	dmg_factors[WPN_STINGER_FIRE][CLASS_EXTERMINATOR_IDX]		= 0.65f;
+	dmg_factors[WPN_STINGER_FIRE][CLASS_MECH_IDX]				= 1.0f;
 	
 	dmg_factors[WPN_STINGER_FIRE][CLASS_BREEDER_IDX]			= 0.0f;
 	dmg_factors[WPN_STINGER_FIRE][CLASS_HATCHY_IDX]				= 0.0f;
@@ -663,7 +663,7 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_ACID_GREN][CLASS_ENGINEER_IDX]				= 1.1f;
 	dmg_factors[WPN_ACID_GREN][CLASS_GRUNT_IDX]					= 0.8f;
 	dmg_factors[WPN_ACID_GREN][CLASS_SHOCK_IDX]					= 0.8f;
-	dmg_factors[WPN_ACID_GREN][CLASS_HEAVY_IDX]					= 1.1f;
+	dmg_factors[WPN_ACID_GREN][CLASS_HEAVY_IDX]					= 1.7f;
 	dmg_factors[WPN_ACID_GREN][CLASS_COMMANDO_IDX]				= 1.0f;
 	dmg_factors[WPN_ACID_GREN][CLASS_EXTERMINATOR_IDX]			= 0.0f;
 	dmg_factors[WPN_ACID_GREN][CLASS_MECH_IDX]					= 0.0f;

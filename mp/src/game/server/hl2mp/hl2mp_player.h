@@ -202,7 +202,7 @@ public:
 	void PlasmaOff(void);
 	bool PlasmaReady(void);
 	void RechargeThink(void);
-	void FilterDamage(CTakeDamageInfo &info);
+	void FilterDamageArmor(CTakeDamageInfo &info);
 	int PlasmaCharge(void);
 	void PlasmaShot(void);
 	void RailgunShot(void);

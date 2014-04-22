@@ -34,8 +34,6 @@
 
 #define GRENADE_DAMAGE_RADIUS 250.0f
 
-#define GRENADE_DMG 15.0f
-
 #ifdef CLIENT_DLL
 #define CWeaponAcidGren C_WeaponAcidGren
 #endif
@@ -457,8 +455,6 @@ void CWeaponAcidGren::ThrowGrenade( CBasePlayer *pPlayer )
 			}
 		}
 		
-		pGrenade->SetDamage( GetHL2MPWpnData().m_iPlayerDamage );
-		pGrenade->SetDamageRadius( GRENADE_DAMAGE_RADIUS );
 	}
 #endif
 
@@ -489,11 +485,6 @@ void CWeaponAcidGren::LobGrenade( CBasePlayer *pPlayer )
 	vecThrow += vForward * 300 + Vector( 0, 0, 50 );
 	CBaseGrenade *pGrenade = AcidGren_Create( vecSrc, vec3_angle, vecThrow, AngularImpulse(200,random->RandomInt(-600,600),0), pPlayer, GRENADE_TIMER, false );
 
-	if ( pGrenade )
-	{
-		pGrenade->SetDamage( GetHL2MPWpnData().m_iPlayerDamage );
-		pGrenade->SetDamageRadius( GRENADE_DAMAGE_RADIUS );
-	}
 #endif
 
 	WeaponSound( WPN_DOUBLE );
@@ -540,12 +531,6 @@ void CWeaponAcidGren::RollGrenade( CBasePlayer *pPlayer )
 	// roll it
 	AngularImpulse rotSpeed(0,0,720);
 	CBaseGrenade *pGrenade = AcidGren_Create( vecSrc, orientation, vecThrow, rotSpeed, pPlayer, GRENADE_TIMER, false );
-
-	if ( pGrenade )
-	{
-		pGrenade->SetDamage( GetHL2MPWpnData().m_iPlayerDamage );
-		pGrenade->SetDamageRadius( GRENADE_DAMAGE_RADIUS );
-	}
 
 #endif
 
