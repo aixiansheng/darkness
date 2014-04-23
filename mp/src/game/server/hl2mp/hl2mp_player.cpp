@@ -806,16 +806,16 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 	switch(GetTeamNumber()) {
 	case TEAM_SPIDERS:
 		if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
-			CBasePlayer::GiveAmmo(999, dk_classes[m_iClassNumber].pri_ammo);
+			CBasePlayer::GiveAmmo(999, dk_classes[m_iClassNumber].pri_ammo, true);
 
 		if (Q_strcmp(dk_classes[m_iClassNumber].sec_ammo, AMMO_NULL))
-			CBasePlayer::GiveAmmo(999, dk_classes[m_iClassNumber].sec_ammo);
+			CBasePlayer::GiveAmmo(999, dk_classes[m_iClassNumber].sec_ammo, true);
 
 		if (m_flNextRefilTime < gpGlobals->curtime) {
 			m_flNextRefilTime = gpGlobals->curtime + GRENADE_REFIL_TIMEOUT;
 
 			if (Q_strcmp(dk_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
-				CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type);
+				CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type, true);
 		}
 
 		break;
@@ -937,7 +937,7 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 	}
 
 	if (Q_strcmp(dk_classes[m_iClassNumber].grenade_type, GRENADE_NULL)) {
-		CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type);
+		CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type, true);
 	}
 	
 	if (Q_strcmp(dk_classes[m_iClassNumber].grenade_weapon, WEAPON_NULL)) {
@@ -1104,7 +1104,7 @@ void CHL2MP_Player::Spawn(void)
 				TogglePowerArmor();
 				SpawnHackPowerArmorUpdateThink();
 
-				CBasePlayer::GiveAmmo(max_plasma, plasma_ammo_type, false);
+				CBasePlayer::GiveAmmo(max_plasma, plasma_ammo_type, true);
 
 			} else if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
 				max_plasma = GetAmmoDef()->MaxCarry(plasma_ammo_type);

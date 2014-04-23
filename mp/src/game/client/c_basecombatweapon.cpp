@@ -16,6 +16,7 @@
 #include "tier1/KeyValues.h"
 #include "toolframework/itoolframework.h"
 #include "toolframework_client.h"
+#include "hl2mp_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -150,7 +151,9 @@ void C_BaseCombatWeapon::OnDataChanged( DataUpdateType_t updateType )
 					pHudSelection->OnWeaponPickup( this );
 				}
 
-				pPlayer->EmitSound( "Player.PickupWeapon" );
+				if (GetTeamNumber() != TEAM_SPIDERS) {
+					pPlayer->EmitSound( "Player.PickupWeapon" );
+				}
 			}
 		}
 	}

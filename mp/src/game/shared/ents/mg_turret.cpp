@@ -318,7 +318,7 @@ void CMGTurretHead::ShootAt(CBaseEntity *ent) {
 	endpos = ent->BodyTarget(shootpos, false);
 	dir = endpos - shootpos;
 
-	UTIL_TraceLine(shootpos, endpos, MASK_SOLID, NULL, COLLISION_GROUP_NONE, &tr);
+	UTIL_TraceLine(shootpos, endpos, MASK_SOLID, GetParent(), COLLISION_GROUP_NONE, &tr);
 	CTakeDamageInfo info(this, GetParent(), SMG_TURRET_DAMAGE, DMG_BULLET);
 	info.SetAmmoType(m_iAmmoType);
 

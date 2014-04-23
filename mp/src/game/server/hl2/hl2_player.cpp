@@ -2735,7 +2735,9 @@ bool CHL2_Player::BumpWeapon( CBaseCombatWeapon *pWeapon )
 
 		Weapon_Equip( pWeapon );
 
-		EmitSound( "HL2Player.PickupWeapon" );
+		if (GetTeamNumber() != TEAM_SPIDERS) {
+			EmitSound( "HL2Player.PickupWeapon" );
+		}
 		
 		return true;
 	}
