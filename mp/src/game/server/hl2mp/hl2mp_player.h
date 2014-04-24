@@ -329,6 +329,8 @@ private:
 	bool showSpawnHint;
 
 	int hatchy_ammo_type;
+
+	float deathHealth;
 };
 
 inline CHL2MP_Player *ToHL2MPPlayer( CBaseEntity *pEntity )

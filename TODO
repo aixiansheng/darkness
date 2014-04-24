@@ -1,12 +1,17 @@
 ROADMAP
 =================
 
+- new item damage/balance
+- stalker balance
+
+- menu usability fixes (gray out unavailable buttons, show messages on failure)
+
+- kami should leave ragdoll on normal death that can explode on kill
+- kami should not leave ragdoll when exploded!
+
 - fix all crashes (video mode change, change server)
 
 - mech crush hachy/kami w/out landing on them (Dot prod at touch: fwd x dir, must be on ground)
-
-- hatchy = 1 shot by pistol
-- hatchy = 2 shot by smg (done?)
 
 - medic w/flare
 - wraith

@@ -60,6 +60,9 @@
 #define RAGDOLL_SLEEP_TIME 10.0f
 #define RAGDOLL_HEALTH 200
 
+#define GIB_HEALTH_THRESHOLD -70.0f
+
+
 int g_iLastCitizenModel = 0;
 int g_iLastCombineModel = 0;
 
@@ -2794,6 +2797,10 @@ void CHL2MP_Player::DetonateTripmines( void )
 
 bool CHL2MP_Player::ShouldGib( const CTakeDamageInfo &info ) {
 	
+	// last hit was hard
+	if (deathHealth < GIB_HEALTH_THRESHOLD)
+		return true;
+
 	return false;
 }
 
@@ -2810,8 +2817,15 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 	SetContextThink(NULL, 0, GUARDIAN_ARMOR_CTX);
 
 	DetonateTripmines();
-
 	RemoveSpikeGrenades();
+
+	//
+	// save the health value at death time
+	// before a BaseClass::Event_Killed alters it
+	// .. so that ShouldGib will work
+	//
+
+	deathHealth = GetHealth();
 
 	CBaseEntity *pAttacker = info.GetAttacker();
 	CHL2MP_Player *player;
