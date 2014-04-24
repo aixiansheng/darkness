@@ -143,7 +143,7 @@ void C_BaseCombatWeapon::OnDataChanged( DataUpdateType_t updateType )
 		if ( (m_iState != WEAPON_NOT_CARRIED ) && (m_iOldState == WEAPON_NOT_CARRIED) )
 		{
 			// Tell the HUD this weapon's been picked up
-			if ( ShouldDrawPickup() )
+			if ( GetTeamNumber() != TEAM_SPIDERS && ShouldDrawPickup() )
 			{
 				CBaseHudWeaponSelection *pHudSelection = GetHudWeaponSelection();
 				if ( pHudSelection )
@@ -151,9 +151,7 @@ void C_BaseCombatWeapon::OnDataChanged( DataUpdateType_t updateType )
 					pHudSelection->OnWeaponPickup( this );
 				}
 
-				if (GetTeamNumber() != TEAM_SPIDERS) {
-					pPlayer->EmitSound( "Player.PickupWeapon" );
-				}
+				pPlayer->EmitSound( "Player.PickupWeapon" );
 			}
 		}
 	}

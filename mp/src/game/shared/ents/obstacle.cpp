@@ -2,6 +2,7 @@
 #include "obstacle.h"
 #include "item_info.h"
 #include "class_info.h"
+#include "ammodef.h"
 
 LINK_ENTITY_TO_CLASS(ent_obstacle, CObstacleEntity);
 IMPLEMENT_NETWORKCLASS_ALIASED(ObstacleEntity, DT_ObstacleEntity);
@@ -56,7 +57,10 @@ void CObstacleEntity::ObsTouch(CBaseEntity *e) {
 			dir = endpos - GetAbsOrigin();
 
 			CTakeDamageInfo info(this, this, OBSTACLE_DMG_VALUE, DMG_GENERIC|DMG_ALWAYSGIB);
+			
 			CalculateMeleeDamageForce(&info, dir, endpos, 0.01f);
+			info.SetAmmoType(GetAmmoDef()->Index("obstacle"));
+
 			p->DispatchTraceAttack(info, Vector(0,0,1), &tr);
 			ApplyMultiDamage();
 		}

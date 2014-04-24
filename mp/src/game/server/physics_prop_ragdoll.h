@@ -107,6 +107,8 @@ public:
 	void			InputTurnOff( inputdata_t &inputdata );
 	void			InputFadeAndRemove( inputdata_t &inputdata );
 
+	void		TakeDamageThink(float delay);
+	void		TurnOnDamage(void);
 	void		SetSleepThink(float flDelay);
 	void		SetSleep(void);
 	void		RemoveServerRagdoll(void);

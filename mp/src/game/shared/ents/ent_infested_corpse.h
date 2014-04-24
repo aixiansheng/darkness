@@ -18,7 +18,7 @@
 #define CORPSE_GIB_SOUND	"Egg.Die"
 #define CORPSE_MODEL		"models/infested.mdl"
 #define CORPSE_FLIES_SPRITE	"black_flies"
-#define CORPSE_HEALTH		175
+#define CORPSE_HEALTH		275
 #define CORPSE_FLIES_SOUND	"Corpse.Flies"
 #define CORPSE_DMG_INT		0.3f
 #define CORPSE_DMG_RAD		200

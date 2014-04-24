@@ -58,7 +58,7 @@
 #define DEFAULT_RAGDOLL_FADE 120.0f
 #define DEFAULT_RAGDOLL_FADE_DURATION 3.0f
 #define RAGDOLL_SLEEP_TIME 10.0f
-#define RAGDOLL_HEALTH 150
+#define RAGDOLL_HEALTH 200
 
 int g_iLastCitizenModel = 0;
 int g_iLastCombineModel = 0;
@@ -2586,6 +2586,8 @@ void CHL2MP_Player::CreateViewModel( int index /*=0*/ )
 	}
 }
 
+#define DEFAULT_RAGDOLL_DMG_LAG 1.0f
+
 bool CHL2MP_Player::BecomeRagdoll(const CTakeDamageInfo &info, const Vector &forceVector) {
 	CRagdollProp *ragdoll;
 
@@ -2603,7 +2605,10 @@ bool CHL2MP_Player::BecomeRagdoll(const CTakeDamageInfo &info, const Vector &for
 
 			ragdoll->SetSleepThink(RAGDOLL_SLEEP_TIME);
 			ragdoll->FadeOut(DEFAULT_RAGDOLL_FADE, DEFAULT_RAGDOLL_FADE_DURATION);
+			ragdoll->TakeDamageThink(DEFAULT_RAGDOLL_DMG_LAG);
 		}
+	} else {
+		CreateRagdollEntity();
 	}
 
 	return true;
@@ -2653,39 +2658,32 @@ END_SEND_TABLE()
 
 void CHL2MP_Player::CreateRagdollEntity( void )
 {
-	if (m_bForceServerRagdoll == false || num_server_ragdolls >= MAX_SERVER_RAGDOLLS) {
-		if ( m_hRagdoll ) {
-			UTIL_RemoveImmediate( m_hRagdoll );
-			m_hRagdoll = NULL;
-		}
 
-		// If we already have a ragdoll, don't make another one.
-		CHL2MPRagdoll *pRagdoll = dynamic_cast< CHL2MPRagdoll* >( m_hRagdoll.Get() );
-	
-		if ( !pRagdoll ) {
-			// create a new one
-			pRagdoll = dynamic_cast< CHL2MPRagdoll* >( CreateEntityByName( "hl2mp_ragdoll" ) );
-		}
-
-		if ( pRagdoll ) {
-			pRagdoll->m_hPlayer = this;
-			pRagdoll->m_vecRagdollOrigin = GetAbsOrigin();
-			pRagdoll->m_vecRagdollVelocity = GetAbsVelocity();
-			pRagdoll->m_nModelIndex = m_nModelIndex;
-			pRagdoll->m_nForceBone = m_nForceBone;
-			pRagdoll->m_vecForce = m_vecTotalBulletForce;
-			pRagdoll->SetAbsOrigin( GetAbsOrigin() );
-		}
-
-		// ragdolls will be removed on round restart automatically
-		m_hRagdoll = pRagdoll;
+	if ( m_hRagdoll ) {
+		UTIL_RemoveImmediate( m_hRagdoll );
+		m_hRagdoll = NULL;
 	}
 
-	//
-	// else BecomeRagdoll will handle this when the BaseCombatCharacter
-	// Event_Killed() is called, so there's no need to do anything
-	// right here
-	//
+	// If we already have a ragdoll, don't make another one.
+	CHL2MPRagdoll *pRagdoll = dynamic_cast< CHL2MPRagdoll* >( m_hRagdoll.Get() );
+	
+	if ( !pRagdoll ) {
+		// create a new one
+		pRagdoll = dynamic_cast< CHL2MPRagdoll* >( CreateEntityByName( "hl2mp_ragdoll" ) );
+	}
+
+	if ( pRagdoll ) {
+		pRagdoll->m_hPlayer = this;
+		pRagdoll->m_vecRagdollOrigin = GetAbsOrigin();
+		pRagdoll->m_vecRagdollVelocity = GetAbsVelocity();
+		pRagdoll->m_nModelIndex = m_nModelIndex;
+		pRagdoll->m_nForceBone = m_nForceBone;
+		pRagdoll->m_vecForce = m_vecTotalBulletForce;
+		pRagdoll->SetAbsOrigin( GetAbsOrigin() );
+	}
+
+	// ragdolls will be removed on round restart automatically
+	m_hRagdoll = pRagdoll;
 }
 
 //-----------------------------------------------------------------------------
@@ -2788,6 +2786,17 @@ void CHL2MP_Player::DetonateTripmines( void )
 	EmitSound( "Weapon_SLAM.SatchelDetonate" );
 }
 
+//void CHL2MP_Player::Event_Dying( const CTakeDamageInfo &info ) {
+//	// Note: since we're dead, it won't draw us on the client, but we don't set EF_NODRAW
+//	// because we still want to transmit to the clients in our PVS.
+//	CreateRagdollEntity();
+//}
+
+bool CHL2MP_Player::ShouldGib( const CTakeDamageInfo &info ) {
+	
+	return false;
+}
+
 void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 {
 	//update damage info with our accumulated physics force
@@ -2799,10 +2808,6 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 
 	PlasmaOff();
 	SetContextThink(NULL, 0, GUARDIAN_ARMOR_CTX);
-
-	// Note: since we're dead, it won't draw us on the client, but we don't set EF_NODRAW
-	// because we still want to transmit to the clients in our PVS.
-	CreateRagdollEntity();
 
 	DetonateTripmines();
 
@@ -2844,8 +2849,6 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 		}
 	}
 
-	
-
 	FlashlightTurnOff();
 
 	m_lifeState = LIFE_DEAD;
@@ -2871,14 +2874,22 @@ float CHL2MP_Player::DmgTypeFactor(int dmgtype) {
 				case CLASS_DRONE_IDX:
 					return 0.0f;
 
+				case CLASS_STINGER_IDX:
+				case CLASS_GUARDIAN_IDX:
+				case CLASS_STALKER_IDX:
+					return 0.25f;
+
+				case CLASS_ENGINEER_IDX:
+				case CLASS_GRUNT_IDX:
+				case CLASS_SHOCK_IDX:
+				case CLASS_HEAVY_IDX:
+				case CLASS_COMMANDO_IDX:
+				case CLASS_EXTERMINATOR_IDX:
+					return 3.0f;
+
 				case CLASS_MECH_IDX:
 					return 6.5f;
 			}
-
-			if (team == TEAM_HUMANS)
-				return 3.0f;
-			else
-				return 0.25f;
 	}
 
 	return 1.0f;
@@ -2901,7 +2912,9 @@ int CHL2MP_Player::OnTakeDamage( const CTakeDamageInfo &inputInfo ) {
 	// scale damage scale based on the attack weapon's factor for this class
 	ammotype = inputInfo.GetAmmoType();
 	wpn_factor = GetAmmoDef()->DmgFactorForClass(ammotype, m_iClassNumber);
-	newinfo.ScaleDamage(wpn_factor);
+	if (wpn_factor >= 0.0f) {
+		newinfo.ScaleDamage(wpn_factor);
+	}
 
 	team = GetTeamNumber();
 	dmgtype = inputInfo.GetDamageType();

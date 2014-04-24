@@ -40,6 +40,7 @@ const char *GetMassEquivalent(float flMass);
 const char *s_pFadeOutContext = "RagdollFadeOutContext";
 const char *s_pDebrisContext = "DebrisContext";
 const char *s_pSetSleepContext = "RagdollSleepContext";
+const char *s_pTurnOnDamageContext = "RagdollDmgContext";
 
 const float ATTACHED_DAMPING_SCALE = 50.0f;
 
@@ -799,6 +800,9 @@ void CRagdollProp::SetDamageEntity( CBaseEntity *pEntity )
 //-----------------------------------------------------------------------------
 int	CRagdollProp::OnTakeDamage( const CTakeDamageInfo &info )
 {
+	if (m_takedamage == DAMAGE_NO)
+		return 0;
+
 	// If we have a damage entity, we want to pass damage to it. Add the
 	// Never Ragdoll flag, on the assumption that if the entity dies, we'll
 	// actually be taking the role of its ragdoll.
@@ -1101,6 +1105,15 @@ void CRagdollProp::UpdateNetworkDataFromVPhysics( IPhysicsObject *pPhysics, int 
 void CRagdollProp::RemoveServerRagdoll(void) {
 	num_server_ragdolls--;
 	UTIL_Remove(this);
+}
+
+void CRagdollProp::TurnOnDamage(void) {
+	m_takedamage = DAMAGE_YES;
+}
+
+void CRagdollProp::TakeDamageThink(float delay) {
+	m_takedamage = DAMAGE_NO;
+	SetContextThink(&CRagdollProp::TurnOnDamage, gpGlobals->curtime + delay, s_pTurnOnDamageContext);
 }
 
 //-----------------------------------------------------------------------------

@@ -166,7 +166,7 @@ int CMultiplayRules::Damage_GetTimeBased( void )
 //-----------------------------------------------------------------------------
 int	CMultiplayRules::Damage_GetShouldGibCorpse( void )
 {
-	int iDamage = ( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB );
+	int iDamage = ( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC );
 	return iDamage;
 }
 
@@ -217,7 +217,7 @@ bool CMultiplayRules::Damage_IsTimeBased( int iDmgType )
 bool CMultiplayRules::Damage_ShouldGibCorpse( int iDmgType )
 {
 	// Damage types that gib the corpse.
-	return ( ( iDmgType & ( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB ) ) != 0 );
+	return ( ( iDmgType & ( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC ) ) != 0 );
 }
 
 //-----------------------------------------------------------------------------

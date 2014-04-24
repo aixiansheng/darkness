@@ -49,6 +49,7 @@
 #include "steam/steam_api.h"
 #include "sourcevr/isourcevirtualreality.h"
 #include "client_virtualreality.h"
+#include "hl2mp_gamerules.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_wearable.h"
@@ -977,21 +978,23 @@ void C_BasePlayer::OnDataChanged( DataUpdateType_t updateType )
 		// Reset engine areabits pointer
 		render->SetAreaState( m_Local.m_chAreaBits, m_Local.m_chAreaPortalBits );
 
-		// Check for Ammo pickups.
-		for ( int i = 0; i < MAX_AMMO_TYPES; i++ )
-		{
-			if ( GetAmmoCount(i) > m_iOldAmmo[i] )
+		if (GetTeamNumber() != TEAM_SPIDERS) {
+			// Check for Ammo pickups.
+			for ( int i = 0; i < MAX_AMMO_TYPES; i++ )
 			{
-				// Don't add to ammo pickup if the ammo doesn't do it
-				const FileWeaponInfo_t *pWeaponData = gWR.GetWeaponFromAmmo(i);
-
-				if ( !pWeaponData || !( pWeaponData->iFlags & ITEM_FLAG_NOAMMOPICKUPS ) )
+				if ( GetAmmoCount(i) > m_iOldAmmo[i] )
 				{
-					// We got more ammo for this ammo index. Add it to the ammo history
-					CHudHistoryResource *pHudHR = GET_HUDELEMENT( CHudHistoryResource );
-					if( pHudHR )
+					// Don't add to ammo pickup if the ammo doesn't do it
+					const FileWeaponInfo_t *pWeaponData = gWR.GetWeaponFromAmmo(i);
+
+					if ( !pWeaponData || !( pWeaponData->iFlags & ITEM_FLAG_NOAMMOPICKUPS ) )
 					{
-						pHudHR->AddToHistory( HISTSLOT_AMMO, i, abs(GetAmmoCount(i) - m_iOldAmmo[i]) );
+						// We got more ammo for this ammo index. Add it to the ammo history
+						CHudHistoryResource *pHudHR = GET_HUDELEMENT( CHudHistoryResource );
+						if( pHudHR )
+						{
+							pHudHR->AddToHistory( HISTSLOT_AMMO, i, abs(GetAmmoCount(i) - m_iOldAmmo[i]) );
+						}
 					}
 				}
 			}
