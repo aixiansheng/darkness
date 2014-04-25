@@ -16,8 +16,11 @@
 
 #include <game/client/iviewport.h>
 
+#include <vgui_controls/Button.h>
 #include <vgui/KeyCode.h>
 #include <utlvector.h>
+
+#include "c_team.h"
 
 namespace vgui
 {
@@ -51,6 +54,7 @@ public:
 	vgui::VPANEL GetVPanel( void ) { return BaseClass::GetVPanel(); }
   	virtual bool IsVisible() { return BaseClass::IsVisible(); }
 	virtual void SetParent( vgui::VPANEL parent ) { BaseClass::SetParent( parent ); }
+	virtual void OnTick(void);
 
 public:
 	
@@ -82,6 +86,9 @@ protected:
 	ButtonCode_t m_iScoreBoardKey;
 
 	char m_szMapName[ MAX_PATH ];
+
+	vgui::Button *spiderButton;
+	vgui::Button *humanButton;
 };
 
 

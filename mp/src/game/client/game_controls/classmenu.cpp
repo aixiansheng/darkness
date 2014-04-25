@@ -205,12 +205,21 @@ void CClassMenu::ClearClassButtons(void) {
 }
 
 void CClassMenu::ShowClassButton(int buttonNum, int classNum) {
+	CHL2MP_Player *p;
 	char buttonName[32];
 	char commandStr[32];
 	char buttonText[32];
 	const char *name;
 	int cost;
+	int available_points;
 	Button *b;
+
+	available_points = 10;
+
+	p = C_HL2MP_Player::GetLocalHL2MPPlayer();
+	if (p) {
+		available_points = p->GetPlayerPoints();
+	}
 
 	name = dk_classes[classNum].name;
 	cost = dk_classes[classNum].cost;
@@ -224,6 +233,10 @@ void CClassMenu::ShowClassButton(int buttonNum, int classNum) {
 		b->SetText(buttonText);
 		b->SetVisible(true);
 		b->SetCommand(commandStr);
+
+		if (available_points < cost) {
+			b->SetEnabled(false);
+		}
 	}
 }
 

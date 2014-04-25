@@ -56,7 +56,7 @@ void CEggEntity::Spawn(void) {
 	spawnpoint->SetAbsOrigin(GetAbsOrigin());
 	spawnpoint->SetAbsAngles(GetAbsAngles());
 	spawnpoint->SetParent(this);
-	spawnpoint->SetCycleEfficiency(0.25f);
+	spawnpoint->SetCycleEfficiency(0.35f);
 
 	SetSequence(LookupSequence("idle"));
 	SetPlaybackRate(1.0f);

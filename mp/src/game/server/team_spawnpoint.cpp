@@ -67,8 +67,8 @@ CTeamSpawnPoint::CTeamSpawnPoint(void) {
 	nextSpawnTime = gpGlobals->curtime + DEFAULT_SPAWN_CYCLE;
 }
 
-void CTeamSpawnPoint::SetCycleEfficiency(float f) {
-	cycleTime = f * DEFAULT_SPAWN_CYCLE;
+void CTeamSpawnPoint::SetCycleEfficiency(float eff) {
+	cycleTime = 1.0f/eff * DEFAULT_SPAWN_CYCLE;
 	nextSpawnTime = gpGlobals->curtime + cycleTime;
 }
 

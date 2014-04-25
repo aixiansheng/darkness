@@ -14,7 +14,7 @@
 
 class CTeam;
 
-#define DEFAULT_SPAWN_CYCLE 5.0f
+#define DEFAULT_SPAWN_CYCLE 8.0f
 
 //-----------------------------------------------------------------------------
 // Purpose: points at which the player can spawn, restricted by team

@@ -13,6 +13,7 @@
 #include <vgui/IScheme.h>
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
+#include <vgui/IVGui.h>
 #include <KeyValues.h>
 #include <vgui_controls/ImageList.h>
 #include <filesystem.h>
@@ -21,6 +22,7 @@
 #include <vgui_controls/Label.h>
 #include <vgui_controls/Button.h>
 #include <vgui_controls/HTML.h>
+#include <vgui_controls/Panel.h>
 
 #include "IGameUIFuncs.h" // for key bindings
 #include <igameresources.h>
@@ -28,6 +30,10 @@
 #include <stdlib.h> // MAX_PATH define
 #include <stdio.h>
 #include "byteswap.h"
+
+#include "c_hl2mp_player.h"
+
+#include "hl2mp_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -96,6 +102,109 @@ CTeamMenu::CTeamMenu(IViewPort *pViewPort) : Frame(NULL, PANEL_TEAM )
 	InvalidateLayout();
 
 	m_szMapName[0] = 0;
+
+	spiderButton = dynamic_cast<vgui::Button *>(FindChildByName("jointeam2", true));
+	humanButton = dynamic_cast<vgui::Button *>(FindChildByName("jointeam3", true));
+
+	ivgui()->AddTickSignal(GetVPanel(), 3000);
+}
+
+void CTeamMenu::OnTick(void) {
+	//
+	// each tick, update the spider/human buttons
+	// to show the number of players on each team
+	// additional SetEnabled(false) if dk_team_balance
+	// is on, and a team can't currently be selected
+	//
+	
+	int currentTeam;
+	int nHumans;
+	int nSpiders;
+	char buttonStr[64];
+	bool disableSpiderButton;
+	bool disableHumanButton;
+	C_Team *spiders;
+	C_Team *humans;
+	ConVar *dk_team_balance;
+	C_HL2MP_Player *player;
+
+	nHumans = 0;
+	nSpiders = 0;
+	disableSpiderButton = false;
+	disableHumanButton = false;
+	currentTeam = 0;
+	player = C_HL2MP_Player::GetLocalHL2MPPlayer();
+
+	if (player)
+		currentTeam = player->GetTeamNumber();
+	
+	spiders = GetGlobalTeam(TEAM_SPIDERS);
+	humans = GetGlobalTeam(TEAM_HUMANS);
+
+	if (spiders)
+		nSpiders = spiders->Get_Number_Players();
+
+	if (humans)
+		nHumans = humans->Get_Number_Players();
+
+	if (spiderButton) {
+		Q_snprintf(buttonStr, sizeof(buttonStr), "Join Spiders [%d players]", nSpiders);
+		spiderButton->SetText(buttonStr);
+		spiderButton->SetEnabled(true);
+	}
+
+	if (humanButton) {
+		Q_snprintf(buttonStr, sizeof(buttonStr), "Join Humans [%d players]", nHumans);
+		humanButton->SetText(buttonStr);
+		humanButton->SetEnabled(true);
+	}
+
+	dk_team_balance = cvar->FindVar("dk_team_balance");
+	if (dk_team_balance && dk_team_balance->GetBool() == true) {
+		switch (currentTeam) {
+		case TEAM_HUMANS:
+			disableHumanButton = true;
+			
+			// pretend we're switching teams
+			nHumans--;
+			nSpiders++;
+
+			if (nSpiders > nHumans && nSpiders - nHumans > MAX_TEAM_DELTA_PLAYERS)
+				disableSpiderButton = true;
+
+			break;
+
+		case TEAM_SPIDERS:
+			disableSpiderButton = true;
+
+			// pretend we're switching teams
+			nSpiders--;
+			nHumans++;
+
+			if (nHumans > nSpiders && nHumans - nSpiders > MAX_TEAM_DELTA_PLAYERS)
+				disableHumanButton = true;
+
+			break;
+
+		default:
+
+			if ((nHumans + 1) > nSpiders && (nHumans + 1) - nSpiders > MAX_TEAM_DELTA_PLAYERS)
+				disableHumanButton = true;
+			else if ((nSpiders + 1) > nHumans && (nSpiders + 1) - nHumans > MAX_TEAM_DELTA_PLAYERS)
+				disableSpiderButton = true;
+
+			break;
+
+		}
+
+		if (spiderButton && disableSpiderButton)
+			spiderButton->SetEnabled(false);
+
+		if (humanButton && disableHumanButton)
+			humanButton->SetEnabled(false);
+	}
+
+	
 }
 
 //-----------------------------------------------------------------------------

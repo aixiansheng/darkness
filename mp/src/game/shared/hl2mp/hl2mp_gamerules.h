@@ -26,6 +26,9 @@
 #define VEC_CROUCH_TRACE_MIN	HL2MPRules()->GetHL2MPViewVectors()->m_vCrouchTraceMin
 #define VEC_CROUCH_TRACE_MAX	HL2MPRules()->GetHL2MPViewVectors()->m_vCrouchTraceMax
 
+// for dk_team_balance
+#define MAX_TEAM_DELTA_PLAYERS 1
+
 enum
 {
 	TEAM_SPIDERS = 2,

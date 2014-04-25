@@ -60,7 +60,7 @@
 #define RAGDOLL_SLEEP_TIME 10.0f
 #define RAGDOLL_HEALTH 200
 
-#define GIB_HEALTH_THRESHOLD -70.0f
+#define GIB_HEALTH_THRESHOLD -60.0f
 
 
 int g_iLastCitizenModel = 0;
@@ -1869,8 +1869,6 @@ void CHL2MP_Player::ChangeTeam( int iTeam )
 	}
 }
 
-#define MAX_TEAM_DELTA_PLAYERS 1
-
 bool CHL2MP_Player::HandleCommand_JoinTeam( int team )
 {
 	int spiders;
@@ -1936,11 +1934,15 @@ bool CHL2MP_Player::HandleCommand_JoinTeam( int team )
 
 			if (dk_team_balance.GetBool() == true) {
 				if (team == TEAM_SPIDERS) {
-					if (spiders + 1 > humans + MAX_TEAM_DELTA_PLAYERS)
+					if (spiders + 1 > humans + MAX_TEAM_DELTA_PLAYERS) {
+						UTIL_SayText("Too many spider players!", this);
 						return false;
+					}
 				} else if (team == TEAM_HUMANS) {
-					if (humans + 1 > spiders + MAX_TEAM_DELTA_PLAYERS)
+					if (humans + 1 > spiders + MAX_TEAM_DELTA_PLAYERS) {
+						UTIL_SayText("Too many human players!", this);
 						return false;
+					}
 				}
 			}
 
@@ -2147,11 +2149,25 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 		if (ShouldRunRateLimitedCommand(args)) {
 			int iTeam = atoi( args[1] );
-			HandleCommand_JoinTeam( iTeam );
+			if (HandleCommand_JoinTeam(iTeam) == false) {
 
-			chose_class = false;
-			choosing_class = false;
-			m_flDeathTime = gpGlobals->curtime;
+				//
+				// player picked a team they couldn't join
+				// so show the team menu again
+				//
+				ShowViewPortPanel(PANEL_TEAM, true, NULL);
+
+			} else {
+
+				//
+				// doing this will make sure the class selection
+				// menu pops up
+				//
+				chose_class = false;
+				choosing_class = false;
+				m_flDeathTime = gpGlobals->curtime;
+
+			}
 		}
 		return true;
 
