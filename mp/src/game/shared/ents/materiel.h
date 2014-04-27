@@ -36,6 +36,7 @@ public:
 
 	virtual void Event_Killed(const CTakeDamageInfo &info);
 	virtual int OnTakeDamage(const CTakeDamageInfo &info);
+	virtual void DoSpawnSound(void);
 
 	virtual int TakeHealth(int amt, int type);
 
@@ -44,6 +45,8 @@ public:
 	virtual CHL2MP_Player *GetCreator(void);
 	virtual void SetCreator(CHL2MP_Player *player);
 	virtual void EndTouch(CBaseEntity *e);
+
+	virtual void RefundPoints(void);
 
 	CNetworkVar(bool, active);
 

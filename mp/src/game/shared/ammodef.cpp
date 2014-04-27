@@ -711,13 +711,13 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_GUARDIAN_SPIKE][CLASS_STALKER_IDX]			= 0.0f;
 
 	// STALKER SLASH
-	dmg_factors[WPN_STALKER_SLASH][CLASS_ENGINEER_IDX]			= 1.3f;
-	dmg_factors[WPN_STALKER_SLASH][CLASS_GRUNT_IDX]				= 1.3f;
-	dmg_factors[WPN_STALKER_SLASH][CLASS_SHOCK_IDX]				= 1.0f;
-	dmg_factors[WPN_STALKER_SLASH][CLASS_HEAVY_IDX]				= 1.0f;
-	dmg_factors[WPN_STALKER_SLASH][CLASS_COMMANDO_IDX]			= 1.0f;
-	dmg_factors[WPN_STALKER_SLASH][CLASS_EXTERMINATOR_IDX]		= 1.0f;
-	dmg_factors[WPN_STALKER_SLASH][CLASS_MECH_IDX]				= 1.0f;
+	dmg_factors[WPN_STALKER_SLASH][CLASS_ENGINEER_IDX]			= 1.0f;
+	dmg_factors[WPN_STALKER_SLASH][CLASS_GRUNT_IDX]				= 1.1f;
+	dmg_factors[WPN_STALKER_SLASH][CLASS_SHOCK_IDX]				= 0.9f;
+	dmg_factors[WPN_STALKER_SLASH][CLASS_HEAVY_IDX]				= 1.1f;
+	dmg_factors[WPN_STALKER_SLASH][CLASS_COMMANDO_IDX]			= 0.8f;
+	dmg_factors[WPN_STALKER_SLASH][CLASS_EXTERMINATOR_IDX]		= 0.8f;
+	dmg_factors[WPN_STALKER_SLASH][CLASS_MECH_IDX]				= 0.8f;
 	
 	dmg_factors[WPN_STALKER_SLASH][CLASS_BREEDER_IDX]			= 0.0f;
 	dmg_factors[WPN_STALKER_SLASH][CLASS_HATCHY_IDX]			= 0.0f;
@@ -731,10 +731,10 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_STALKER_GREN][CLASS_ENGINEER_IDX]			= 1.1f;
 	dmg_factors[WPN_STALKER_GREN][CLASS_GRUNT_IDX]				= 1.1f;
 	dmg_factors[WPN_STALKER_GREN][CLASS_SHOCK_IDX]				= 1.0f;
-	dmg_factors[WPN_STALKER_GREN][CLASS_HEAVY_IDX]				= 1.0f;
-	dmg_factors[WPN_STALKER_GREN][CLASS_COMMANDO_IDX]			= 1.0f;
-	dmg_factors[WPN_STALKER_GREN][CLASS_EXTERMINATOR_IDX]		= 1.0f;
-	dmg_factors[WPN_STALKER_GREN][CLASS_MECH_IDX]				= 1.0f;
+	dmg_factors[WPN_STALKER_GREN][CLASS_HEAVY_IDX]				= 1.3f;
+	dmg_factors[WPN_STALKER_GREN][CLASS_COMMANDO_IDX]			= 1.2f;
+	dmg_factors[WPN_STALKER_GREN][CLASS_EXTERMINATOR_IDX]		= 1.4f;
+	dmg_factors[WPN_STALKER_GREN][CLASS_MECH_IDX]				= 1.1f;
 	
 	dmg_factors[WPN_STALKER_GREN][CLASS_BREEDER_IDX]			= 0.0f;
 	dmg_factors[WPN_STALKER_GREN][CLASS_HATCHY_IDX]				= 0.0f;
@@ -746,12 +746,12 @@ CAmmoDef::CAmmoDef(void)
 
 	// STALKER SPIKE
 	dmg_factors[WPN_STALKER_SPIKE][CLASS_ENGINEER_IDX]			= 1.1f;
-	dmg_factors[WPN_STALKER_SPIKE][CLASS_GRUNT_IDX]				= 1.2f;
+	dmg_factors[WPN_STALKER_SPIKE][CLASS_GRUNT_IDX]				= 1.0f;
 	dmg_factors[WPN_STALKER_SPIKE][CLASS_SHOCK_IDX]				= 1.0f;
-	dmg_factors[WPN_STALKER_SPIKE][CLASS_HEAVY_IDX]				= 1.0f;
+	dmg_factors[WPN_STALKER_SPIKE][CLASS_HEAVY_IDX]				= 1.1f;
 	dmg_factors[WPN_STALKER_SPIKE][CLASS_COMMANDO_IDX]			= 1.0f;
-	dmg_factors[WPN_STALKER_SPIKE][CLASS_EXTERMINATOR_IDX]		= 0.9f;
-	dmg_factors[WPN_STALKER_SPIKE][CLASS_MECH_IDX]				= 0.9f;
+	dmg_factors[WPN_STALKER_SPIKE][CLASS_EXTERMINATOR_IDX]		= 0.6f;
+	dmg_factors[WPN_STALKER_SPIKE][CLASS_MECH_IDX]				= 1.1f;
 	
 	dmg_factors[WPN_STALKER_SPIKE][CLASS_BREEDER_IDX]			= 0.0f;
 	dmg_factors[WPN_STALKER_SPIKE][CLASS_HATCHY_IDX]			= 0.0f;
@@ -781,12 +781,12 @@ CAmmoDef::CAmmoDef(void)
 
 	// SPIKER
 	dmg_factors[WPN_SPIKER][CLASS_ENGINEER_IDX]			= 1.1f;
-	dmg_factors[WPN_SPIKER][CLASS_GRUNT_IDX]			= 1.1f;
-	dmg_factors[WPN_SPIKER][CLASS_SHOCK_IDX]			= 1.0f;
+	dmg_factors[WPN_SPIKER][CLASS_GRUNT_IDX]			= 0.8f;
+	dmg_factors[WPN_SPIKER][CLASS_SHOCK_IDX]			= 0.8f;
 	dmg_factors[WPN_SPIKER][CLASS_HEAVY_IDX]			= 1.0f;
-	dmg_factors[WPN_SPIKER][CLASS_COMMANDO_IDX]			= 1.0f;
-	dmg_factors[WPN_SPIKER][CLASS_EXTERMINATOR_IDX]		= 0.9f;
-	dmg_factors[WPN_SPIKER][CLASS_MECH_IDX]				= 0.9f;
+	dmg_factors[WPN_SPIKER][CLASS_COMMANDO_IDX]			= 0.7f;
+	dmg_factors[WPN_SPIKER][CLASS_EXTERMINATOR_IDX]		= 1.0f;
+	dmg_factors[WPN_SPIKER][CLASS_MECH_IDX]				= 0.8f;
 	
 	dmg_factors[WPN_SPIKER][CLASS_BREEDER_IDX]			= 0.0f;
 	dmg_factors[WPN_SPIKER][CLASS_HATCHY_IDX]			= 0.0f;
@@ -866,10 +866,10 @@ CAmmoDef::CAmmoDef(void)
 
 	// INFESTED CORPSE
 	dmg_factors[WPN_INFESTED][CLASS_ENGINEER_IDX]		= 1.0f;
-	dmg_factors[WPN_INFESTED][CLASS_GRUNT_IDX]			= 1.0f;
+	dmg_factors[WPN_INFESTED][CLASS_GRUNT_IDX]			= 1.2f;
 	dmg_factors[WPN_INFESTED][CLASS_SHOCK_IDX]			= 0.9f;
 	dmg_factors[WPN_INFESTED][CLASS_HEAVY_IDX]			= 1.2f;
-	dmg_factors[WPN_INFESTED][CLASS_COMMANDO_IDX]		= 1.0f;
+	dmg_factors[WPN_INFESTED][CLASS_COMMANDO_IDX]		= 1.1f;
 	dmg_factors[WPN_INFESTED][CLASS_EXTERMINATOR_IDX]	= 0.0f;
 	dmg_factors[WPN_INFESTED][CLASS_MECH_IDX]			= 0.0f;
 	

@@ -757,7 +757,7 @@ void CHL2MP_Player::Precache( void )
 
 void CHL2MP_Player::GiveAllItems( void )
 {
-	EquipSuit();
+	EquipSuit(false);
 
 	CBasePlayer::GiveAmmo( 255,	"Pistol");
 	CBasePlayer::GiveAmmo( 255,	"AR2" );

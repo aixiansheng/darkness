@@ -20,7 +20,7 @@
 #define CORPSE_FLIES_SPRITE	"black_flies"
 #define CORPSE_HEALTH		275
 #define CORPSE_FLIES_SOUND	"Corpse.Flies"
-#define CORPSE_DMG_INT		0.3f
+#define CORPSE_DMG_INT		0.25f
 #define CORPSE_DMG_RAD		200
 #define CORPSE_DMG_VAL		20
 

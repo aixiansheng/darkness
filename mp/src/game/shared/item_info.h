@@ -140,14 +140,11 @@ typedef struct item_info_t item_info_t;
 #define GASSER_ARMOR			ARMOR_NONE
 #define GASSER_DIE_SOUND		HEALER_DIE_SOUND
 
-//
-// ents are server side only, so put these here for now
-// since they are used in client code
-//
-#define TELEPORTER_HULL_MIN -Vector(20,20,3)
-#define TELEPORTER_HULL_MAX	Vector(20,20,3)
-#define AMMO_CRATE_HULL_MIN	-Vector(30,20,20)
-#define AMMO_CRATE_HULL_MAX Vector(30,20,20)
+
+#define TELEPORTER_HULL_MIN -Vector(20,20,0)
+#define TELEPORTER_HULL_MAX	Vector(20,20,5)
+#define AMMO_CRATE_HULL_MIN	-Vector(28,28,0)
+#define AMMO_CRATE_HULL_MAX Vector(28,28,10)
 #define MEDIPAD_HULL_MIN TELEPORTER_HULL_MIN
 #define MEDIPAD_HULL_MAX TELEPORTER_HULL_MAX
 #define EXP_MINE_HULL_MIN -Vector(4,4,4)
@@ -155,7 +152,7 @@ typedef struct item_info_t item_info_t;
 #define DETECTOR_HULL_MIN EXP_MINE_HULL_MIN
 #define DETECTOR_HULL_MAX EXP_MINE_HULL_MAX
 #define SMG_TURRET_HULL_MIN -Vector(16,16,2)
-#define SMG_TURRET_HULL_MAX Vector(16,16,25)
+#define SMG_TURRET_HULL_MAX Vector(16,16,16)
 #define MSL_TURRET_HULL_MIN SMG_TURRET_HULL_MIN
 #define MSL_TURRET_HULL_MAX SMG_TURRET_HULL_MAX
 #define EGG_HULL_MIN -Vector(14,14,0)
@@ -171,11 +168,5 @@ typedef struct item_info_t item_info_t;
 
 extern item_info_t human_items[NUM_HUMAN_ITEMS];
 extern item_info_t spider_items[NUM_SPIDER_ITEMS];
-
-// used by many items...
-typedef struct waiting_player {
-	EHANDLE player;
-	float end_time;
-} waiting_player_t;
 
 #endif

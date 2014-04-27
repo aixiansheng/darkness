@@ -4,6 +4,7 @@
 
 #include "weapon_hl2mpbasehlmpcombatweapon.h"
 #include "weapon_hl2mpbasebasebludgeon.h"
+#include "ents/human_materiel.h"
 
 
 #ifdef CLIENT_DLL
@@ -39,6 +40,9 @@ public:
 
 
 #ifndef CLIENT_DLL
+
+	bool WallStickParams(CHL2MP_Player *player, Vector &position, QAngle &angles, trace_t &tr);
+	CHumanMateriel *SpawnItem(const char *name, Vector &origin, QAngle &angles, CHL2MP_Player *creator, bool start_disabled, bool ignore_collision, trace_t &tr);
 	virtual void Precache(void);
 	void ItemStatusUpdate(CBasePlayer *player, int health, int armor);
 

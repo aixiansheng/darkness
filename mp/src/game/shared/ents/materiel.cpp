@@ -77,11 +77,6 @@ void CMateriel::EndTouch(CBaseEntity *e) {
 }
 
 void CMateriel::Spawn(void) {
-	Vector origin;
-	CSoundParameters params;
-	CRecipientFilter filter;
-	EmitSound_t ep;
-	
 	Precache();
 	BaseClass::Spawn();
 
@@ -96,6 +91,17 @@ void CMateriel::Spawn(void) {
 	m_takedamage = DAMAGE_YES;
 	
 	(void)VPhysicsInitStatic();
+
+	GetTeam()->spend_points(item_info->value);
+
+	active = false;
+}
+
+void CMateriel::DoSpawnSound(void) {
+	Vector origin;
+	CSoundParameters params;
+	CRecipientFilter filter;
+	EmitSound_t ep;
 
 	if (item_info->create_sound != NULL) {
 		if (GetParametersForSound( item_info->create_sound, params, NULL )) {
@@ -114,11 +120,6 @@ void CMateriel::Spawn(void) {
 			EmitSound( filter, entindex(), ep );
 		}
 	}
-
-	GetTeam()->spend_points(item_info->value);
-
-	active = false;
-
 }
 
 CHL2MP_Player *CMateriel::GetCreator(void) {
@@ -200,6 +201,10 @@ void CMateriel::Event_Killed(const CTakeDamageInfo &info) {
 		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib4, 10.0f);
 	if (gib5 != NULL)
 		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib5, 15.0f);
+}
+
+void CMateriel::RefundPoints(void) {
+	GetTeam()->reclaim_points(item_info->value);
 }
 
 //

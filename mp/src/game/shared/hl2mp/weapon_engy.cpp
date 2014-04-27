@@ -21,6 +21,9 @@
 	#include "c_hl2mp_player.h"
 #else
 	#include "hl2mp_player.h"
+	#include "gameinterface.h"
+	#include "team.h"
+	#include "particle_parse.h"
 	#include "ents/teleporter.h"
 	#include "ents/ammo_crate.h"
 	#include "ents/egg.h"
@@ -29,10 +32,8 @@
 	#include "ents/mg_turret.h"
 	#include "ents/missile_turret.h"
 	#include "ents/detector.h"
-	#include "gameinterface.h"
-	#include "team.h"
-	#include "particle_parse.h"
 #endif
+
 
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -171,17 +172,10 @@ void CWeaponEngy::ItemPostFrame( void ) {
 }
 
 void CWeaponEngy::MakeItem(int idx) {
-	
 #ifndef CLIENT_DLL
-	CBaseEntity *ent = NULL;
 	CTeleporterEntity *tele = NULL;
-	CAmmoCrate *ammo = NULL;
-	CMedipadEntity *medipad = NULL;
 	CExpMineEntity *mine = NULL;
-	CMGTurretEntity *turret = NULL;
-	CDetectorEntity *det = NULL;
-	CMSLTurretEntity *missile_turret = NULL;
-#endif
+	CHumanMateriel *mat = NULL;
 
 	bool autokill;
 	int cost;
@@ -190,285 +184,188 @@ void CWeaponEngy::MakeItem(int idx) {
 	QAngle turned;
 	Vector dir, start, end, fwd, dst;
 	trace_t tr;
+	Vector normal;
 
 	m_flNextItemCreation = gpGlobals->curtime + ENGY_CREATION_INTERVAL;
 
 	p = ToHL2MPPlayer(GetOwner());
-	if (!p) {
+	if (!p)
 		return;
-	}
 	
 	AngleVectors(p->EyeAngles(), &fwd);
 	fwd.z = 0;
 	VectorNormalize(fwd);
 	VectorAngles(fwd, turned);
-	autokill = false;
 
-	dst = p->GetAbsOrigin() + (fwd * 60);
+	dst = p->GetAbsOrigin() + (fwd * 60) + Vector(0,0,20);
 	QAngle ang(0, p->GetAbsAngles().y - 90, 0);
 
 	if (p->GetTeamNumber() == TEAM_HUMANS) {
-		switch(idx) {
+		//
+		// make sure the item cost is not too high
+		//
+		switch (idx) {
 		case ITEM_TELEPORTER_IDX:
-
-			//
-			// trace the largest unit's hull size to prevent stuck spawns
-			//
-			UTIL_TraceHull(dst + Vector(0,0,10), dst + Vector(0,0,10), dk_classes[CLASS_MECH_IDX].vectors->m_vHullMin, dk_classes[CLASS_MECH_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				// can't create a valid spawn here
-				// see if the player is trying to climb by putting a teleporter half-way into
-				// a world structure
-				UTIL_TraceHull(dst + Vector(0,0,60), dst + Vector(0,0,60), TELEPORTER_HULL_MIN, TELEPORTER_HULL_MAX, MASK_SOLID, NULL, &tr);
-				if (tr.DidHit() && tr.m_pEnt && tr.m_pEnt->IsWorld()) {
-					autokill = true;
-				} else {
-					WeaponSound(EMPTY);
-					break;
-				}
-			}
-
-
-			cost = human_items[ITEM_TELEPORTER_IDX].value;
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(human_items[ITEM_TELEPORTER_IDX].ent_name);
-				if (ent) {
-					tele = dynamic_cast<CTeleporterEntity *>(ent);
-					if (!tele) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					tele->SetAbsOrigin(dst + Vector(0,0,60));
-					tele->SetAbsAngles(ang);
-					tele->SetCreator(p);
-					DispatchSpawn(tele);
-					tele->Disable();
-					if (autokill) {
-						tele->AutoKill();
-					}
-
-				}
-				#endif
-
-				WeaponSound(SINGLE);
-			}
-
-
-			break;
-		
-		case ITEM_AMMO_CRATE_IDX:
-			UTIL_TraceHull(dst, dst, AMMO_CRATE_HULL_MIN, AMMO_CRATE_HULL_MAX, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-
-			cost = human_items[ITEM_AMMO_CRATE_IDX].value;
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(human_items[ITEM_AMMO_CRATE_IDX].ent_name);
-				if (ent) {
-					ammo = dynamic_cast<CAmmoCrate *>(ent);
-					if (!ammo) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					ammo->SetAbsOrigin(dst);
-					ammo->SetAbsAngles(ang);
-					ammo->SetCreator(p);
-					DispatchSpawn(ammo);
-					ammo->Disable();
-				}
-				#endif
-
-				WeaponSound(SINGLE);
-			}
-
-			break;
-		
 		case ITEM_MEDIPAD_IDX:
-			UTIL_TraceHull(dst, dst, MEDIPAD_HULL_MIN, MEDIPAD_HULL_MAX, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
+		case ITEM_AMMO_CRATE_IDX:
+		case ITEM_MINE_IDX:
+		case ITEM_DETECTOR_IDX:
+		case ITEM_SMG_TURRET_IDX:
+		case ITEM_MSL_TURRET_IDX:
+			cost = human_items[idx].value;
+			if (cost > p->GetTeam()->asset_points)
+				return;
+			break;
+
+		default:
+			return;
+		}
+
+		switch (idx) {
+
+		case ITEM_TELEPORTER_IDX:
+			turned = ang;
+			mat = SpawnItem(human_items[idx].ent_name, dst, turned, p, true, false, tr);
+
+			if ((tele = dynamic_cast<CTeleporterEntity *>(mat)) != NULL) {
+				//
+				// no collision happened, see if the bounds
+				// are good for a regular teleporter spawning a mech
+				//
+				UTIL_TraceHull
+				(
+					dst,
+					dst,
+					dk_classes[CLASS_MECH_IDX].vectors->m_vHullMin,
+					dk_classes[CLASS_MECH_IDX].vectors->m_vHullMax,
+					MASK_SOLID,
+					tele,
+					COLLISION_GROUP_DEBRIS,
+					&tr
+				);
+
+				if (tr.DidHit()) {
+					tele->RefundPoints();
+					UTIL_Remove(tele);
+					tele = NULL;
+					mat = NULL;
+				}
+
+				autokill = false;
+
+			} else {
+				//
+				// create a teleporter for the engineer to jump on
+				//
+				dst = dst + Vector(0,0,15);
+				mat = SpawnItem(human_items[idx].ent_name, dst, turned, p, true, true, tr);
+				tele = dynamic_cast<CTeleporterEntity *>(mat);
+
+				autokill = true;
 			}
 
-
-			cost = human_items[ITEM_MEDIPAD_IDX].value;
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(human_items[ITEM_MEDIPAD_IDX].ent_name);
-				if (ent) {
-					medipad = dynamic_cast<CMedipadEntity *>(ent);
-					if (!medipad) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					medipad->SetAbsOrigin(dst);
-					medipad->SetAbsAngles(ang);
-					medipad->SetCreator(p);
-					DispatchSpawn(medipad);
-					medipad->Disable();
-				}
-				#endif
-
-				WeaponSound(SINGLE);
+			if (tele && autokill) {
+				tele->AutoKill();
 			}
 
 			break;
 
 		case ITEM_MINE_IDX:
-			dir = ToBasePlayer(p)->GetAutoaimVector(0);
-			start = p->Weapon_ShootPosition();
-			end = start + (dir * ENGY_WELDER_RANGE);
-
-			UTIL_TraceLine(start, end, MASK_ALL, p, COLLISION_GROUP_NONE, &tr);
-
-			if (tr.fraction == 1.0f) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-
-			cost = human_items[ITEM_MINE_IDX].value;
-
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(human_items[ITEM_MINE_IDX].ent_name);
-				if (ent) {
-					mine = dynamic_cast<CExpMineEntity *>(ent);
-					if (!mine) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					VectorAngles(tr.plane.normal, stick_ang);
-					stick_ang.y -= 50;
-					//stick_ang.z -= 90;
-					//tr.endpos.z -= 6.0f;
-
-					mine->SetAbsOrigin(tr.endpos + tr.plane.normal * 2);
-					mine->SetAbsAngles(stick_ang);
-					mine->SetCreator(p);
-					DispatchSpawn(mine);
-					mine->SetNormal(tr.plane.normal);
-				}
-				#endif
-			}
-
-
-			break;
-
 		case ITEM_DETECTOR_IDX:
-			dir = ToBasePlayer(p)->GetAutoaimVector(0);
-			start = p->Weapon_ShootPosition();
-			end = start + (dir * ENGY_WELDER_RANGE);
-
-			UTIL_TraceLine(start, end, MASK_ALL, p, COLLISION_GROUP_NONE, &tr);
-
-			if (tr.fraction == 1.0f) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-			cost = human_items[ITEM_DETECTOR_IDX].value;
-
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(human_items[ITEM_DETECTOR_IDX].ent_name);
-				if (ent) {
-					det = dynamic_cast<CDetectorEntity *>(ent);
-					if (!det) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					VectorAngles(tr.plane.normal, stick_ang);
-					stick_ang.y -= 50;
-					//stick_ang.z -= 90;
-					//tr.endpos.z -= 6.0f;
-
-					det->SetAbsOrigin(tr.endpos + tr.plane.normal * 2);
-					det->SetAbsAngles(stick_ang);
-					det->SetCreator(p);
-					DispatchSpawn(det);
+			if (WallStickParams(p, dst, turned, tr)) {
+				normal = tr.plane.normal;
+				mat = SpawnItem(human_items[idx].ent_name, dst, turned, p, false, true, tr);
+				if ((mine = dynamic_cast<CExpMineEntity *>(mat)) != NULL) {
+					mine->SetNormal(normal);
 				}
-				#endif
 			}
-
 
 			break;
 
+		case ITEM_AMMO_CRATE_IDX:
+		case ITEM_MEDIPAD_IDX:
+			turned = ang;
 		case ITEM_SMG_TURRET_IDX:
-			UTIL_TraceHull(dst, dst, SMG_TURRET_HULL_MIN, SMG_TURRET_HULL_MAX, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-			cost = human_items[ITEM_SMG_TURRET_IDX].value;
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(human_items[ITEM_SMG_TURRET_IDX].ent_name);
-				if (ent) {
-					turret = dynamic_cast<CMGTurretEntity *>(ent);
-					if (!turret) {
-						UTIL_Remove(turret);
-						return;
-					}
-
-					turret->SetAbsOrigin(dst);
-					turret->SetAbsAngles(turned);
-					turret->SetCreator(p);
-					DispatchSpawn(turret);
-					turret->Disable();
-				}
-				#endif
-			}
-
-
-			break;
-
 		case ITEM_MSL_TURRET_IDX:
-			UTIL_TraceHull(dst, dst, MSL_TURRET_HULL_MIN, MSL_TURRET_HULL_MAX, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-			cost = human_items[ITEM_MSL_TURRET_IDX].value;
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(human_items[ITEM_MSL_TURRET_IDX].ent_name);
-				if (ent) {
-					missile_turret = dynamic_cast<CMSLTurretEntity *>(ent);
-					if (!missile_turret) {
-						UTIL_Remove(missile_turret);
-						return;
-					}
-
-					missile_turret->SetAbsOrigin(dst);
-					missile_turret->SetAbsAngles(turned);
-					missile_turret->SetCreator(p);
-					DispatchSpawn(missile_turret);
-					missile_turret->Disable();
-				}
-				#endif
-			}
-
+			mat = SpawnItem(human_items[idx].ent_name, dst, turned, p, true, false, tr);
 
 			break;
 
 		default:
 			break;
 		}
+
+		//
+		// potentiall do something based on mat being NULL
+		// like writing a message to the client, or emitting
+		// a sound right here...
+		//
+
+		if (mat) {
+			mat->DoSpawnSound();
+		} else {
+			WeaponSound(EMPTY);
+		}
 	}
+#endif
 }
+
+#ifndef CLIENT_DLL
+
+bool CWeaponEngy::WallStickParams(CHL2MP_Player *player, Vector &position, QAngle &angles, trace_t &tr) {
+	Vector direction;
+	Vector start;
+	Vector end;
+
+	direction = ToBasePlayer(player)->GetAutoaimVector(0);
+	start = player->Weapon_ShootPosition();
+	end = start + (direction * ENGY_WELDER_RANGE);
+
+	UTIL_TraceLine(start, end, MASK_ALL, player, COLLISION_GROUP_NONE, &tr);
+	if (tr.fraction == 1.0f)
+		return false;
+
+	VectorAngles(tr.plane.normal, angles);
+	angles.y -= 50;
+	position = tr.endpos + tr.plane.normal * 2;
+
+	return true;
+}
+
+CHumanMateriel *
+CWeaponEngy::SpawnItem(
+	const char *name,
+	Vector &origin, 
+	QAngle &angles,
+	CHL2MP_Player *creator,
+	bool start_disabled,
+	bool ignore_collision,
+	trace_t &tr) 
+{
+	CHumanMateriel *item;
+
+	item = dynamic_cast<CHumanMateriel *>(CreateEntityByName(name));
+	if (item == NULL)
+		return NULL;
+
+	item->SetAbsOrigin(origin);
+	item->SetAbsAngles(angles);
+	item->SetCreator(creator);
+	DispatchSpawn(item);
+	
+	if (start_disabled)
+		item->Disable();
+
+	UTIL_TraceEntity(item, origin, origin, MASK_SOLID, &tr);
+	if (tr.DidHit() && ignore_collision == false) {
+		item->RefundPoints();
+		UTIL_Remove(item);
+		return NULL;
+	}
+
+	return item;
+}
+#endif
 
 //
 // Secondary attack makes the build menu appear
