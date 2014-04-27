@@ -29,7 +29,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( MSLTurretEntity, DT_MSLTurretEntity );
 BEGIN_NETWORK_TABLE( CMSLTurretEntity, DT_MSLTurretEntity )
 END_NETWORK_TABLE()
 
-CMSLTurretEntity::CMSLTurretEntity() : CHumanMateriel(&human_items[ITEM_MSL_TURRET_IDX]) {}
+CMSLTurretEntity::CMSLTurretEntity() : CHumanMateriel(&dk_items[ITEM_MSL_TURRET_IDX]) {}
 CMSLTurretEntity::~CMSLTurretEntity() {}
 
 

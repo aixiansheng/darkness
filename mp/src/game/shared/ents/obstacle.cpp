@@ -12,7 +12,7 @@ END_NETWORK_TABLE()
 
 #define MIN_FUNCTIONAL_HEALTH	150
 
-CObstacleEntity::CObstacleEntity() : CSpiderMateriel(&spider_items[ITEM_OBSTACLE_IDX]) {
+CObstacleEntity::CObstacleEntity() : CSpiderMateriel(&dk_items[ITEM_OBSTACLE_IDX]) {
 }
 
 CObstacleEntity::~CObstacleEntity() {

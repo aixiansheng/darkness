@@ -260,8 +260,8 @@ void CWeaponStalkerSlash::SecondaryAttack(void) {
 		return;
 
 	owner->EyeVectors(&fwd, &right, &up);
-	src_left = owner->Weapon_ShootPosition() + fwd * 10.0f + (right * -7.0f);
-	src_right = owner->Weapon_ShootPosition() + fwd * 10.0f + (right * 7.0f);
+	src_left = owner->Weapon_ShootPosition() + fwd * 10.0f + (right * -7.0f) + Vector(0,0,-10);
+	src_right = owner->Weapon_ShootPosition() + fwd * 10.0f + (right * 7.0f) + Vector(0,0,-10);
 
 	VectorAngles(fwd, angles);
 	(void)VectorNormalize(fwd);

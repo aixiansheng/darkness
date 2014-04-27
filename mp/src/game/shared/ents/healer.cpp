@@ -8,7 +8,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( HealerEntity, DT_HealerEntity );
 BEGIN_NETWORK_TABLE(CHealerEntity, DT_HealerEntity)
 END_NETWORK_TABLE()
 
-CHealerEntity::CHealerEntity() : CSpiderMateriel(&spider_items[ITEM_HEALER_IDX]) {
+CHealerEntity::CHealerEntity() : CSpiderMateriel(&dk_items[ITEM_HEALER_IDX]) {
 }
 
 CHealerEntity::~CHealerEntity() {

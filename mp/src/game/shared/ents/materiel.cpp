@@ -243,6 +243,8 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 			case WPN_SMG:
 			case WPN_SHOTGUN_BUCK:
 			case WPN_PLASMA_RIFLE:
+			case WPN_HATCHY_SLASH:
+			case WPN_KAMI_SLASH:
 				if (item_info->idx == ITEM_TELEPORTER_IDX)
 					return 0;
 				break;
@@ -256,8 +258,17 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 
 			case WPN_ACID_GREN:
 			case WPN_GASSER:
+				newinfo.ScaleDamage(0.2f);
+				break;
+
 			case WPN_STINGER_FIRE:
 				newinfo.ScaleDamage(0.5f);
+				break;
+
+			case WPN_STALKER_SLASH:
+			case WPN_GUARDIAN_SLASH:
+			case WPN_STINGER_SLASH:
+				newinfo.ScaleDamage(0.7f);
 				break;
 		}
 	} else {

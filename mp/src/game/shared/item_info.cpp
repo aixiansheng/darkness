@@ -1,7 +1,7 @@
 #include "cbase.h"
 #include "item_info.h"
 
-item_info_t human_items[NUM_HUMAN_ITEMS] = {
+item_info_t dk_items[NUM_ITEMS] = {
 	{ 
 		ITEM_TELEPORTER_IDX,
 		TELEPORTER_VALUE,
@@ -10,7 +10,7 @@ item_info_t human_items[NUM_HUMAN_ITEMS] = {
 		TELEPORTER_MIN_HEALTH,
 		TELEPORTER_TEAM_DMG,
 		TELEPORTER_ARMOR,
-		L"Teleporter",
+		"Teleporter",
 		"ent_teleporter",
 		"models/teleporter.mdl",
 		NULL,
@@ -24,7 +24,7 @@ item_info_t human_items[NUM_HUMAN_ITEMS] = {
 		AMMO_CRATE_MIN_HEALTH,
 		AMMO_CRATE_TEAM_DMG,
 		AMMO_CRATE_ARMOR,
-		L"Ammo Crate",
+		"Ammo Crate",
 		"ent_ammo_crate",
 		"models/Items/ammocrate_smg1.mdl",
 		NULL,
@@ -38,7 +38,7 @@ item_info_t human_items[NUM_HUMAN_ITEMS] = {
 		MEDIPAD_MIN_HEALTH,
 		MEDIPAD_TEAM_DMG,
 		MEDIPAD_ARMOR,
-		L"Medi-pad",
+		"Medi-pad",
 		"ent_medipad",
 		"models/teleporter.mdl",
 		NULL,
@@ -52,7 +52,7 @@ item_info_t human_items[NUM_HUMAN_ITEMS] = {
 		0,
 		MINE_TEAM_DMG,
 		MINE_ARMOR,
-		L"Mine",
+		"Mine",
 		"ent_mine",
 		"models/mine.mdl",
 		MINE_INIT_SOUND,
@@ -66,7 +66,7 @@ item_info_t human_items[NUM_HUMAN_ITEMS] = {
 		SMG_TURRET_MIN_HEALTH,
 		SMG_TURRET_TEAM_DMG,
 		SMG_TURRET_ARMOR,
-		L"MG Turret",
+		"MG Turret",
 		"ent_mg_turret",
 		"models/turret_base.mdl",
 		SMG_TURRET_INIT_SOUND,
@@ -80,7 +80,7 @@ item_info_t human_items[NUM_HUMAN_ITEMS] = {
 		0,
 		DETECTOR_TEAM_DMG,
 		DETECTOR_ARMOR,
-		L"Detector",
+		"Detector",
 		"ent_detector",
 		"models/mine.mdl",
 		DETECTOR_INIT_SOUND,
@@ -94,15 +94,12 @@ item_info_t human_items[NUM_HUMAN_ITEMS] = {
 		MSL_TURRET_MIN_HEALTH,
 		MSL_TURRET_TEAM_DMG,
 		MSL_TURRET_ARMOR,
-		L"Missile Turret",
+		"Missile Turret",
 		"ent_msl_turret",
 		"models/turret_base.mdl",
 		MSL_TURRET_INIT_SOUND,
 		MSL_TURRET_DIE_SOUND
-	}
-};
-
-item_info_t spider_items[NUM_SPIDER_ITEMS] = {
+	},
 	{
 		ITEM_EGG_IDX,
 		EGG_VALUE,
@@ -111,7 +108,7 @@ item_info_t spider_items[NUM_SPIDER_ITEMS] = {
 		0,
 		EGG_TEAM_DMG,
 		EGG_ARMOR,
-		L"Egg",
+		"Egg",
 		"ent_egg",
 		"models/egg.mdl",
 		NULL,
@@ -125,7 +122,7 @@ item_info_t spider_items[NUM_SPIDER_ITEMS] = {
 		0,
 		HEALER_TEAM_DMG,
 		HEALER_ARMOR,
-		L"Healer",
+		"Healer",
 		"ent_healer",
 		"models/healer.mdl",
 		NULL,
@@ -139,7 +136,7 @@ item_info_t spider_items[NUM_SPIDER_ITEMS] = {
 		0,
 		OBSTACLE_TEAM_DMG,
 		OBSTACLE_ARMOR,
-		L"Obstacle",
+		"Obstacle",
 		"ent_obstacle",
 		"models/obstacle.mdl",
 		NULL,
@@ -153,7 +150,7 @@ item_info_t spider_items[NUM_SPIDER_ITEMS] = {
 		0,
 		SPIKER_TEAM_DMG,
 		SPIKER_ARMOR,
-		L"Spiker",
+		"Spiker",
 		"ent_spiker",
 		"models/spiker.mdl",
 		SPIKER_INIT_SOUND,
@@ -167,7 +164,7 @@ item_info_t spider_items[NUM_SPIDER_ITEMS] = {
 		0,
 		GASSER_TEAM_DMG,
 		GASSER_ARMOR,
-		L"Gasser",
+		"Gasser",
 		"ent_gasser",
 		"models/Gibs/HGIBS.mdl",
 		NULL,

@@ -968,7 +968,7 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("357",				WPN_357,			DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,	0,	12,	BULLET_IMPULSE(800, 5000),	0 );
 		//def.AddAmmoType("XBowBolt",			WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE,		0,	0,	10,	BULLET_IMPULSE(800, 8000),	0 );
 		def.AddAmmoType("Buckshot",			WPN_SHOTGUN_BUCK,	DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,		0,	0,	12,	BULLET_IMPULSE(400, 1200),	0 );
-		def.AddAmmoType("RPG_Round",		WPN_RPG,			DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("RPG_Round",		WPN_RPG,			DMG_BLAST,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		//def.AddAmmoType("SMG1_Grenade",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("Grenade",			WPN_FRAG,			DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		//def.AddAmmoType("slam",				WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	1,	0,				0 );
@@ -978,7 +978,7 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("grenade_acid",		WPN_ACID_GREN,		DMG_ACID,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("stingerfire",		WPN_STINGER_FIRE,	DMG_BURN,			TRACER_NONE,		0,	0,	10,	0, 				0 );
 		def.AddAmmoType("spike",			WPN_SPIKER,			DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,	0,	20,	BULLET_IMPULSE(800, 4000), 	0 );
-		def.AddAmmoType("grenade_c4",		WPN_C4,				DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("grenade_c4",		WPN_C4,				DMG_BLAST,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("plasma",			WPN_PLASMA_RIFLE,	DMG_PLASMA,			TRACER_LINE,		0,	0,	150,	0, 				0 );
 		def.AddAmmoType("plasma_bolt",		WPN_PLASMA_CANON,	DMG_PLASMA | DMG_ALWAYSGIB,	TRACER_LINE,		0,	0,	200,	BULLET_IMPULSE(200, 1000), 	0 );
 		def.AddAmmoType("xp_shells",		WPN_SHOTGUN_XP,		DMG_BLAST,			TRACER_LINE,		0,	0,	3,	0, 				0 );
@@ -991,10 +991,10 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("plasma_railgun",	WPN_RAILGUN,		DMG_PLASMA,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("hatchy_slash",		WPN_HATCHY_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("guardian_slash",	WPN_GUARDIAN_SLASH,	DMG_CLUB,			TRACER_NONE,		0,	0,	1,	0,				0 );
-		def.AddAmmoType("kami_xp",			WPN_KAMI_XP,		DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
+		def.AddAmmoType("kami_xp",			WPN_KAMI_XP,		DMG_BLAST,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("turret_missile",	WPN_MSL_TURRET,		DMG_BULLET | DMG_ALWAYSGIB, TRACER_NONE,		0,	0,	1,	0,		0 );
 		def.AddAmmoType("turret_bullet",	WPN_MG_TURRET,		DMG_BULLET,			TRACER_NONE,		0,	0,	1,	0,		0 );
-		def.AddAmmoType("obstacle",			WPN_OBSTACLE,		DMG_BULLET | DMG_ALWAYSGIB,	TRACER_NONE,	0,	0,	20,	0, 	0 );
+		def.AddAmmoType("obstacle",			WPN_OBSTACLE,		DMG_CLUB | DMG_ALWAYSGIB,	TRACER_NONE,	0,	0,	20,	0, 	0 );
 
 		//
 		// make sure you don't hit the 32 item limit without first increasing it :D

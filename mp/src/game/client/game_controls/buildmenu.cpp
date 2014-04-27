@@ -152,13 +152,21 @@ void CBuildMenu::Update(void) {
 	}
 
 	team = player->GetTeamNumber();
+	ClearItemButtons();
 	if (team == TEAM_SPIDERS) {
-		ShowItems(spider_items, NUM_SPIDER_ITEMS);
+		ShowItemButton(0, ITEM_EGG_IDX);
+		ShowItemButton(1, ITEM_HEALER_IDX);
+		ShowItemButton(2, ITEM_SPIKER_IDX);
+		ShowItemButton(3, ITEM_OBSTACLE_IDX);
+		ShowItemButton(4, ITEM_GASSER_IDX);
 	} else if (team == TEAM_HUMANS) {
-		ShowItems(human_items, NUM_HUMAN_ITEMS);
-	} else {
-		ShowItems(NULL, 0);
-		return;
+		ShowItemButton(0, ITEM_TELEPORTER_IDX);
+		ShowItemButton(1, ITEM_AMMO_CRATE_IDX);
+		ShowItemButton(2, ITEM_MEDIPAD_IDX);
+		ShowItemButton(3, ITEM_MINE_IDX);
+		ShowItemButton(4, ITEM_SMG_TURRET_IDX);
+		ShowItemButton(5, ITEM_DETECTOR_IDX);
+		ShowItemButton(6, ITEM_MSL_TURRET_IDX);
 	}
 
 }
@@ -187,54 +195,114 @@ void CBuildMenu::ShowPanel(bool bShow) {
 
 }
 
+
 #define BUTTON_STR		"builditem"
 #define BUTTON_FMT_STR	BUTTON_STR "%d"
 
-// see BuildMenu.res for max...
+// see ClassMenu.res for max...
 #define MAX_BUTTONS 9
 
-
-void CBuildMenu::ShowItems(item_info_t *infos, int num) {
+void CBuildMenu::ClearItemButtons(void) {
 	int i;
 	char buf[sizeof(BUTTON_STR) + 1];
-	char dispBuf[32];
 	Button *b;
 	
-	if (infos == NULL || num == 0) {
-		for (i = 0; i < MAX_BUTTONS; i++) {
-			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
-			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
-			if (b) {
-				b->SetText("None");
-				b->SetVisible(false);
-			}
-		}
-	}
-
-	// num > 9 = bad... so don't do it :D
-	for (i = 0; i < num; i++) {
+	for (i = 0; i < MAX_BUTTONS; i++) {
 		Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
 		b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
 		if (b) {
-			Q_snprintf(dispBuf, sizeof(dispBuf), "&%d. %ls  [%d points]", i + 1, infos[i].display_name, infos[i].value);
-			b->SetText(dispBuf);
-			b->SetVisible(true);
-			b->SetButtonBorderEnabled(false);
-			b->SetPaintBorderEnabled(false);
-		}
-	}
-
-	if (i < MAX_BUTTONS - 1) {
-		for (; i < MAX_BUTTONS; i++) {
-			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
-			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
-			if (b) {
-				b->SetText("None");
-				b->SetVisible(false);
-			}
+			b->SetText("None");
+			b->SetVisible(false);
 		}
 	}
 }
+
+void CBuildMenu::ShowItemButton(int buttonNum, int itemNum) {
+	CHL2MP_Player *p;
+	char buttonName[32];
+	char commandStr[32];
+	char buttonText[32];
+	const char *name;
+	int cost;
+	int available_points;
+	Button *b;
+
+	available_points = 10;
+
+	p = C_HL2MP_Player::GetLocalHL2MPPlayer();
+	if (p)
+		available_points = p->GetTeam()->GetAssetPoints();
+
+	name = dk_items[itemNum].display_name;
+	cost = dk_items[itemNum].value;
+
+	Q_snprintf(buttonName, sizeof(buttonName), "builditem%d", buttonNum);
+	Q_snprintf(commandStr, sizeof(commandStr), "builditem %d", itemNum);
+	Q_snprintf(buttonText, sizeof(buttonText), "%d. %s [%d points]", buttonNum + 1, name, cost);
+
+	b = dynamic_cast<Button *>(FindChildByName((const char *)buttonName));
+	if (b) {
+		b->SetText(buttonText);
+		b->SetVisible(true);
+		b->SetCommand(commandStr);
+		b->SetButtonBorderEnabled(false);
+		b->SetPaintBorderEnabled(false);
+		b->SetEnabled(true);
+
+		if (available_points < cost) {
+			b->SetEnabled(false);
+		}
+	}
+}
+
+//#define BUTTON_STR		"builditem"
+//#define BUTTON_FMT_STR	BUTTON_STR "%d"
+//
+//// see BuildMenu.res for max...
+//#define MAX_BUTTONS 9
+//
+//
+//void CBuildMenu::ShowItems(item_info_t *infos, int num) {
+//	int i;
+//	char buf[sizeof(BUTTON_STR) + 1];
+//	char dispBuf[32];
+//	Button *b;
+//	
+//	if (infos == NULL || num == 0) {
+//		for (i = 0; i < MAX_BUTTONS; i++) {
+//			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
+//			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
+//			if (b) {
+//				b->SetText("None");
+//				b->SetVisible(false);
+//			}
+//		}
+//	}
+//
+//	// num > 9 = bad... so don't do it :D
+//	for (i = 0; i < num; i++) {
+//		Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
+//		b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
+//		if (b) {
+//			Q_snprintf(dispBuf, sizeof(dispBuf), "&%d. %ls  [%d points]", i + 1, infos[i].display_name, infos[i].value);
+//			b->SetText(dispBuf);
+//			b->SetVisible(true);
+//			b->SetButtonBorderEnabled(false);
+//			b->SetPaintBorderEnabled(false);
+//		}
+//	}
+//
+//	if (i < MAX_BUTTONS - 1) {
+//		for (; i < MAX_BUTTONS; i++) {
+//			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
+//			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
+//			if (b) {
+//				b->SetText("None");
+//				b->SetVisible(false);
+//			}
+//		}
+//	}
+//}
 
 void CBuildMenu::SetData(KeyValues *data) {
 	return;

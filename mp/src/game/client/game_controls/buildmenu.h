@@ -69,7 +69,8 @@ protected:
 
 	CUtlVector< MouseOverPanelButton * > m_mouseoverButtons;
 
-	void ShowItems(item_info_t *infos, int num);
+	void ShowItemButton(int buttonNum, int itemNum);
+	void ClearItemButtons(void);
 };
 
 

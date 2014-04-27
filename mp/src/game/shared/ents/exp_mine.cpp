@@ -14,7 +14,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( ExpMineEntity, DT_ExpMineEntity );
 BEGIN_NETWORK_TABLE( CExpMineEntity, DT_ExpMineEntity )
 END_NETWORK_TABLE()
 
-CExpMineEntity::CExpMineEntity() : CHumanMateriel(&human_items[ITEM_MINE_IDX]) {
+CExpMineEntity::CExpMineEntity() : CHumanMateriel(&dk_items[ITEM_MINE_IDX]) {
 #ifndef CLIENT_DLL
 	surfaceNorm = vec3_origin;
 	laser = NULL;

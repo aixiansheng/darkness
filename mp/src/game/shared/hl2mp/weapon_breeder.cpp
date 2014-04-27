@@ -296,11 +296,11 @@ void CWeaponBreeder::MakeItem(int idx) {
 				break;
 			}
 
-			cost = spider_items[ITEM_EGG_IDX].value;
+			cost = dk_items[ITEM_EGG_IDX].value;
 
 			if (cost < p->GetTeam()->asset_points) {
 				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(spider_items[ITEM_EGG_IDX].ent_name);
+				ent = CreateEntityByName(dk_items[ITEM_EGG_IDX].ent_name);
 				if (ent) {
 					egg = dynamic_cast<CEggEntity *>(ent);
 					if (!egg) {
@@ -328,11 +328,11 @@ void CWeaponBreeder::MakeItem(int idx) {
 				break;
 			}
 
-			cost = spider_items[ITEM_HEALER_IDX].value;
+			cost = dk_items[ITEM_HEALER_IDX].value;
 
 			if (cost < p->GetTeam()->asset_points) {
 				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(spider_items[ITEM_HEALER_IDX].ent_name);
+				ent = CreateEntityByName(dk_items[ITEM_HEALER_IDX].ent_name);
 				if (ent) {
 					healer = dynamic_cast<CHealerEntity *>(ent);
 					if (!healer) {
@@ -361,11 +361,11 @@ void CWeaponBreeder::MakeItem(int idx) {
 				break;
 			}
 
-			cost = spider_items[ITEM_OBSTACLE_IDX].value;
+			cost = dk_items[ITEM_OBSTACLE_IDX].value;
 
 			if (cost < p->GetTeam()->asset_points) {
 				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(spider_items[ITEM_OBSTACLE_IDX].ent_name);
+				ent = CreateEntityByName(dk_items[ITEM_OBSTACLE_IDX].ent_name);
 				if (ent) {
 					obs = dynamic_cast<CObstacleEntity *>(ent);
 					if (!obs) {
@@ -397,11 +397,11 @@ void CWeaponBreeder::MakeItem(int idx) {
 				break;
 			}
 
-			cost = spider_items[ITEM_SPIKER_IDX].value;
+			cost = dk_items[ITEM_SPIKER_IDX].value;
 
 			if (cost < p->GetTeam()->asset_points) {
 				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(spider_items[ITEM_SPIKER_IDX].ent_name);
+				ent = CreateEntityByName(dk_items[ITEM_SPIKER_IDX].ent_name);
 				if (ent) {
 					spiker = dynamic_cast<CSpikerEntity *>(ent);
 					if (!spiker) {
@@ -435,11 +435,11 @@ void CWeaponBreeder::MakeItem(int idx) {
 				break;
 			}
 
-			cost = spider_items[ITEM_GASSER_IDX].value;
+			cost = dk_items[ITEM_GASSER_IDX].value;
 
 			if (cost < p->GetTeam()->asset_points) {
 				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(spider_items[ITEM_GASSER_IDX].ent_name);
+				ent = CreateEntityByName(dk_items[ITEM_GASSER_IDX].ent_name);
 				if (ent) {
 					gasser = dynamic_cast<CGasserEntity *>(ent);
 					if (!gasser) {
@@ -499,19 +499,19 @@ void CWeaponBreeder::PrimaryAttack(void) {
 		if (ent) {
 			if ((egg = dynamic_cast<CEggEntity*>(ent)) != NULL) {
 				team->RemoveSpawnpoint(egg->SpawnPoint());
-				team->reclaim_points(spider_items[ITEM_EGG_IDX].value);
+				team->reclaim_points(dk_items[ITEM_EGG_IDX].value);
 				UTIL_Remove(egg);
 			} else if ((healer = dynamic_cast<CHealerEntity *>(ent)) != NULL) {
-				team->reclaim_points(spider_items[ITEM_HEALER_IDX].value);
+				team->reclaim_points(dk_items[ITEM_HEALER_IDX].value);
 				UTIL_Remove(healer);
 			} else if ((obs = dynamic_cast<CObstacleEntity *>(ent)) != NULL) {
-				team->reclaim_points(spider_items[ITEM_OBSTACLE_IDX].value);
+				team->reclaim_points(dk_items[ITEM_OBSTACLE_IDX].value);
 				UTIL_Remove(obs);
 			} else if ((spiker = dynamic_cast<CSpikerEntity *>(ent)) != NULL) {
-				team->reclaim_points(spider_items[ITEM_SPIKER_IDX].value);
+				team->reclaim_points(dk_items[ITEM_SPIKER_IDX].value);
 				UTIL_Remove(spiker);
 			} else if ((gasser = dynamic_cast<CGasserEntity *>(ent)) != NULL) {
-				team->reclaim_points(spider_items[ITEM_GASSER_IDX].value);
+				team->reclaim_points(dk_items[ITEM_GASSER_IDX].value);
 				UTIL_Remove(gasser);
 			}
 		}

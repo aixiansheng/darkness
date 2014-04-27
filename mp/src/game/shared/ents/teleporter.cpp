@@ -10,7 +10,7 @@ END_NETWORK_TABLE()
 
 
 
-CTeleporterEntity::CTeleporterEntity() : CHumanMateriel(&human_items[ITEM_TELEPORTER_IDX]) {
+CTeleporterEntity::CTeleporterEntity() : CHumanMateriel(&dk_items[ITEM_TELEPORTER_IDX]) {
 	active = false;
 	autoKill = false;
 

@@ -12,7 +12,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( SpikerEntity, DT_SpikerEntity );
 BEGIN_NETWORK_TABLE( CSpikerEntity, DT_SpikerEntity )
 END_NETWORK_TABLE()
 
-CSpikerEntity::CSpikerEntity() : CSpiderMateriel(&spider_items[ITEM_SPIKER_IDX]) {
+CSpikerEntity::CSpikerEntity() : CSpiderMateriel(&dk_items[ITEM_SPIKER_IDX]) {
 }
 
 CSpikerEntity::~CSpikerEntity() {}

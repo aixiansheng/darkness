@@ -41,6 +41,7 @@
 #include "usermessages.h"
 #include "weapon_plasma_canon.h"
 #include "physics_prop_ragdoll.h"
+#include "ents/teleporter.h"
 
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -1274,25 +1275,27 @@ void CHL2MP_Player::Slash(CBaseEntity *other, bool force) {
 	trace_t tr;
 	Vector forward;
 	Vector endpos;
+	CTeleporterEntity *tele;
 
 	// first, is this player a hatchy or kami
 	if (GetTeamNumber() == TEAM_SPIDERS) {
 		if (m_iClassNumber == CLASS_HATCHY_IDX || m_iClassNumber == CLASS_KAMI_IDX) {
 			if (other->GetTeamNumber() == TEAM_HUMANS) {
 				if (m_flNextHitTime < gpGlobals->curtime) {
-				// ignore force parameter:
-				// sometimes hatchy touches another player and slashes extremely fast
-				// if we don't respect the timer
-				// if (force == true || m_flNextHitTime < gpGlobals->curtime) {
+
 
 					CDisablePredictionFiltering foo;
 
+					m_flNextHitTime =  gpGlobals->curtime + HATCHY_HIT_RATE;
+
+					// don't even bother slashing teleporters
+					if ((tele = dynamic_cast<CTeleporterEntity *>(other)) != NULL)
+						return;
+					
 					EmitSound(HATCHY_SLASH_SOUND);
 
 					ClearMultiDamage();
 					
-					m_flNextHitTime =  gpGlobals->curtime + HATCHY_HIT_RATE;
-
 					AngleVectors(GetLocalAngles(), &forward, NULL, NULL);
 
 					UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + forward * 16, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
@@ -2285,8 +2288,18 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 			itemNum = atoi(args.Arg(1));
 
-			if (itemNum < 0 || itemNum > NUM_HUMAN_ITEMS)
-				return true;
+			switch (itemNum) {
+			case ITEM_TELEPORTER_IDX:
+			case ITEM_AMMO_CRATE_IDX:
+			case ITEM_MEDIPAD_IDX:
+			case ITEM_SMG_TURRET_IDX:
+			case ITEM_MSL_TURRET_IDX:
+			case ITEM_MINE_IDX:
+			case ITEM_DETECTOR_IDX:
+				break;
+			default:
+				return false;
+			}
 
 			current = GetActiveWeapon();
 			if (current == NULL)
@@ -2305,8 +2318,16 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 			itemNum = atoi(args.Arg(1));
 
-			if (itemNum < 0 || itemNum > NUM_SPIDER_ITEMS)
-				return true;
+			switch (itemNum) {
+			case ITEM_EGG_IDX:
+			case ITEM_HEALER_IDX:
+			case ITEM_SPIKER_IDX:
+			case ITEM_OBSTACLE_IDX:
+			case ITEM_GASSER_IDX:
+				break;
+			default:
+				return false;
+			}
 
 			current = GetActiveWeapon();
 			if (current == NULL)

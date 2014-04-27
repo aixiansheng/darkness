@@ -21,7 +21,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( MGTurretEntity, DT_MGTurretEntity );
 BEGIN_NETWORK_TABLE( CMGTurretEntity, DT_MGTurretEntity )
 END_NETWORK_TABLE()
 
-CMGTurretEntity::CMGTurretEntity() : CHumanMateriel(&human_items[ITEM_SMG_TURRET_IDX]) {}
+CMGTurretEntity::CMGTurretEntity() : CHumanMateriel(&dk_items[ITEM_SMG_TURRET_IDX]) {}
 CMGTurretEntity::~CMGTurretEntity() {}
 
 

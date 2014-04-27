@@ -16,7 +16,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( DetectorEntity, DT_DetectorEntity );
 BEGIN_NETWORK_TABLE( CDetectorEntity, DT_DetectorEntity )
 END_NETWORK_TABLE()
 
-CDetectorEntity::CDetectorEntity() : CHumanMateriel(&human_items[ITEM_DETECTOR_IDX]) {}
+CDetectorEntity::CDetectorEntity() : CHumanMateriel(&dk_items[ITEM_DETECTOR_IDX]) {}
 CDetectorEntity::~CDetectorEntity() {}
 
 #ifndef CLIENT_DLL
@@ -75,7 +75,7 @@ void CDetectorEntity::DetectThink(void) {
 
 	SetNextThink(gpGlobals->curtime + DETECTOR_THINK_INTERVAL);
 	
-	for (CEntitySphereQuery sphere(GetAbsOrigin(), DETECTOR_RADIUS / 2); 
+	for (CEntitySphereQuery sphere(GetAbsOrigin(), DETECTOR_RADIUS); 
 		(ent = sphere.GetCurrentEntity()) != NULL; 
 		sphere.NextEntity()) 
 	{

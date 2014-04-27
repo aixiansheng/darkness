@@ -15,6 +15,7 @@
 #endif
 
 #include "class_info.h"
+#include "item_info.h"
 
 // human ammo types
 #define WPN_DEFAULT			0
@@ -132,6 +133,7 @@ public:
 	int		AttackWeapon(int nAmmoIndex);
 	int		Flags(int nAmmoIndex);
 	float	DmgFactorForClass(int nAmmoIndex, int classNum);
+	float	DmgFactorForItem(int nAmmoIndex, int itemNum);
 
 	void		AddAmmoType(char const* name, int weaponNumber, int damageType, int tracerType, int plr_dmg, int npc_dmg, int carry, float physicsForceImpulse, int nFlags, int minSplashSize = 4, int maxSplashSize = 8 );
 	void		AddAmmoType(char const* name, int weaponNumber, int damageType, int tracerType, char const* plr_cvar, char const* npc_var, char const* carry_cvar, float physicsForceImpulse, int nFlags, int minSplashSize = 4, int maxSplashSize = 8 );
@@ -143,6 +145,7 @@ private:
 	bool		AddAmmoType(char const* name, int weaponNumber, int damageType, int tracerType, int nFlags, int minSplashSize, int maxSplashSize );
 
 	float dmg_factors[WPN_MAX][NUM_CLASSES];
+	float item_dmg_factors[WPN_MAX][NUM_ITEMS];
 };
 
 

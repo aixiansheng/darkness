@@ -10,7 +10,7 @@ END_NETWORK_TABLE()
 
 #define MIN_FUNCTIONAL_HEALTH	150
 
-CMedipadEntity::CMedipadEntity() : CHumanMateriel(&human_items[ITEM_MEDIPAD_IDX]) {
+CMedipadEntity::CMedipadEntity() : CHumanMateriel(&dk_items[ITEM_MEDIPAD_IDX]) {
 #ifndef CLIENT_DLL
 	active = true;
 #endif

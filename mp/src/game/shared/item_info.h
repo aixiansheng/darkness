@@ -9,7 +9,7 @@ struct item_info_t {
 	int min_health;
 	int team_dmg;
 	float armor_factor;
-	const wchar_t *display_name;
+	const char *display_name;
 	const char *ent_name;
 	const char *model;
 	const char *create_sound;
@@ -36,7 +36,15 @@ typedef struct item_info_t item_info_t;
 #define ITEM_SMG_TURRET_IDX	4
 #define ITEM_DETECTOR_IDX	5
 #define ITEM_MSL_TURRET_IDX	6
-#define NUM_HUMAN_ITEMS		7
+
+#define ITEM_EGG_IDX		7
+#define ITEM_HEALER_IDX		8
+#define ITEM_OBSTACLE_IDX	9
+#define ITEM_SPIKER_IDX		10
+#define ITEM_GASSER_IDX		11
+
+#define NUM_ITEMS			12
+
 
 #define TELEPORTER_VALUE	40
 #define AMMO_CRATE_VALUE	60
@@ -45,13 +53,6 @@ typedef struct item_info_t item_info_t;
 #define SMG_TURRET_VALUE	40
 #define MSL_TURRET_VALUE	60
 #define DETECTOR_VALUE		20
-
-#define ITEM_EGG_IDX		0
-#define ITEM_HEALER_IDX		1
-#define ITEM_OBSTACLE_IDX	2
-#define ITEM_SPIKER_IDX		3
-#define ITEM_GASSER_IDX		4
-#define NUM_SPIDER_ITEMS	5
 
 #define EGG_VALUE			15
 #define HEALER_VALUE		50
@@ -166,7 +167,6 @@ typedef struct item_info_t item_info_t;
 #define GASSER_HULL_MIN -Vector(4,4,4)
 #define GASSER_HULL_MAX Vector(4,4,4)
 
-extern item_info_t human_items[NUM_HUMAN_ITEMS];
-extern item_info_t spider_items[NUM_SPIDER_ITEMS];
+extern item_info_t dk_items[NUM_ITEMS];
 
 #endif

@@ -11,7 +11,7 @@ END_NETWORK_TABLE()
 #define NOCLIP_RADIUS		40
 #define NOCLIP_THINK_TIME	0.3f
 
-CEggEntity::CEggEntity() : CSpiderMateriel(&spider_items[ITEM_EGG_IDX]) {
+CEggEntity::CEggEntity() : CSpiderMateriel(&dk_items[ITEM_EGG_IDX]) {
 #ifndef CLIENT_DLL
 	noclip_ents.Purge();
 	spawnpoint = (CTeamSpawnPoint *)CreateEntityByName("info_player_teamspawn");

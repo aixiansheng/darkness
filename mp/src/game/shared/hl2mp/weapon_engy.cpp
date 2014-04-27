@@ -212,7 +212,7 @@ void CWeaponEngy::MakeItem(int idx) {
 		case ITEM_DETECTOR_IDX:
 		case ITEM_SMG_TURRET_IDX:
 		case ITEM_MSL_TURRET_IDX:
-			cost = human_items[idx].value;
+			cost = dk_items[idx].value;
 			if (cost > p->GetTeam()->asset_points)
 				return;
 			break;
@@ -225,7 +225,7 @@ void CWeaponEngy::MakeItem(int idx) {
 
 		case ITEM_TELEPORTER_IDX:
 			turned = ang;
-			mat = SpawnItem(human_items[idx].ent_name, dst, turned, p, true, false, tr);
+			mat = SpawnItem(dk_items[idx].ent_name, dst, turned, p, true, false, tr);
 
 			if ((tele = dynamic_cast<CTeleporterEntity *>(mat)) != NULL) {
 				//
@@ -258,7 +258,7 @@ void CWeaponEngy::MakeItem(int idx) {
 				// create a teleporter for the engineer to jump on
 				//
 				dst = dst + Vector(0,0,15);
-				mat = SpawnItem(human_items[idx].ent_name, dst, turned, p, true, true, tr);
+				mat = SpawnItem(dk_items[idx].ent_name, dst, turned, p, true, true, tr);
 				tele = dynamic_cast<CTeleporterEntity *>(mat);
 
 				autokill = true;
@@ -274,7 +274,7 @@ void CWeaponEngy::MakeItem(int idx) {
 		case ITEM_DETECTOR_IDX:
 			if (WallStickParams(p, dst, turned, tr)) {
 				normal = tr.plane.normal;
-				mat = SpawnItem(human_items[idx].ent_name, dst, turned, p, false, true, tr);
+				mat = SpawnItem(dk_items[idx].ent_name, dst, turned, p, false, true, tr);
 				if ((mine = dynamic_cast<CExpMineEntity *>(mat)) != NULL) {
 					mine->SetNormal(normal);
 				}
@@ -287,7 +287,7 @@ void CWeaponEngy::MakeItem(int idx) {
 			turned = ang;
 		case ITEM_SMG_TURRET_IDX:
 		case ITEM_MSL_TURRET_IDX:
-			mat = SpawnItem(human_items[idx].ent_name, dst, turned, p, true, false, tr);
+			mat = SpawnItem(dk_items[idx].ent_name, dst, turned, p, true, false, tr);
 
 			break;
 

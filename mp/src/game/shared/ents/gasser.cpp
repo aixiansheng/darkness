@@ -15,7 +15,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( GasserEntity, DT_GasserEntity );
 BEGIN_NETWORK_TABLE( CGasserEntity, DT_GasserEntity )
 END_NETWORK_TABLE()
 
-CGasserEntity::CGasserEntity() : CSpiderMateriel(&spider_items[ITEM_GASSER_IDX]) {}
+CGasserEntity::CGasserEntity() : CSpiderMateriel(&dk_items[ITEM_GASSER_IDX]) {}
 CGasserEntity::~CGasserEntity() {}
 
 #ifndef CLIENT_DLL

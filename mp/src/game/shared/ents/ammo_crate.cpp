@@ -8,7 +8,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( AmmoCrate, DT_AmmoCrate );
 BEGIN_NETWORK_TABLE( CAmmoCrate, DT_AmmoCrate )
 END_NETWORK_TABLE()
 
-CAmmoCrate::CAmmoCrate() : CHumanMateriel(&human_items[ITEM_AMMO_CRATE_IDX]) {}
+CAmmoCrate::CAmmoCrate() : CHumanMateriel(&dk_items[ITEM_AMMO_CRATE_IDX]) {}
 CAmmoCrate::~CAmmoCrate() {}
 
 #ifndef CLIENT_DLL
