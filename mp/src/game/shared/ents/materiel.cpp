@@ -216,94 +216,29 @@ void CMateriel::RefundPoints(void) {
 int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 	int ret;
 	int health;
-	int attack_weapon;
+	int ammo_type;
 	float hull_height;
-	CHL2MP_Player *p;
+	float wpn_factor;
 	CTakeDamageInfo newinfo = info;
 
 	ret = 0;
-	attack_weapon = GetAmmoDef()->AttackWeapon(info.GetAmmoType());
-	p = ToHL2MPPlayer(info.GetAttacker());
+	ammo_type = info.GetAmmoType();
 
 	//
-	// even items that don't take team damage should be
-	// damaged by explosions
+	// apply ammo-type/weapon specific damage factors
+	// -1.0f return means the default ammo type was used
 	//
-  	if (p && p->GetTeamNumber() == GetTeamNumber() && item_info->team_dmg == 0) {
-		if (!(info.GetDamageType() & DMG_BLAST))
-			return 0;
-	}
+	wpn_factor = GetAmmoDef()->DmgFactorForItem(ammo_type, item_info->idx);
+	if (wpn_factor >= 0.0f)
+		newinfo.ScaleDamage(wpn_factor);
 
+	//
+	// now apply armor-specific factoring
+	//
 	newinfo.ScaleDamage(item_info->armor_factor);
 
-	if (GetTeamNumber() == TEAM_HUMANS) {
-		switch (attack_weapon) {
-			case WPN_ENGY:
-			case WPN_PISTOL:
-			case WPN_SMG:
-			case WPN_SHOTGUN_BUCK:
-			case WPN_PLASMA_RIFLE:
-			case WPN_HATCHY_SLASH:
-			case WPN_KAMI_SLASH:
-				if (item_info->idx == ITEM_TELEPORTER_IDX)
-					return 0;
-				break;
-
-			case WPN_RPG:
-			case WPN_FRAG:
-			case WPN_KAMI_XP:
-			case WPN_SHOTGUN_XP:
-				newinfo.ScaleDamage(1.3f);
-				break;
-
-			case WPN_ACID_GREN:
-			case WPN_GASSER:
-				newinfo.ScaleDamage(0.2f);
-				break;
-
-			case WPN_STINGER_FIRE:
-				newinfo.ScaleDamage(0.5f);
-				break;
-
-			case WPN_STALKER_SLASH:
-			case WPN_GUARDIAN_SLASH:
-			case WPN_STINGER_SLASH:
-				newinfo.ScaleDamage(0.7f);
-				break;
-		}
-	} else {
-		switch (attack_weapon) {
-			case WPN_RPG:
-			case WPN_FRAG:
-			case WPN_KAMI_XP:
-			case WPN_SHOTGUN_XP:
-			case WPN_PLASMA_CANON:
-			case WPN_357:
-				newinfo.ScaleDamage(0.8f);
-				break;
-
-			case WPN_HATCHY_SLASH:
-			case WPN_KAMI_SLASH:
-			case WPN_DRONE_SLASH:
-			case WPN_STINGER_SLASH:
-			case WPN_GUARDIAN_SLASH:
-			case WPN_STALKER_SLASH:
-			case WPN_STALKER_SPIKE:
-			case WPN_GUARDIAN_SPIKE:
-			case WPN_STINGER_FIRE:
-			case WPN_RAILGUN:
-				if (item_info->idx == ITEM_EGG_IDX)
-					newinfo.ScaleDamage(0.2f);
-				break;
-
-			case WPN_ACID_GREN:
-			case WPN_GASSER:
-			case WPN_SPIKER:
-			case WPN_INFESTED:
-				return 0;
-				break;
-		}
-	}
+	if (newinfo.GetDamage() == 0.0f)
+		return 0;
 
 	ret = BaseClass::OnTakeDamage(newinfo);
 

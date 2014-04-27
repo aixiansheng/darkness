@@ -518,13 +518,20 @@ void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
 	float dmg;
 	float armor;
 	float armor_bonus;
+	bool flashed;
 	color32 blue = {0,0,255,70};
+	color32 red = {255,0,0,90};
+
+	// don't flash red adn blue at the same time ;)
+	flashed = false;
 
 	if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
 		initial_plasma = PlasmaCharge();
 		dmg = info.GetDamage();
 
 		if (PlasmaReady() && powerArmorEnabled) {
+			CDisablePredictionFiltering foo;
+
 			if (dmg > (float)initial_plasma) {
 				//
 				// shields will be completely drained by the hit
@@ -553,12 +560,10 @@ void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
 			EmitSound(XT_PLASMA_HIT);
 		
 			UTIL_ScreenFade( this, blue, 0.2, 0.3, FFADE_MODULATE );
-
 			m_Local.m_vecPunchAngle.SetX( RandomFloat( -3, -10 ) );
-
-			CDisablePredictionFiltering foo;
-
 			DispatchParticleEffect(JETPACK_SPARK, GetAbsOrigin() + Vector(0,0,32), GetAbsAngles(), this);
+			
+			flashed = true;
 		}
 	}
 
@@ -567,6 +572,11 @@ void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
 	dmg = info.GetDamage();
 	if (armor <= 0.0f || dmg <= 0.0f)
 		return;
+
+	if (flashed == false) {
+		UTIL_ScreenFade(this, red, 0.2, 0.3, FFADE_MODULATE);
+		m_Local.m_vecPunchAngle.SetX(RandomFloat(-3, -10));
+	}
 
 	armor_bonus = DEFAULT_ARMOR_BONUS;
 

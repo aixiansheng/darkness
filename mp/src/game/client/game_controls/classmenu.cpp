@@ -233,6 +233,7 @@ void CClassMenu::ShowClassButton(int buttonNum, int classNum) {
 		b->SetText(buttonText);
 		b->SetVisible(true);
 		b->SetCommand(commandStr);
+		b->SetEnabled(true);
 
 		if (available_points < cost) {
 			b->SetEnabled(false);
