@@ -41,10 +41,13 @@
 
 #define ITEM_UPDATE_INTERVAL	0.5f
 
-
 #define DESTROY_CHARGE_TIME 7.0f
 #define CHARGE_WARN_TIME 2.0f
 #define DEFAULT_WARN_BEEPS 3
+
+#define DISCHARGE_OWNER_DMG 35
+#define DISCHARGE_PLAYER_DMG 40
+#define DISCHARGE_ENT_DMG 30
 
 //-----------------------------------------------------------------------------
 // CWeaponEngyDestroy
@@ -267,6 +270,7 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 					// cause damage to owner
 					// shock sound
 					Warning("Shock!\n");
+					DamageOwner();
 				}
 			}
 		} else {
@@ -309,6 +313,35 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 	if (!m_bInReload) {
 		WeaponIdle();
 	}
+}
+
+void CWeaponEngyDestroy::DamageOwner(void) {
+#ifndef CLIENT_DLL
+	CBasePlayer *bp;
+	Vector dir;
+	Vector start;
+	Vector end;
+	trace_t tr;
+
+	if ((bp = ToBasePlayer(GetOwner())) == NULL)
+		return;
+
+	//
+	// push player backwards, significantly!
+	//
+	dir = bp->GetAutoaimVector(0) * -1.0f;
+	end = bp->Weapon_ShootPosition();
+	start = start + (dir * ENGY_WELDER_RANGE * 4);
+
+	UTIL_TraceLine(start, end, MASK_ALL, bp, COLLISION_GROUP_NONE, &tr);
+
+	CTakeDamageInfo info(this, GetOwner(), DISCHARGE_OWNER_DMG, DMG_PLASMA);
+	info.SetAmmoType(m_iPrimaryAmmoType);
+
+	CalculateMeleeDamageForce(&info, dir, start, 3.0f);
+	bp->DispatchTraceAttack(info, dir, &tr);
+	ApplyMultiDamage();
+#endif
 }
 
 void CWeaponEngyDestroy::ChargeThink(void) {
@@ -362,6 +395,8 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 	CBasePlayer *p;
 	CBaseEntity *ent;
 	CHumanMateriel *hmat;
+	CSpiderMateriel *smat;
+	CHL2MP_Player *pmat;
 
 	p = ToBasePlayer(GetOwner());
 	if (p) {
@@ -376,9 +411,35 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 		if (ent) {
 			if ((hmat = dynamic_cast<CHumanMateriel *>(ent)) != NULL) {
 				CTakeDamageInfo info(this, this, 9999, DMG_BULLET | DMG_ALWAYSGIB);
-				info.SetAmmoType(GetAmmoType());
+				info.SetAmmoType(m_iPrimaryAmmoType);
+
 				CalculateMeleeDamageForce(&info, dir, start, 0.01f);
 				hmat->DispatchTraceAttack(info, dir, &tr);
+				ApplyMultiDamage();
+			} else if ((smat = dynamic_cast<CSpiderMateriel *>(ent)) != NULL) {
+				CTakeDamageInfo info(this, this, DISCHARGE_ENT_DMG, DMG_PLASMA);
+				info.SetAmmoType(m_iPrimaryAmmoType);
+
+				CalculateMeleeDamageForce(&info, dir, start, 0.01f);
+				smat->DispatchTraceAttack(info, dir, &tr);
+				ApplyMultiDamage();
+			} else if ((pmat = ToHL2MPPlayer(ent)) != NULL) {
+				CTakeDamageInfo info(this, GetOwner(), DISCHARGE_PLAYER_DMG, DMG_PLASMA);
+				info.SetAmmoType(m_iPrimaryAmmoType);
+
+				CalculateMeleeDamageForce(&info, dir, start, 4.0f);
+				pmat->DispatchTraceAttack(info, dir, &tr);
+				ApplyMultiDamage();
+			} else {
+				//
+				// infested corpses, server-side ragdolls and other non-materiel
+				// ( must be specific to avoid NULL )
+				//
+				CTakeDamageInfo info(this, this, DISCHARGE_ENT_DMG, DMG_PLASMA);
+				info.SetAmmoType(m_iPrimaryAmmoType);
+
+				CalculateMeleeDamageForce(&info, dir, start, 0.01f);
+				smat->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
 			}
 		}

@@ -44,6 +44,7 @@ public:
 
 	void ChargeThink(void);
 	void DrainThink(void);
+	void DamageOwner(void);
 
 
 #ifndef CLIENT_DLL

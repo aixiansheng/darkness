@@ -50,6 +50,7 @@
 #include "sourcevr/isourcevirtualreality.h"
 #include "client_virtualreality.h"
 #include "hl2mp_gamerules.h"
+#include "ammodef.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_wearable.h"
@@ -975,6 +976,12 @@ void C_BasePlayer::OnDataChanged( DataUpdateType_t updateType )
 	// Only care about this for local player
 	if ( IsLocalPlayer() )
 	{
+		int engy_destroy_ammo_type;
+		int plasma_rifle_ammo_type;
+
+		engy_destroy_ammo_type = GetAmmoDef()->Index("engy_charge");
+		plasma_rifle_ammo_type = GetAmmoDef()->Index("plasma");
+
 		// Reset engine areabits pointer
 		render->SetAreaState( m_Local.m_chAreaBits, m_Local.m_chAreaPortalBits );
 
@@ -984,6 +991,11 @@ void C_BasePlayer::OnDataChanged( DataUpdateType_t updateType )
 			{
 				if ( GetAmmoCount(i) > m_iOldAmmo[i] )
 				{
+					if (i == engy_destroy_ammo_type ||
+						i == plasma_rifle_ammo_type) {
+							continue;
+					}
+
 					// Don't add to ammo pickup if the ammo doesn't do it
 					const FileWeaponInfo_t *pWeaponData = gWR.GetWeaponFromAmmo(i);
 

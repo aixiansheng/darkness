@@ -16,6 +16,7 @@
 #include <vgui/ISurface.h>
 #include "ihudlcd.h"
 #include "weapon_shotgun.h"
+#include "weapon_engy_destroy.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -126,9 +127,9 @@ void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 
 	// Clear out the vehicle entity
 	m_hCurrentVehicle = NULL;
-
 	C_BaseCombatWeapon *wpn = GetActiveWeapon();
 	C_WeaponShotgun *sg;
+	C_WeaponEngyDestroy *ed;
 	int grenade_type;
 	int grenades;
 
@@ -164,12 +165,15 @@ void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 	m_iconPrimaryAmmo = gWR.GetAmmoIconFromWeapon( wpn->GetPrimaryAmmoType() );
 
 	sg = dynamic_cast<C_WeaponShotgun *>(wpn);
+	ed = dynamic_cast<C_WeaponEngyDestroy *>(wpn);
 	if (sg) {
 		if (sg->currentAmmoType == sg->m_iPrimaryAmmoType) {
 			SetLabelText(L"BUCK");
 		} else {
 			SetLabelText(L"XP");
 		}
+	} else if (ed) {
+		SetLabelText(L"CHARGE");
 	} else {
 		SetLabelText(L"AMMO");
 	}

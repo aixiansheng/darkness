@@ -929,7 +929,7 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 }
 
 void CHL2MP_Player::GiveDefaultItems( void ) {
-	EquipSuit();
+	EquipSuit(false);
 
 	pack_item_0 = -1;
 	pack_item_1 = -1;
