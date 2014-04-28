@@ -51,6 +51,7 @@ public:
 	virtual float	GetRange( void )								{	return	32.0f;	}
 	virtual	float	GetDamageForActivity( Activity hitActivity )	{	return	1.0f;	}
 	virtual void	SetAmmoType(int type);
+	virtual int		GetAmmoType(void);
 
 	CBaseHL2MPBludgeonWeapon( const CBaseHL2MPBludgeonWeapon & );
 

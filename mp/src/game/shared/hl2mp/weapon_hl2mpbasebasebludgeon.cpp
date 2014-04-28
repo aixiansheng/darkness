@@ -278,6 +278,10 @@ void CBaseHL2MPBludgeonWeapon::ImpactEffect( trace_t &traceHit )
 	UTIL_ImpactTrace( &traceHit, DMG_CLUB );
 }
 
+int CBaseHL2MPBludgeonWeapon::GetAmmoType(void) {
+	return bludgeon_ammo_type;
+}
+
 void CBaseHL2MPBludgeonWeapon::SetAmmoType(int type) {
 	bludgeon_ammo_type = type;
 }

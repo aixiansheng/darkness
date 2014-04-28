@@ -41,6 +41,11 @@
 
 #define ITEM_UPDATE_INTERVAL	0.5f
 
+
+#define DESTROY_CHARGE_TIME 7.0f
+#define CHARGE_WARN_TIME 2.0f
+#define DEFAULT_WARN_BEEPS 3
+
 //-----------------------------------------------------------------------------
 // CWeaponEngyDestroy
 //-----------------------------------------------------------------------------
@@ -48,6 +53,13 @@
 IMPLEMENT_NETWORKCLASS_ALIASED( WeaponEngyDestroy, DT_WeaponEngyDestroy )
 
 BEGIN_NETWORK_TABLE( CWeaponEngyDestroy, DT_WeaponEngyDestroy )
+#ifdef CLIENT_DLL
+	RecvPropInt(RECVINFO(warnBeepsLeft)),
+	RecvPropFloat(RECVINFO(nextWarnBeep)),
+#else
+	SendPropInt(SENDINFO(warnBeepsLeft), 3, SPROP_UNSIGNED),
+	SendPropFloat(SENDINFO(nextWarnBeep)),
+#endif
 END_NETWORK_TABLE()
 
 BEGIN_PREDICTION_DATA( CWeaponEngyDestroy )
@@ -58,6 +70,13 @@ PRECACHE_WEAPON_REGISTER( weapon_engy_destroy );
 
 #define	MEGACANNON_MODEL "models/weapons/v_superphyscannon.mdl"
 #define	MEGACANNON_SKIN	1
+
+#ifndef CLIENT_DLL
+BEGIN_DATADESC( CWeaponEngyDestroy )
+	DEFINE_FUNCTION( ChargeThink ),
+	DEFINE_FUNCTION( DrainThink ),
+END_DATADESC()
+#endif
 
 acttable_t	CWeaponEngyDestroy::m_acttable[] = 
 {
@@ -84,6 +103,12 @@ float CWeaponEngyDestroy::GetDamageForActivity( Activity hitActivity ) {
 
 bool CWeaponEngyDestroy::Deploy(void) {
 	bool ret;
+	CHL2MP_Player *p;
+
+	p = ToHL2MPPlayer(GetOwner());
+	if (p) {
+		p->SetAmmoCount(0, m_iPrimaryAmmoType);
+	}
 	
 	m_flNextItemStatus = 0.0f;
 
@@ -111,6 +136,14 @@ void CWeaponEngyDestroy::ItemStatusUpdate(CBasePlayer *player, int health, int a
 		WRITE_SHORT(health);
 	MessageEnd();
 }
+
+void CWeaponEngyDestroy::Spawn(void) {
+	BaseClass::Spawn();
+	SetAmmoType(GetAmmoDef()->Index("engy_destroy"));
+
+	gun_state = STATE_OFF;
+}
+
 #endif
 
 void CWeaponEngyDestroy::ItemPostFrame( void ) {
@@ -173,13 +206,153 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 
 #endif
 
-	BaseClass::ItemPostFrame();
+	//
+	// stuff that happens on client and server
+	//
+	int charge;
+	CBasePlayer *owner;
+	CHL2MP_Player *pHL2MPPlayer;
+
+	owner = ToBasePlayer(GetOwner());
+	if (!owner)
+		return;
+
+	pHL2MPPlayer = ToHL2MPPlayer(owner);
+	if (!pHL2MPPlayer)
+		return;
+
+	charge = pHL2MPPlayer->GetAmmoCount(m_iPrimaryAmmoType);
+
+	switch (gun_state) {
+	case STATE_OFF:
+		if (owner->m_nButtons & IN_ATTACK) {
+			pHL2MPPlayer->SetAmmoCount(0, m_iPrimaryAmmoType);
+			gun_state = STATE_CHARGING;
+			SetThink(&CWeaponEngyDestroy::ChargeThink);
+			SetNextThink(gpGlobals->curtime + 0.1f);
+			Warning("Charging\n");
+		}
+		break;
+
+	case STATE_CHARGING:
+		if (owner->m_nButtons & IN_ATTACK) {
+			if (charge >= 100) {
+				gun_state = STATE_CHARGED;
+				nextWarnBeep = gpGlobals->curtime + CHARGE_WARN_TIME;
+				warnBeepsLeft = DEFAULT_WARN_BEEPS;
+				SetThink(NULL);
+
+				// full charge beep
+				Warning("Full charge\n");
+
+			}
+		} else {
+			gun_state = STATE_DRAINING;
+			SetThink(&CWeaponEngyDestroy::DrainThink);
+			SetNextThink(gpGlobals->curtime + 0.1f);
+			Warning("Draining\n");
+		}
+		break;
+
+	case STATE_CHARGED:
+		if (owner->m_nButtons & IN_ATTACK) {
+			if (gpGlobals->curtime > nextWarnBeep) {
+				if (warnBeepsLeft > 0) {
+					nextWarnBeep = gpGlobals->curtime + CHARGE_WARN_TIME;
+					warnBeepsLeft--;
+					Warning("Warning Beep\n");
+				} else {
+					gun_state = STATE_OFF;
+					SetThink(NULL);
+					// cause damage to owner
+					// shock sound
+					Warning("Shock!\n");
+				}
+			}
+		} else {
+			Warning("Attack\n");
+			// player released attack button, fire away!
+			PrimaryAttack();
+			gun_state = STATE_OFF;
+			SetThink(NULL);
+			pHL2MPPlayer->SetAmmoCount(0, m_iPrimaryAmmoType);
+		}
+			
+		break;
+
+	case STATE_DRAINING:
+		if (owner->m_nButtons & IN_ATTACK) {
+			if (charge < 100) {
+				gun_state = STATE_CHARGING;
+				SetThink(&CWeaponEngyDestroy::ChargeThink);
+				SetNextThink(gpGlobals->curtime + 0.1f);
+				Warning("Resuming Charge\n");
+			} else {
+				gun_state = STATE_CHARGED;
+				SetThink(NULL);
+				Warning("Holding Full Charge\n");
+			}
+		} else {
+			if (charge <= 0) {
+				gun_state = STATE_OFF;
+				SetThink(NULL);
+
+				Warning("Drained\n");
+			}
+		}
+		break;	
+
+	default:
+		break;
+	}
+	
+	if (!m_bInReload) {
+		WeaponIdle();
+	}
+}
+
+void CWeaponEngyDestroy::ChargeThink(void) {
+	int charge;
+	CHL2MP_Player *p;
+	
+	SetNextThink(gpGlobals->curtime + 0.1f);
+
+	p = ToHL2MPPlayer(GetOwner());
+	if (!p)
+		return;
+
+	charge = p->GetAmmoCount(m_iPrimaryAmmoType);
+
+	charge += 2;
+	if (charge > 100)
+		charge = 100;
+
+	p->SetAmmoCount(charge, m_iPrimaryAmmoType);
+}
+
+void CWeaponEngyDestroy::DrainThink(void) {
+	int charge;
+	CHL2MP_Player *p;
+
+	SetNextThink(gpGlobals->curtime + 0.1f);
+
+	p = ToHL2MPPlayer(GetOwner());
+	if (!p)
+		return;
+
+	charge = p->GetAmmoCount(m_iPrimaryAmmoType);
+	
+	charge -= 3;
+	if (charge < 0)
+		charge = 0;
+
+	p->SetAmmoCount(charge, m_iPrimaryAmmoType);
 }
 
 //
 // Secondary attack to destroy when held down
 //
-void CWeaponEngyDestroy::SecondaryAttack(void) {
+void CWeaponEngyDestroy::PrimaryAttack(void) {
 
 #ifndef CLIENT_DLL
 	Vector start;
@@ -203,6 +376,7 @@ void CWeaponEngyDestroy::SecondaryAttack(void) {
 		if (ent) {
 			if ((hmat = dynamic_cast<CHumanMateriel *>(ent)) != NULL) {
 				CTakeDamageInfo info(this, this, 9999, DMG_BULLET | DMG_ALWAYSGIB);
+				info.SetAmmoType(GetAmmoType());
 				CalculateMeleeDamageForce(&info, dir, start, 0.01f);
 				hmat->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
@@ -215,8 +389,4 @@ void CWeaponEngyDestroy::SecondaryAttack(void) {
 	WeaponSound(SINGLE);
 	m_flNextSecondaryAttack = gpGlobals->curtime + ENGY_REFIRE;
 
-}
-
-void CWeaponEngyDestroy::PrimaryAttack(void) {
-	//BaseClass::PrimaryAttack();
 }
