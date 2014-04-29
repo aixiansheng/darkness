@@ -17,6 +17,7 @@
 
 #if defined( CLIENT_DLL )
 	#include "c_hl2mp_player.h"
+	#include "fx_interpvalue.h"
 #else
 	#include "hl2mp_player.h"
 	#include "ents/teleporter.h"
@@ -31,6 +32,7 @@
 	#include "team.h"
 #endif
 
+#define	SPRITE_SCALE	128.0f
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -45,10 +47,24 @@
 #define CHARGE_WARN_TIME 2.0f
 #define DEFAULT_WARN_BEEPS 3
 
-#define DISCHARGE_OWNER_DMG 35
-#define DISCHARGE_PLAYER_DMG 40
-#define DISCHARGE_ENT_DMG 30
+#define DISCHARGE_OWNER_DMG 45
+#define DISCHARGE_PLAYER_DMG 55
+#define DISCHARGE_ENT_DMG 25
 #define DEFAULT_PLAYER_PUSH_SPEED 600
+
+#ifdef CLIENT_DLL
+
+	//Precahce the effects
+	CLIENTEFFECT_REGISTER_BEGIN( PrecacheEffectDestroyGun )
+	CLIENTEFFECT_MATERIAL( "sprites/orangelight1" )
+	CLIENTEFFECT_MATERIAL( "sprites/orangelight1_noz" )
+	CLIENTEFFECT_MATERIAL( PHYSCANNON_GLOW_SPRITE )
+	CLIENTEFFECT_MATERIAL( PHYSCANNON_ENDCAP_SPRITE )
+	CLIENTEFFECT_MATERIAL( PHYSCANNON_CENTER_GLOW )
+	CLIENTEFFECT_MATERIAL( PHYSCANNON_BLAST_SPRITE )
+	CLIENTEFFECT_REGISTER_END()
+
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -61,14 +77,22 @@ BEGIN_NETWORK_TABLE( CWeaponEngyDestroy, DT_WeaponEngyDestroy )
 #ifdef CLIENT_DLL
 	RecvPropInt(RECVINFO(warnBeepsLeft)),
 	RecvPropFloat(RECVINFO(nextWarnBeep)),
+	RecvPropBool(RECVINFO(clawsOpen)),
+	RecvPropInt(RECVINFO(m_EffectState)),
 #else
 	SendPropInt(SENDINFO(warnBeepsLeft), 3, SPROP_UNSIGNED),
 	SendPropFloat(SENDINFO(nextWarnBeep)),
+	SendPropBool(SENDINFO(clawsOpen)),
+	SendPropInt(SENDINFO(m_EffectState)),
 #endif
 END_NETWORK_TABLE()
 
-BEGIN_PREDICTION_DATA( CWeaponEngyDestroy )
+#ifdef CLIENT_DLL
+BEGIN_PREDICTION_DATA(CWeaponEngyDestroy)
+	DEFINE_PRED_FIELD(m_EffectState, FIELD_INTEGER,	FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(clawsOpen, FIELD_BOOLEAN,	FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA()
+#endif
 
 LINK_ENTITY_TO_CLASS( weapon_engy_destroy, CWeaponEngyDestroy );
 PRECACHE_WEAPON_REGISTER( weapon_engy_destroy );
@@ -96,10 +120,41 @@ acttable_t	CWeaponEngyDestroy::m_acttable[] =
 
 IMPLEMENT_ACTTABLE(CWeaponEngyDestroy);
 
+
+enum
+{
+	EFFECT_NONE,
+	EFFECT_CLOSED,
+	EFFECT_READY,
+	EFFECT_HOLDING,
+	EFFECT_LAUNCH,
+};
+
+
 CWeaponEngyDestroy::CWeaponEngyDestroy( void ) {
 	SetWeaponVisible(false);
 	AddEffects(EF_NODRAW);
 	m_flNextItemStatus = 0.0f;
+	clawsOpen = false;
+	m_EffectState = (int)EFFECT_NONE;
+
+#ifdef CLIENT_DLL
+	m_nOldEffectState = EFFECT_NONE;
+	oldClawsOpen = false;
+#endif
+}
+
+void CWeaponEngyDestroy::Precache(void) {
+	PrecacheModel(PHYSCANNON_BEAM_SPRITE);
+	PrecacheModel(PHYSCANNON_BEAM_SPRITE_NOZ);
+
+	PrecacheScriptSound( "Weapon_PhysCannon.HoldSound" );
+	BaseClass::Precache();
+}
+
+void CWeaponEngyDestroy::UpdateOnRemove(void) {
+	DestroyEffects();
+	BaseClass::UpdateOnRemove();
 }
 
 float CWeaponEngyDestroy::GetDamageForActivity( Activity hitActivity ) {
@@ -109,6 +164,9 @@ float CWeaponEngyDestroy::GetDamageForActivity( Activity hitActivity ) {
 bool CWeaponEngyDestroy::Deploy(void) {
 	bool ret;
 	CHL2MP_Player *p;
+
+	CloseElements();
+	StopEffects();
 
 	p = ToHL2MPPlayer(GetOwner());
 	if (p) {
@@ -236,7 +294,17 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 			SetThink(&CWeaponEngyDestroy::ChargeThink);
 			SetNextThink(gpGlobals->curtime + 0.1f);
 			Warning("Charging\n");
+			CloseElements();
+			StopEffects();
+			DoEffect(EFFECT_READY);
+			if (GetMotorSound()) {
+				(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.0f, 1.0f );
+				(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 50, 1.0f );
+			}
+		} else {
+			StopEffects();
 		}
+
 		break;
 
 	case STATE_CHARGING:
@@ -249,13 +317,21 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 
 				// full charge beep
 				Warning("Full charge\n");
-
+				OpenElements();
+				DoEffect(EFFECT_HOLDING);
+				if (GetMotorSound()) {
+					(CSoundEnvelopeController::GetController()).Play( GetMotorSound(), 0.0f, 50 );
+					(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 100, 0.5f );
+					(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.8f, 0.5f );
+				}
 			}
 		} else {
 			gun_state = STATE_DRAINING;
 			SetThink(&CWeaponEngyDestroy::DrainThink);
 			SetNextThink(gpGlobals->curtime + 0.1f);
 			Warning("Draining\n");
+			CloseElements();
+			StopEffects();
 		}
 		break;
 
@@ -273,6 +349,9 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 					// shock sound
 					Warning("Shock!\n");
 					DamageOwner();
+					CloseElements();
+					StopEffects();
+					SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 				}
 			}
 		} else {
@@ -282,6 +361,9 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 			gun_state = STATE_OFF;
 			SetThink(NULL);
 			pHL2MPPlayer->SetAmmoCount(0, m_iPrimaryAmmoType);
+			CloseElements();
+			StopEffects();
+			SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 		}
 			
 		break;
@@ -293,10 +375,24 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 				SetThink(&CWeaponEngyDestroy::ChargeThink);
 				SetNextThink(gpGlobals->curtime + 0.1f);
 				Warning("Resuming Charge\n");
+				CloseElements();
+				StopEffects();
+				DoEffect(EFFECT_READY);
+				if (GetMotorSound()) {
+					(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.0f, 1.0f );
+					(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 50, 1.0f );
+				}
 			} else {
 				gun_state = STATE_CHARGED;
 				SetThink(NULL);
 				Warning("Holding Full Charge\n");
+				OpenElements();
+				DoEffect(EFFECT_HOLDING);
+				if (GetMotorSound()) {
+					(CSoundEnvelopeController::GetController()).Play( GetMotorSound(), 0.0f, 50 );
+					(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 100, 0.5f );
+					(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.8f, 0.5f );
+				}
 			}
 		} else {
 			if (charge <= 0) {
@@ -304,17 +400,77 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 				SetThink(NULL);
 
 				Warning("Drained\n");
+				CloseElements();
+				StopEffects();
+				WeaponSound(MELEE_MISS);
 			}
 		}
 		break;	
-
-	default:
-		break;
 	}
 	
 	if (!m_bInReload) {
 		WeaponIdle();
 	}
+}
+
+bool CWeaponEngyDestroy::Holster(CBaseCombatWeapon *pSwitchingTo) {
+	CloseElements();
+	StopEffects();
+	DestroyEffects();
+
+	return BaseClass::Holster( pSwitchingTo );
+}
+
+void CWeaponEngyDestroy::DryFire(void) {
+	SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+	WeaponSound(EMPTY);
+}
+
+void CWeaponEngyDestroy::PrimaryFireEffect(void) {
+	CBasePlayer *pOwner;
+	
+	pOwner = ToBasePlayer(GetOwner());
+	if (pOwner == NULL)
+		return;
+
+	pOwner->ViewPunch( QAngle(-6, SharedRandomInt( "physcannonfire", -2,2) ,0) );
+	
+#ifndef CLIENT_DLL
+	color32 white = { 245, 245, 255, 32 };
+	UTIL_ScreenFade( pOwner, white, 0.1f, 0.0f, FFADE_IN );
+#endif
+
+	WeaponSound( SINGLE );
+}
+
+void CWeaponEngyDestroy::ShockEntityEffect(CBaseEntity *pEntity, const Vector &forward, trace_t &tr) {
+	#ifndef CLIENT_DLL
+	DoEffect(EFFECT_LAUNCH, &tr.endpos);
+	#endif
+	
+	PrimaryFireEffect();
+	SendWeaponAnim( ACT_VM_SECONDARYATTACK );
+}
+
+float CWeaponEngyDestroy::TraceLength() {
+	return 250.0f;
+}
+
+CSoundPatch *CWeaponEngyDestroy::GetMotorSound(void) {
+	if (m_sndMotor == NULL) {
+		CPASAttenuationFilter filter(this);
+		
+		m_sndMotor = (CSoundEnvelopeController::GetController()).SoundCreate
+		(
+			filter,
+			entindex(),
+			CHAN_STATIC,
+			"Weapon_PhysCannon.HoldSound",
+			ATTN_NORM
+		);
+	}
+
+	return m_sndMotor;
 }
 
 void CWeaponEngyDestroy::DamageOwner(void) {
@@ -419,16 +575,14 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 			if ((hmat = dynamic_cast<CHumanMateriel *>(ent)) != NULL) {
 				CTakeDamageInfo info(this, this, 9999, DMG_BULLET | DMG_ALWAYSGIB);
 				info.SetAmmoType(m_iPrimaryAmmoType);
-
 				CalculateMeleeDamageForce(&info, dir, start, 0.01f);
-				hmat->DispatchTraceAttack(info, dir, &tr);
+				ent->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
 			} else if ((smat = dynamic_cast<CSpiderMateriel *>(ent)) != NULL) {
 				CTakeDamageInfo info(this, this, DISCHARGE_ENT_DMG, DMG_PLASMA);
 				info.SetAmmoType(m_iPrimaryAmmoType);
-
 				CalculateMeleeDamageForce(&info, dir, start, 1.0f);
-				smat->DispatchTraceAttack(info, dir, &tr);
+				ent->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
 			} else if ((pmat = ToHL2MPPlayer(ent)) != NULL) {
 				CTakeDamageInfo info(this, GetOwner(), DISCHARGE_PLAYER_DMG, DMG_PLASMA);
@@ -438,12 +592,11 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 				pmat->SetGroundEntity(NULL);
 
 				CalculateMeleeDamageForce(&info, dir, start, 1.0f);
-				pmat->DispatchTraceAttack(info, dir, &tr);
+				ent->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
 			} else {
 				//
 				// infested corpses, server-side ragdolls and other non-materiel
-				// ( must be specific to avoid NULL ? )
 				//
 				CTakeDamageInfo info(this, this, DISCHARGE_ENT_DMG, DMG_PLASMA);
 				info.SetAmmoType(m_iPrimaryAmmoType);
@@ -452,6 +605,9 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 				ent->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
 			}
+
+			ShockEntityEffect(ent, dir, tr);
+
 		}
 	}
 
@@ -460,4 +616,670 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 	WeaponSound(SINGLE);
 	m_flNextSecondaryAttack = gpGlobals->curtime + ENGY_REFIRE;
 
+	if (GetMotorSound()) {
+		(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.0f, 1.0f );
+		(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 50, 1.0f );
+	}
+
 }
+
+void CWeaponEngyDestroy::OpenElements(void) {
+	CBasePlayer *pOwner;
+
+	if (clawsOpen)
+		return;
+
+	WeaponSound( SPECIAL2 );
+
+	pOwner = ToBasePlayer( GetOwner() );
+	if (pOwner == NULL)
+		return;
+
+	SendWeaponAnim(ACT_VM_IDLE);
+
+	clawsOpen = true;
+
+	DoEffect(EFFECT_READY);
+
+#ifdef CLIENT
+
+	// Element prediction 
+	m_ElementParameter.InitFromCurrent( 1.0f, 0.2f, INTERP_SPLINE );
+	oldClawsOpen = true;
+
+#endif
+}
+
+void CWeaponEngyDestroy::StopLoopingSounds(void) {
+	if (m_sndMotor != NULL) {
+		 (CSoundEnvelopeController::GetController()).SoundDestroy( m_sndMotor );
+		 m_sndMotor = NULL;
+	}
+#ifndef CLIENT_DLL
+	BaseClass::StopLoopingSounds();
+#endif
+}
+
+void CWeaponEngyDestroy::CloseElements(void) {
+	CBasePlayer *pOwner;
+
+	if ( clawsOpen == false )
+		return;
+
+	WeaponSound( MELEE_HIT );
+
+	pOwner = ToBasePlayer( GetOwner() );
+	if ( pOwner == NULL )
+		return;
+
+	SendWeaponAnim( ACT_VM_IDLE );
+
+	clawsOpen = false;
+
+	if ( GetMotorSound() )
+	{
+		(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.0f, 1.0f );
+		(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 50, 1.0f );
+	}
+	
+	DoEffect(EFFECT_CLOSED);
+
+#ifdef CLIENT
+	// Element prediction 
+	m_ElementParameter.InitFromCurrent( 0.0f, 0.5f, INTERP_SPLINE );
+	oldClawsOpen = false;
+#endif
+}
+
+inline float CWeaponEngyDestroy::SpriteScaleFactor() {
+	return 1.0f;
+}
+
+#ifdef CLIENT_DLL
+void CWeaponEngyDestroy::OnDataChanged(DataUpdateType_t type) {
+	BaseClass::OnDataChanged( type );
+
+	if (type == DATA_UPDATE_CREATED) {
+		SetNextClientThink(CLIENT_THINK_ALWAYS);
+
+		C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, false);
+		StartEffects();
+	}
+
+	if (m_nOldEffectState != m_EffectState) {
+		DoEffect(m_EffectState);
+		m_nOldEffectState = m_EffectState;
+	}
+
+	if (oldClawsOpen != clawsOpen) {
+		if (clawsOpen) {
+			m_ElementParameter.InitFromCurrent( 1.0f, 0.2f, INTERP_SPLINE );
+		} else {	
+			m_ElementParameter.InitFromCurrent( 0.0f, 0.5f, INTERP_SPLINE );
+		}
+
+		oldClawsOpen = clawsOpen;
+	}
+}
+
+void CWeaponEngyDestroy::UpdateElementPosition(void) {
+	CBasePlayer *pOwner;
+	CBaseViewModel *vm;
+	float flElementPosition;
+
+	pOwner = ToBasePlayer(GetOwner());
+
+	flElementPosition = m_ElementParameter.Interp(gpGlobals->curtime);
+
+	if (ShouldDrawUsingViewModel()) {
+		if (pOwner) {
+			vm = pOwner->GetViewModel();
+			if (vm) {
+				vm->SetPoseParameter("active", flElementPosition);
+			}
+		}
+	} else {
+		SetPoseParameter("active", flElementPosition);
+	}
+}
+
+void CWeaponEngyDestroy::ClientThink(void) {
+	UpdateElementPosition();
+	DoEffectIdle();
+}
+
+#endif
+
+void CWeaponEngyDestroy::DoEffectIdle( void ) {
+#ifdef CLIENT_DLL
+
+	StartEffects();
+
+	//if ( ShouldDrawUsingViewModel() )
+	{
+		// Turn on the glow sprites
+		for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ ) {
+			m_Parameters[i].GetScale().SetAbsolute( random->RandomFloat( 0.075f, 0.05f ) * SPRITE_SCALE );
+			m_Parameters[i].GetAlpha().SetAbsolute( random->RandomInt( 24, 32 ) );
+		}
+
+		// Turn on the glow sprites
+		for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ ) {
+			m_Parameters[i].GetScale().SetAbsolute( random->RandomFloat( 3, 5 ) );
+			m_Parameters[i].GetAlpha().SetAbsolute( random->RandomInt( 200, 255 ) );
+		}
+
+		if ( m_EffectState != EFFECT_HOLDING ) {
+			// Turn beams off
+			m_Beams[0].SetVisible( false );
+			m_Beams[1].SetVisible( false );
+			m_Beams[2].SetVisible( false );
+		}
+	}
+#endif
+}
+
+void CWeaponEngyDestroy::DestroyEffects(void) {
+#ifdef CLIENT_DLL
+	// Free our beams
+	m_Beams[0].Release();
+	m_Beams[1].Release();
+	m_Beams[2].Release();
+
+#endif
+
+	// Stop everything
+	StopEffects();
+}
+
+void CWeaponEngyDestroy::StopEffects(bool stopSound) {
+	// Turn off our effect state
+	DoEffect(EFFECT_NONE);
+
+#ifndef CLIENT_DLL
+	//Shut off sounds
+	if (stopSound && GetMotorSound() != NULL) {
+		(CSoundEnvelopeController::GetController()).SoundFadeOut( GetMotorSound(), 0.1f );
+	}
+#endif
+}
+
+void CWeaponEngyDestroy::StartEffects(void) {
+#ifdef CLIENT_DLL
+
+	// ------------------------------------------
+	// Core
+	// ------------------------------------------
+
+	if ( m_Parameters[PHYSCANNON_CORE].GetMaterial() == NULL ) {
+		m_Parameters[PHYSCANNON_CORE].GetScale().Init( 0.0f, 1.0f, 0.1f );
+		m_Parameters[PHYSCANNON_CORE].GetAlpha().Init( 255.0f, 255.0f, 0.1f );
+		m_Parameters[PHYSCANNON_CORE].SetAttachment( 1 );
+		
+		if ( m_Parameters[PHYSCANNON_CORE].SetMaterial( PHYSCANNON_CENTER_GLOW ) == false ) {
+			// This means the texture was not found
+			Assert( 0 );
+		}
+	}
+
+	// ------------------------------------------
+	// Blast
+	// ------------------------------------------
+
+	if ( m_Parameters[PHYSCANNON_BLAST].GetMaterial() == NULL ) {
+		m_Parameters[PHYSCANNON_BLAST].GetScale().Init( 0.0f, 1.0f, 0.1f );
+		m_Parameters[PHYSCANNON_BLAST].GetAlpha().Init( 255.0f, 255.0f, 0.1f );
+		m_Parameters[PHYSCANNON_BLAST].SetAttachment( 1 );
+		m_Parameters[PHYSCANNON_BLAST].SetVisible( false );
+		
+		if ( m_Parameters[PHYSCANNON_BLAST].SetMaterial( PHYSCANNON_BLAST_SPRITE ) == false ) {
+			// This means the texture was not found
+			Assert( 0 );
+		}
+	}
+
+	// ------------------------------------------
+	// Glows
+	// ------------------------------------------
+
+	const char *attachNamesGlowThirdPerson[NUM_GLOW_SPRITES] = 
+	{
+		"fork1m",
+		"fork1t",
+		"fork2m",
+		"fork2t",
+		"fork3m",
+		"fork3t",
+	};
+
+	const char *attachNamesGlow[NUM_GLOW_SPRITES] = 
+	{
+		"fork1b",
+		"fork1m",
+		"fork1t",
+		"fork2b",
+		"fork2m",
+		"fork2t"
+	};
+
+	//Create the glow sprites
+	for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ ) {
+		if ( m_Parameters[i].GetMaterial() != NULL )
+			continue;
+
+		m_Parameters[i].GetScale().SetAbsolute( 0.05f * SPRITE_SCALE );
+		m_Parameters[i].GetAlpha().SetAbsolute( 64.0f );
+		
+		// Different for different views
+		if ( ShouldDrawUsingViewModel() ) {
+			m_Parameters[i].SetAttachment( LookupAttachment( attachNamesGlow[i-PHYSCANNON_GLOW1] ) );
+		} else {
+			m_Parameters[i].SetAttachment( LookupAttachment( attachNamesGlowThirdPerson[i-PHYSCANNON_GLOW1] ) );
+		}
+		m_Parameters[i].SetColor( Vector( 10, 128, 200 ) );
+		
+		if ( m_Parameters[i].SetMaterial( PHYSCANNON_GLOW_SPRITE ) == false ) {
+			// This means the texture was not found
+			Assert( 0 );
+		}
+	}
+
+	// ------------------------------------------
+	// End caps
+	// ------------------------------------------
+
+	const char *attachNamesEndCap[NUM_ENDCAP_SPRITES] = 
+	{
+		"fork1t",
+		"fork2t",
+		"fork3t"
+	};
+	
+	//Create the glow sprites
+	for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ ) {
+		if ( m_Parameters[i].GetMaterial() != NULL )
+			continue;
+
+		m_Parameters[i].GetScale().SetAbsolute( 0.05f * SPRITE_SCALE );
+		m_Parameters[i].GetAlpha().SetAbsolute( 255.0f );
+		m_Parameters[i].SetAttachment( LookupAttachment( attachNamesEndCap[i-PHYSCANNON_ENDCAP1] ) );
+		m_Parameters[i].SetVisible( false );
+		
+		if ( m_Parameters[i].SetMaterial( PHYSCANNON_ENDCAP_SPRITE ) == false ) {
+			// This means the texture was not found
+			Assert( 0 );
+		}
+	}
+
+#endif
+}
+
+void CWeaponEngyDestroy::DoEffectClosed(void) {
+#ifdef CLIENT_DLL
+
+	// Turn off the end-caps
+	for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ )
+	{
+		m_Parameters[i].SetVisible( false );
+	}
+	
+#endif
+
+}
+
+void CWeaponEngyDestroy::DoEffectReady(void) {
+#ifdef CLIENT_DLL
+
+	// Special POV case
+	if ( ShouldDrawUsingViewModel() )
+	{
+		//Turn on the center sprite
+		m_Parameters[PHYSCANNON_CORE].GetScale().InitFromCurrent( 14.0f, 0.2f );
+		m_Parameters[PHYSCANNON_CORE].GetAlpha().InitFromCurrent( 128.0f, 0.2f );
+		m_Parameters[PHYSCANNON_CORE].SetVisible();
+	}
+	else
+	{
+		//Turn off the center sprite
+		m_Parameters[PHYSCANNON_CORE].GetScale().InitFromCurrent( 8.0f, 0.2f );
+		m_Parameters[PHYSCANNON_CORE].GetAlpha().InitFromCurrent( 0.0f, 0.2f );
+		m_Parameters[PHYSCANNON_CORE].SetVisible();
+	}
+
+	// Turn on the glow sprites
+	for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ )
+	{
+		m_Parameters[i].GetScale().InitFromCurrent( 0.4f * SPRITE_SCALE, 0.2f );
+		m_Parameters[i].GetAlpha().InitFromCurrent( 64.0f, 0.2f );
+		m_Parameters[i].SetVisible();
+	}
+
+	// Turn on the glow sprites
+	for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ )
+	{
+		m_Parameters[i].SetVisible( false );
+	}
+
+#endif
+
+}
+
+void CWeaponEngyDestroy::DoEffectHolding(void) {
+#ifdef CLIENT_DLL
+
+	if ( ShouldDrawUsingViewModel() )
+	{
+		// Scale up the center sprite
+		m_Parameters[PHYSCANNON_CORE].GetScale().InitFromCurrent( 16.0f, 0.2f );
+		m_Parameters[PHYSCANNON_CORE].GetAlpha().InitFromCurrent( 255.0f, 0.1f );
+		m_Parameters[PHYSCANNON_CORE].SetVisible();
+
+		// Prepare for scale up
+		m_Parameters[PHYSCANNON_BLAST].SetVisible( false );
+
+		// Turn on the glow sprites
+		for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ )
+		{
+			m_Parameters[i].GetScale().InitFromCurrent( 0.5f * SPRITE_SCALE, 0.2f );
+			m_Parameters[i].GetAlpha().InitFromCurrent( 64.0f, 0.2f );
+			m_Parameters[i].SetVisible();
+		}
+
+		// Turn on the glow sprites
+		// NOTE: The last glow is left off for first-person
+		for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES-1); i++ )
+		{
+			m_Parameters[i].SetVisible();
+		}
+
+		// Create our beams
+		CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+		CBaseEntity *pBeamEnt = pOwner->GetViewModel();
+
+		// Setup the beams
+		m_Beams[0].Init( LookupAttachment( "fork1t" ), 1, pBeamEnt, true );
+		m_Beams[1].Init( LookupAttachment( "fork2t" ), 1, pBeamEnt, true );
+
+		// Set them visible
+		m_Beams[0].SetVisible();
+		m_Beams[1].SetVisible();
+	}
+	else
+	{
+		// Scale up the center sprite
+		m_Parameters[PHYSCANNON_CORE].GetScale().InitFromCurrent( 14.0f, 0.2f );
+		m_Parameters[PHYSCANNON_CORE].GetAlpha().InitFromCurrent( 255.0f, 0.1f );
+		m_Parameters[PHYSCANNON_CORE].SetVisible();
+
+		// Prepare for scale up
+		m_Parameters[PHYSCANNON_BLAST].SetVisible( false );
+
+		// Turn on the glow sprites
+		for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ )
+		{
+			m_Parameters[i].GetScale().InitFromCurrent( 0.5f * SPRITE_SCALE, 0.2f );
+			m_Parameters[i].GetAlpha().InitFromCurrent( 64.0f, 0.2f );
+			m_Parameters[i].SetVisible();
+		}
+
+		// Turn on the glow sprites
+		for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ )
+		{
+			m_Parameters[i].SetVisible();
+		}
+
+		// Setup the beams
+		m_Beams[0].Init( LookupAttachment( "fork1t" ), 1, this, false );
+		m_Beams[1].Init( LookupAttachment( "fork2t" ), 1, this, false );
+		m_Beams[2].Init( LookupAttachment( "fork3t" ), 1, this, false );
+
+		// Set them visible
+		m_Beams[0].SetVisible();
+		m_Beams[1].SetVisible();
+		m_Beams[2].SetVisible();
+	}
+
+#endif
+}
+
+
+//-----------------------------------------------------------------------------
+// Launch effects
+//-----------------------------------------------------------------------------
+void CWeaponEngyDestroy::DoEffectLaunch(Vector *pos) {
+	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+	if (pOwner == NULL)
+		return;
+
+	Vector	endPos;
+	Vector	shotDir;
+
+	// See if we need to predict this position
+	if ( pos == NULL ) {
+		// Hit an entity if we're holding one
+		//if ( m_hAttachedObject ) {
+		//	endPos = m_hAttachedObject->WorldSpaceCenter();
+		//	
+		//	shotDir = endPos - pOwner->Weapon_ShootPosition();
+		//	VectorNormalize( shotDir );
+		//} else 
+		{
+			// Otherwise try and find the right spot
+			endPos = pOwner->Weapon_ShootPosition();
+			pOwner->EyeVectors( &shotDir );
+
+			trace_t	tr;
+			UTIL_TraceLine( endPos, endPos + ( shotDir * MAX_TRACE_LENGTH ), MASK_SHOT, pOwner, COLLISION_GROUP_NONE, &tr );
+			
+			endPos = tr.endpos;
+			shotDir = endPos - pOwner->Weapon_ShootPosition();
+			VectorNormalize( shotDir );
+		}
+	} else {
+		// Use what is supplied
+		endPos = *pos;
+		shotDir = ( endPos - pOwner->Weapon_ShootPosition() );
+		VectorNormalize( shotDir );
+	}
+
+	// End hit
+	CPVSFilter filter( endPos );
+
+	// Don't send this to the owning player, they already had it predicted
+	if (IsPredicted()) {
+		filter.UsePredictionRules();
+	}
+
+	// Do an impact hit
+	CEffectData	data;
+	data.m_vOrigin = endPos;
+#ifdef CLIENT_DLL
+	data.m_hEntity = GetRefEHandle();
+#else
+	data.m_nEntIndex = entindex();
+#endif
+
+	te->DispatchEffect( filter, 0.0, data.m_vOrigin, "PhyscannonImpact", data );
+
+#ifdef CLIENT_DLL
+
+	//Turn on the blast sprite and scale
+	m_Parameters[PHYSCANNON_BLAST].GetScale().Init( 8.0f, 64.0f, 0.1f );
+	m_Parameters[PHYSCANNON_BLAST].GetAlpha().Init( 255.0f, 0.0f, 0.2f );
+	m_Parameters[PHYSCANNON_BLAST].SetVisible();
+
+#endif
+
+}
+
+void CWeaponEngyDestroy::DoEffectNone(void) {
+#ifdef CLIENT_DLL
+
+	//Turn off main glows
+	m_Parameters[PHYSCANNON_CORE].SetVisible( false );
+	m_Parameters[PHYSCANNON_BLAST].SetVisible( false );
+
+	for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ )
+	{
+		m_Parameters[i].SetVisible( false );
+	}
+
+	// Turn on the glow sprites
+	for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ )
+	{
+		m_Parameters[i].SetVisible( false );
+	}
+
+	m_Beams[0].SetVisible( false );
+	m_Beams[1].SetVisible( false );
+	m_Beams[2].SetVisible( false );
+
+#endif
+}
+
+void CWeaponEngyDestroy::DoEffect(int effectType, Vector *pos) {
+	m_EffectState = effectType;
+
+#ifdef CLIENT_DLL
+	// Save predicted state
+	m_nOldEffectState = m_EffectState;
+#endif
+
+	switch( effectType )
+	{
+	case EFFECT_CLOSED:
+		DoEffectClosed( );
+		break;
+
+	case EFFECT_READY:
+		DoEffectReady( );
+		break;
+
+	case EFFECT_HOLDING:
+		DoEffectHolding();
+		break;
+
+	case EFFECT_LAUNCH:
+		DoEffectLaunch( pos );
+		break;
+
+	default:
+	case EFFECT_NONE:
+		DoEffectNone();
+		break;
+	}
+}
+
+#ifdef CLIENT_DLL
+
+extern void FormatViewModelAttachment(Vector &vOrigin, bool bInverse);
+
+void CWeaponEngyDestroy::GetEffectParameters(EffectType_t effectID, color32 &color, float &scale, IMaterial **pMaterial, Vector &vecAttachment) {
+	const float dt = gpGlobals->curtime;
+
+	// Get alpha
+	float alpha = m_Parameters[effectID].GetAlpha().Interp( dt );
+	
+	// Get scale
+	scale = m_Parameters[effectID].GetScale().Interp( dt );
+	
+	// Get material
+	*pMaterial = (IMaterial *) m_Parameters[effectID].GetMaterial();
+
+	// Setup the color
+	color.r = (int) m_Parameters[effectID].GetColor().x;
+	color.g = (int) m_Parameters[effectID].GetColor().y;
+	color.b = (int) m_Parameters[effectID].GetColor().z;
+	color.a = (int) alpha;
+
+	// Setup the attachment
+	int		attachment = m_Parameters[effectID].GetAttachment();
+	QAngle	angles;
+
+	// Format for first-person
+	if ( ShouldDrawUsingViewModel() ) {
+		CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+		
+		if ( pOwner != NULL ) {
+			pOwner->GetViewModel()->GetAttachment( attachment, vecAttachment, angles );
+			::FormatViewModelAttachment( vecAttachment, true );
+		}
+	} else {
+		GetAttachment( attachment, vecAttachment, angles );
+	}
+}
+
+bool CWeaponEngyDestroy::IsEffectVisible(EffectType_t effectID) {
+	return m_Parameters[effectID].IsVisible();
+}
+
+void CWeaponEngyDestroy::DrawEffectSprite(EffectType_t effectID) {
+	color32 color;
+	float scale;
+	IMaterial *pMaterial;
+	Vector	vecAttachment;
+
+	// Don't draw invisible effects
+	if ( IsEffectVisible( effectID ) == false )
+		return;
+
+	// Get all of our parameters
+	GetEffectParameters( effectID, color, scale, &pMaterial, vecAttachment );
+
+	// Msg( "Scale: %.2f\tAlpha: %.2f\n", scale, alpha );
+
+	// Don't render fully translucent objects
+	if ( color.a <= 0.0f )
+		return;
+
+	// Draw the sprite
+	CMatRenderContextPtr pRenderContext( materials );
+	pRenderContext->Bind( pMaterial, this );
+	DrawSprite( vecAttachment, scale, scale, color );
+}
+
+void CWeaponEngyDestroy::DrawEffects(void) {
+	// Draw the core effects
+	DrawEffectSprite( PHYSCANNON_CORE );
+	DrawEffectSprite( PHYSCANNON_BLAST );
+	
+	// Draw the glows
+	for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ ) {
+		DrawEffectSprite( (EffectType_t) i );
+	}
+
+	// Draw the endcaps
+	for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ ) {
+		DrawEffectSprite( (EffectType_t) i );
+	}
+}
+
+int CWeaponEngyDestroy::DrawModel(int flags) {
+	if (flags & STUDIO_TRANSPARENCY) {
+		DrawEffects();
+		return 1;
+	}
+
+	// Only do this on the opaque pass
+	return BaseClass::DrawModel( flags );
+}
+
+void CWeaponEngyDestroy::ViewModelDrawn( C_BaseViewModel *pBaseViewModel ) {
+	DrawEffects();
+	BaseClass::ViewModelDrawn( pBaseViewModel );
+}
+
+bool CWeaponEngyDestroy::IsTransparent(void) {
+	return true;
+}
+
+
+void CWeaponEngyDestroy::NotifyShouldTransmit(ShouldTransmitState_t state) {
+	BaseClass::NotifyShouldTransmit(state);
+
+	if (state == SHOULDTRANSMIT_END) {
+		DoEffect(EFFECT_NONE);
+	}
+}
+
+#endif
