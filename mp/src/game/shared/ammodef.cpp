@@ -914,18 +914,18 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_DEFAULT][ITEM_SPIKER_IDX]		= -1.0f;
 	item_dmg_factors[WPN_DEFAULT][ITEM_GASSER_IDX]		= -1.0f;
 
-	item_dmg_factors[WPN_ENGY][ITEM_TELEPORTER_IDX]		= 0.0f;
-	item_dmg_factors[WPN_ENGY][ITEM_AMMO_CRATE_IDX]		= 0.0f;
-	item_dmg_factors[WPN_ENGY][ITEM_MEDIPAD_IDX]		= 0.0f;
-	item_dmg_factors[WPN_ENGY][ITEM_MINE_IDX]			= 0.0f;
-	item_dmg_factors[WPN_ENGY][ITEM_SMG_TURRET_IDX]		= 0.0f;
-	item_dmg_factors[WPN_ENGY][ITEM_DETECTOR_IDX]		= 0.0f;
-	item_dmg_factors[WPN_ENGY][ITEM_MSL_TURRET_IDX]		= 0.0f;
-	item_dmg_factors[WPN_ENGY][ITEM_EGG_IDX]			= 0.0f;
-	item_dmg_factors[WPN_ENGY][ITEM_HEALER_IDX]			= 0.3f;
-	item_dmg_factors[WPN_ENGY][ITEM_OBSTACLE_IDX]		= 0.3f;
-	item_dmg_factors[WPN_ENGY][ITEM_SPIKER_IDX]			= 0.3f;
-	item_dmg_factors[WPN_ENGY][ITEM_GASSER_IDX]			= 0.3f;
+	item_dmg_factors[WPN_ENGY][ITEM_TELEPORTER_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_AMMO_CRATE_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_MEDIPAD_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_MINE_IDX]			= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_SMG_TURRET_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_DETECTOR_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_MSL_TURRET_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_EGG_IDX]			= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_HEALER_IDX]			= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_OBSTACLE_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_SPIKER_IDX]			= 1.0f;
+	item_dmg_factors[WPN_ENGY][ITEM_GASSER_IDX]			= 1.0f;
 
 	item_dmg_factors[WPN_PISTOL][ITEM_TELEPORTER_IDX]	= 0.0f;
 	item_dmg_factors[WPN_PISTOL][ITEM_AMMO_CRATE_IDX]	= 1.0f;

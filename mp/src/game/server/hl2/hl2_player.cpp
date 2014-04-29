@@ -897,11 +897,6 @@ void CHL2_Player::PreThink(void)
 void CHL2_Player::PostThink( void )
 {
 	BaseClass::PostThink();
-
-	if ( !g_fGameOver && !IsPlayerLockedInPlace() && IsAlive() )
-	{
-		 HandleAdmireGlovesAnimation();
-	}
 }
 
 void CHL2_Player::StartAdmireGlovesAnimation( void )
