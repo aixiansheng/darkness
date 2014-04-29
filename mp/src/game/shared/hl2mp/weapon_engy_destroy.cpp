@@ -48,6 +48,8 @@
 #define DISCHARGE_OWNER_DMG 35
 #define DISCHARGE_PLAYER_DMG 40
 #define DISCHARGE_ENT_DMG 30
+#define DEFAULT_PLAYER_PUSH_SPEED 600
+
 
 //-----------------------------------------------------------------------------
 // CWeaponEngyDestroy
@@ -338,9 +340,14 @@ void CWeaponEngyDestroy::DamageOwner(void) {
 	CTakeDamageInfo info(this, GetOwner(), DISCHARGE_OWNER_DMG, DMG_PLASMA);
 	info.SetAmmoType(m_iPrimaryAmmoType);
 
+	bp->ApplyAbsVelocityImpulse(DEFAULT_PLAYER_PUSH_SPEED * dir);
+	bp->SetGroundEntity(NULL);
+
 	CalculateMeleeDamageForce(&info, dir, start, 3.0f);
 	bp->DispatchTraceAttack(info, dir, &tr);
 	ApplyMultiDamage();
+
+	
 #endif
 }
 
@@ -420,26 +427,29 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 				CTakeDamageInfo info(this, this, DISCHARGE_ENT_DMG, DMG_PLASMA);
 				info.SetAmmoType(m_iPrimaryAmmoType);
 
-				CalculateMeleeDamageForce(&info, dir, start, 0.01f);
+				CalculateMeleeDamageForce(&info, dir, start, 1.0f);
 				smat->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
 			} else if ((pmat = ToHL2MPPlayer(ent)) != NULL) {
 				CTakeDamageInfo info(this, GetOwner(), DISCHARGE_PLAYER_DMG, DMG_PLASMA);
 				info.SetAmmoType(m_iPrimaryAmmoType);
 
-				CalculateMeleeDamageForce(&info, dir, start, 4.0f);
+				pmat->ApplyAbsVelocityImpulse(DEFAULT_PLAYER_PUSH_SPEED * dir);
+				pmat->SetGroundEntity(NULL);
+
+				CalculateMeleeDamageForce(&info, dir, start, 1.0f);
 				pmat->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
 			} else {
 				//
 				// infested corpses, server-side ragdolls and other non-materiel
-				// ( must be specific to avoid NULL )
+				// ( must be specific to avoid NULL ? )
 				//
 				CTakeDamageInfo info(this, this, DISCHARGE_ENT_DMG, DMG_PLASMA);
 				info.SetAmmoType(m_iPrimaryAmmoType);
 
-				CalculateMeleeDamageForce(&info, dir, start, 0.01f);
-				smat->DispatchTraceAttack(info, dir, &tr);
+				CalculateMeleeDamageForce(&info, dir, start, 0.0f);
+				ent->DispatchTraceAttack(info, dir, &tr);
 				ApplyMultiDamage();
 			}
 		}

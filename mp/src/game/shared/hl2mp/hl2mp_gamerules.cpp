@@ -995,7 +995,7 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("turret_missile",	WPN_MSL_TURRET,		DMG_BULLET | DMG_ALWAYSGIB, TRACER_NONE,		0,	0,	1,	0,		0 );
 		def.AddAmmoType("turret_bullet",	WPN_MG_TURRET,		DMG_BULLET,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("obstacle",			WPN_OBSTACLE,		DMG_CLUB | DMG_ALWAYSGIB,	TRACER_NONE,	0,	0,	20,	0, 			0 );
-		def.AddAmmoType("engy_charge",		WPN_ENGY,			DMG_PLASMA,			TRACER_NONE,		0,	0,	1,	1000000.0f,		0);
+		def.AddAmmoType("engy_charge",		WPN_ENGY,			DMG_PLASMA,			TRACER_NONE,		0,	0,	1,	10000.0f,		0);
 
 		//
 		// make sure you don't hit the 32 item limit without first increasing it :D
