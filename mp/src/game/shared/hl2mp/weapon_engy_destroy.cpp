@@ -45,12 +45,15 @@
 
 #define DESTROY_CHARGE_TIME 7.0f
 #define CHARGE_WARN_TIME 2.0f
-#define DEFAULT_WARN_BEEPS 3
+#define DEFAULT_WARN_BEEPS 4
 
 #define DISCHARGE_OWNER_DMG 45
 #define DISCHARGE_PLAYER_DMG 55
 #define DISCHARGE_ENT_DMG 25
 #define DEFAULT_PLAYER_PUSH_SPEED 600
+
+#define CHARGE_BEEP_DELAY 1.0f
+#define CHARGE_BEEP_SND "Buttons.snd16"
 
 #ifdef CLIENT_DLL
 
@@ -137,6 +140,7 @@ CWeaponEngyDestroy::CWeaponEngyDestroy( void ) {
 	m_flNextItemStatus = 0.0f;
 	clawsOpen = false;
 	m_EffectState = (int)EFFECT_NONE;
+	gun_state = STATE_OFF;
 
 #ifdef CLIENT_DLL
 	m_nOldEffectState = EFFECT_NONE;
@@ -149,6 +153,7 @@ void CWeaponEngyDestroy::Precache(void) {
 	PrecacheModel(PHYSCANNON_BEAM_SPRITE_NOZ);
 
 	PrecacheScriptSound( "Weapon_PhysCannon.HoldSound" );
+	PrecacheScriptSound( CHARGE_BEEP_SND );
 	BaseClass::Precache();
 }
 
@@ -167,6 +172,9 @@ bool CWeaponEngyDestroy::Deploy(void) {
 
 	CloseElements();
 	StopEffects();
+	gun_state = STATE_OFF;
+	clawsOpen = false;
+	m_EffectState = (int)EFFECT_NONE;
 
 	p = ToHL2MPPlayer(GetOwner());
 	if (p) {
@@ -177,6 +185,14 @@ bool CWeaponEngyDestroy::Deploy(void) {
 
 	ret = BaseClass::Deploy();
 	AddEffects(EF_NODRAW);
+
+#ifdef CLIENT_DLL
+	m_nOldEffectState = EFFECT_NONE;
+	oldClawsOpen = false;
+#endif
+
+	StopEffects();
+
 	return ret;
 }
 
@@ -205,6 +221,10 @@ void CWeaponEngyDestroy::Spawn(void) {
 	SetAmmoType(GetAmmoDef()->Index("engy_destroy"));
 
 	gun_state = STATE_OFF;
+	clawsOpen = false;
+	m_EffectState = (int)EFFECT_NONE;
+
+	StopEffects();
 }
 
 #endif
@@ -293,14 +313,20 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 			gun_state = STATE_CHARGING;
 			SetThink(&CWeaponEngyDestroy::ChargeThink);
 			SetNextThink(gpGlobals->curtime + 0.1f);
-			Warning("Charging\n");
+			
+			// start charging
 			CloseElements();
 			StopEffects();
 			DoEffect(EFFECT_READY);
+
 			if (GetMotorSound()) {
 				(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.0f, 1.0f );
 				(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 50, 1.0f );
 			}
+
+			WeaponSound(RELOAD);
+			nextWarnBeep = gpGlobals->curtime + CHARGE_BEEP_DELAY;
+
 		} else {
 			StopEffects();
 		}
@@ -315,23 +341,34 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 				warnBeepsLeft = DEFAULT_WARN_BEEPS;
 				SetThink(NULL);
 
-				// full charge beep
-				Warning("Full charge\n");
+				// full charge
 				OpenElements();
 				DoEffect(EFFECT_HOLDING);
+
 				if (GetMotorSound()) {
 					(CSoundEnvelopeController::GetController()).Play( GetMotorSound(), 0.0f, 50 );
 					(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 100, 0.5f );
 					(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.8f, 0.5f );
 				}
+
+				WeaponSound(SPECIAL2);
+			} else {
+				// do charging beeps
+				if (nextWarnBeep < gpGlobals->curtime) {
+					nextWarnBeep = gpGlobals->curtime + CHARGE_BEEP_DELAY - ChargeBeepQuickening(charge);
+					ChargingBeep(charge);
+				}
 			}
 		} else {
+			// start draining
 			gun_state = STATE_DRAINING;
 			SetThink(&CWeaponEngyDestroy::DrainThink);
 			SetNextThink(gpGlobals->curtime + 0.1f);
-			Warning("Draining\n");
+			
 			CloseElements();
 			StopEffects();
+
+			WeaponSound(MELEE_HIT);
 		}
 		break;
 
@@ -341,29 +378,38 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 				if (warnBeepsLeft > 0) {
 					nextWarnBeep = gpGlobals->curtime + CHARGE_WARN_TIME;
 					warnBeepsLeft--;
-					Warning("Warning Beep\n");
+
+					if (warnBeepsLeft > 0) {
+						WeaponSound(SPECIAL1);
+					} else {
+						// final warning beep
+						WeaponSound(EMPTY);
+					}
 				} else {
 					gun_state = STATE_OFF;
 					SetThink(NULL);
-					// cause damage to owner
-					// shock sound
-					Warning("Shock!\n");
+
+					// damage to owner
 					DamageOwner();
 					CloseElements();
 					StopEffects();
 					SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+
+					WeaponSound(SPECIAL3);
 				}
 			}
 		} else {
-			Warning("Attack\n");
-			// player released attack button, fire away!
-			PrimaryAttack();
+			// regular attack at full charge
 			gun_state = STATE_OFF;
 			SetThink(NULL);
 			pHL2MPPlayer->SetAmmoCount(0, m_iPrimaryAmmoType);
 			CloseElements();
 			StopEffects();
+
 			SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+			PrimaryAttack();
+
+			WeaponSound(SINGLE);
 		}
 			
 		break;
@@ -371,37 +417,47 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 	case STATE_DRAINING:
 		if (owner->m_nButtons & IN_ATTACK) {
 			if (charge < 100) {
+				// resume charging
 				gun_state = STATE_CHARGING;
 				SetThink(&CWeaponEngyDestroy::ChargeThink);
 				SetNextThink(gpGlobals->curtime + 0.1f);
-				Warning("Resuming Charge\n");
 				CloseElements();
 				StopEffects();
 				DoEffect(EFFECT_READY);
+
 				if (GetMotorSound()) {
 					(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.0f, 1.0f );
 					(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 50, 1.0f );
 				}
+
+				WeaponSound(RELOAD);
+				nextWarnBeep = gpGlobals->curtime + CHARGE_BEEP_DELAY - ChargeBeepQuickening(charge);
+
 			} else {
+				// resume at full charge (warnings stay the same)
 				gun_state = STATE_CHARGED;
 				SetThink(NULL);
-				Warning("Holding Full Charge\n");
+				
 				OpenElements();
 				DoEffect(EFFECT_HOLDING);
+
 				if (GetMotorSound()) {
 					(CSoundEnvelopeController::GetController()).Play( GetMotorSound(), 0.0f, 50 );
 					(CSoundEnvelopeController::GetController()).SoundChangePitch( GetMotorSound(), 100, 0.5f );
 					(CSoundEnvelopeController::GetController()).SoundChangeVolume( GetMotorSound(), 0.8f, 0.5f );
 				}
+
+				WeaponSound(SPECIAL2);
 			}
 		} else {
 			if (charge <= 0) {
+				// completely drained
 				gun_state = STATE_OFF;
 				SetThink(NULL);
 
-				Warning("Drained\n");
 				CloseElements();
 				StopEffects();
+
 				WeaponSound(MELEE_MISS);
 			}
 		}
@@ -411,6 +467,47 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 	if (!m_bInReload) {
 		WeaponIdle();
 	}
+}
+
+//
+// return value less than CHARGE_BEEP_DELAY
+// where it's higher as percent approaches 100
+//
+
+float CWeaponEngyDestroy::ChargeBeepQuickening(int percent) {
+	return (CHARGE_BEEP_DELAY * ((float)percent / 100.0f));
+}
+
+//
+// play the charge beep sound with varying pitch
+//
+void CWeaponEngyDestroy::ChargingBeep(int percent) {
+#ifndef CLIENT_DLL
+	CSoundParameters params;
+	EmitSound_t ep;
+	Vector vecOrigin;
+	int pitch;
+
+	pitch = percent + 70;
+
+	if (GetParametersForSound( CHARGE_BEEP_SND, params, NULL ) == false)
+			return;
+
+	vecOrigin = GetAbsOrigin();
+	
+	CRecipientFilter filter;
+	filter.AddRecipientsByPAS(vecOrigin);
+		
+	ep.m_nChannel = params.channel;
+	ep.m_pSoundName = params.soundname;
+	ep.m_flVolume = params.volume;
+	ep.m_SoundLevel = params.soundlevel;
+	ep.m_nFlags = 0;
+	ep.m_nPitch = pitch;
+	ep.m_pOrigin = &vecOrigin;
+
+	EmitSound( filter, entindex(), ep );
+#endif
 }
 
 bool CWeaponEngyDestroy::Holster(CBaseCombatWeapon *pSwitchingTo) {
@@ -439,8 +536,6 @@ void CWeaponEngyDestroy::PrimaryFireEffect(void) {
 	color32 white = { 245, 245, 255, 32 };
 	UTIL_ScreenFade( pOwner, white, 0.1f, 0.0f, FFADE_IN );
 #endif
-
-	WeaponSound( SINGLE );
 }
 
 void CWeaponEngyDestroy::ShockEntityEffect(CBaseEntity *pEntity, const Vector &forward, trace_t &tr) {
@@ -613,7 +708,6 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 
 #endif
 
-	WeaponSound(SINGLE);
 	m_flNextSecondaryAttack = gpGlobals->curtime + ENGY_REFIRE;
 
 	if (GetMotorSound()) {
@@ -628,8 +722,6 @@ void CWeaponEngyDestroy::OpenElements(void) {
 
 	if (clawsOpen)
 		return;
-
-	WeaponSound( SPECIAL2 );
 
 	pOwner = ToBasePlayer( GetOwner() );
 	if (pOwner == NULL)
@@ -665,8 +757,6 @@ void CWeaponEngyDestroy::CloseElements(void) {
 
 	if ( clawsOpen == false )
 		return;
-
-	WeaponSound( MELEE_HIT );
 
 	pOwner = ToBasePlayer( GetOwner() );
 	if ( pOwner == NULL )
@@ -704,6 +794,7 @@ void CWeaponEngyDestroy::OnDataChanged(DataUpdateType_t type) {
 
 		C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, false);
 		StartEffects();
+		StopEffects();
 	}
 
 	if (m_nOldEffectState != m_EffectState) {

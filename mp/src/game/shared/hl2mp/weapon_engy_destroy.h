@@ -234,6 +234,9 @@ public:
 
 	void ShockEntityEffect(CBaseEntity *pEntity, const Vector &forward, trace_t &tr);
 
+	void ChargingBeep(int percent);
+	float ChargeBeepQuickening(int percent);
+
 	/////////////////////////////////////////
 	// effect methods
 	/////////////////////////////////////////

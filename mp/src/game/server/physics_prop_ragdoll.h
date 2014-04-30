@@ -13,7 +13,7 @@
 #include "ragdoll_shared.h"
 #include "player_pickup.h"
 
-#define MAX_SERVER_RAGDOLLS 5
+#define MAX_SERVER_RAGDOLLS 8
 extern unsigned int num_server_ragdolls;
 
 //-----------------------------------------------------------------------------
