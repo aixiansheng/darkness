@@ -246,6 +246,8 @@ public:
 	void Detected(void);
 	void UnDetectThink(void);
 
+	void ForceNoRagdoll(bool force);
+
 	CNetworkVar(bool, stopped);
 
 private:
@@ -279,6 +281,8 @@ private:
 
     bool m_bEnterObserver;
 	bool m_bReady;
+
+	bool forceNoRagdoll;
 
 	// class and class-selection related stuff
 	bool chose_class;

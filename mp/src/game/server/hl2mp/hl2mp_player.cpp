@@ -1009,6 +1009,8 @@ void CHL2MP_Player::Spawn(void)
 	pack_item_2 = -1;
 	pack_item_idx = -1;
 
+	forceNoRagdoll = false;
+
 	showSpawnHint = true;
 	next_ammo_pickup = 0.0f;
 	m_flNextModelChangeTime = 0.0f;
@@ -2562,6 +2564,7 @@ void CHL2MP_Player::SetPlayerClass(int c) {
 	switch (c) {
 		case CLASS_KAMI_IDX:
 			m_nSkin = 1;
+			m_bForceServerRagdoll = true;
 			break;
 
 		case CLASS_GRUNT_IDX:
@@ -2636,10 +2639,18 @@ void CHL2MP_Player::CreateViewModel( int index /*=0*/ )
 	}
 }
 
+void CHL2MP_Player::ForceNoRagdoll(bool force) {
+	forceNoRagdoll = force;
+}
+
 #define DEFAULT_RAGDOLL_DMG_LAG 1.0f
 
 bool CHL2MP_Player::BecomeRagdoll(const CTakeDamageInfo &info, const Vector &forceVector) {
 	CRagdollProp *ragdoll;
+	bool isKami = m_iClassNumber == CLASS_KAMI_IDX ? true : false;
+
+	if (forceNoRagdoll)
+		return false;
 
 	if (m_bForceServerRagdoll && num_server_ragdolls < MAX_SERVER_RAGDOLLS) {
 
@@ -2656,6 +2667,10 @@ bool CHL2MP_Player::BecomeRagdoll(const CTakeDamageInfo &info, const Vector &for
 			ragdoll->SetSleepThink(RAGDOLL_SLEEP_TIME);
 			ragdoll->FadeOut(DEFAULT_RAGDOLL_FADE, DEFAULT_RAGDOLL_FADE_DURATION);
 			ragdoll->TakeDamageThink(DEFAULT_RAGDOLL_DMG_LAG);
+
+			// need to change team?
+			ragdoll->SetKamiRagdoll(isKami);
+			ragdoll->SetExplosionOwner(this);
 		}
 	} else {
 		CreateRagdollEntity();
@@ -2846,6 +2861,9 @@ bool CHL2MP_Player::ShouldGib( const CTakeDamageInfo &info ) {
 	
 	// last hit was hard
 	if (deathHealth < GIB_HEALTH_THRESHOLD)
+		return true;
+
+	if (forceNoRagdoll)
 		return true;
 
 	return false;

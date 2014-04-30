@@ -47,7 +47,7 @@
 #define CHARGE_WARN_TIME 2.0f
 #define DEFAULT_WARN_BEEPS 4
 
-#define DISCHARGE_OWNER_DMG 45
+#define DISCHARGE_OWNER_DMG 35
 #define DISCHARGE_PLAYER_DMG 55
 #define DISCHARGE_ENT_DMG 25
 #define DEFAULT_PLAYER_PUSH_SPEED 600
@@ -655,6 +655,7 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 	CHumanMateriel *hmat;
 	CSpiderMateriel *smat;
 	CHL2MP_Player *pmat;
+	float pushSpeed;
 
 	p = ToBasePlayer(GetOwner());
 	if (p) {
@@ -683,7 +684,37 @@ void CWeaponEngyDestroy::PrimaryAttack(void) {
 				CTakeDamageInfo info(this, GetOwner(), DISCHARGE_PLAYER_DMG, DMG_PLASMA);
 				info.SetAmmoType(m_iPrimaryAmmoType);
 
-				pmat->ApplyAbsVelocityImpulse(DEFAULT_PLAYER_PUSH_SPEED * dir);
+				//
+				// ghetto way of adjusting player push speed
+				// according to player size/class... it would be
+				// better to use player mass
+				//
+				switch (pmat->m_iClassNumber) {
+				case CLASS_MECH_IDX:
+				case CLASS_STALKER_IDX:
+					pushSpeed = 0.3f * DEFAULT_PLAYER_PUSH_SPEED;
+					break;
+				
+				case CLASS_EXTERMINATOR_IDX:
+				case CLASS_GUARDIAN_IDX:
+					pushSpeed = 0.5f * DEFAULT_PLAYER_PUSH_SPEED;
+					break;
+				
+				case CLASS_STINGER_IDX:
+					pushSpeed = 0.8f * DEFAULT_PLAYER_PUSH_SPEED;
+					break;
+
+				case CLASS_HATCHY_IDX:
+				case CLASS_KAMI_IDX:
+					pushSpeed = 2.0f * DEFAULT_PLAYER_PUSH_SPEED;
+					break;
+
+				default:
+					pushSpeed = 1.0f * DEFAULT_PLAYER_PUSH_SPEED;
+					break;
+				}
+
+				pmat->ApplyAbsVelocityImpulse(pushSpeed * dir);
 				pmat->SetGroundEntity(NULL);
 
 				CalculateMeleeDamageForce(&info, dir, start, 1.0f);

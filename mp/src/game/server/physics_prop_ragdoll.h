@@ -112,6 +112,8 @@ public:
 	void		SetSleepThink(float flDelay);
 	void		SetSleep(void);
 	void		RemoveServerRagdoll(void);
+	void		SetKamiRagdoll(bool isKami);
+	void		SetExplosionOwner(CBasePlayer *p);
 
 	virtual void Event_Killed(const CTakeDamageInfo &info);
 
@@ -122,6 +124,9 @@ protected:
 	ragdoll_t			m_ragdoll;
 
 private:
+	EHANDLE explosionOwner;
+	bool isKamiRagdoll;
+
 	const char *gib1;
 	const char *gib2;
 	const char *gib3;

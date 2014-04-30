@@ -38,9 +38,6 @@
 #define PLAYER_SLOW_FLY		200
 #define MIN_DISTANCE		30.0f
 
-#define KAMI_DAMAGE			400
-#define KAMI_RADIUS			400
-
 #ifndef CLIENT_DLL
  
 LINK_ENTITY_TO_CLASS( grapple_hook, CGrapplingHook );
@@ -329,19 +326,24 @@ void CWeaponGrapple::PrimaryAttack( void ) {
 void CWeaponGrapple::SecondaryAttack( void ) {
 #ifndef CLIENT_DLL
 	CHL2MP_Player *p;
+
+	p = ToHL2MPPlayer(GetOwnerEntity());
+	if (!p)
+		return;
+	
+	p->ForceNoRagdoll(true);
+
 	ExplosionCreate(GetAbsOrigin(), GetAbsAngles(), GetOwnerEntity(), KAMI_DAMAGE, KAMI_RADIUS,
 		SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, this);
 
-	p = ToHL2MPPlayer(GetOwnerEntity());
-	if (p) {
-		//
-		// sometimes the player won't die from his own explosion
-		// so make sure it happens (maybe the owner cant blow himself up)
-		//
-		if (p->IsAlive()) {
-			p->CommitSuicide(true, true);
-		}
+	//
+	// sometimes the player won't die from his own explosion
+	// so make sure it happens (maybe the owner cant blow himself up)
+	//
+	if (p->IsAlive()) {
+		p->CommitSuicide(true, true);
 	}
+
 #endif
 }
 

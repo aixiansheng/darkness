@@ -21,6 +21,8 @@
 #include "ragdoll_shared.h"
 #include "hierarchy.h"
 #include "gib.h"
+#include "explode.h"
+#include "weapon_hatchy.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -688,6 +690,8 @@ void CRagdollProp::SetOverlaySequence( Activity activity )
 
 void CRagdollProp::InitRagdoll( const Vector &forceVector, int forceBone, const Vector &forcePos, matrix3x4_t *pPrevBones, matrix3x4_t *pBoneToWorld, float dt, int collisionGroup, bool activateRagdoll, bool bWakeRagdoll )
 {
+	isKamiRagdoll = false;
+
 	SetCollisionGroup( collisionGroup );
 
 	// Make sure it's interactive debris for at most 5 seconds
@@ -1109,6 +1113,21 @@ void CRagdollProp::RemoveServerRagdoll(void) {
 
 void CRagdollProp::TurnOnDamage(void) {
 	m_takedamage = DAMAGE_YES;
+	if (isKamiRagdoll) {
+		SetMaxHealth(50);
+		SetHealth(50);
+	}
+}
+
+void CRagdollProp::SetKamiRagdoll(bool isKami) {
+	isKamiRagdoll = isKami;
+}
+
+void CRagdollProp::SetExplosionOwner(CBasePlayer *p) {
+	if (explosionOwner.Get() != p) {
+		explosionOwner = p;
+		CollisionRulesChanged();
+	}
 }
 
 void CRagdollProp::TakeDamageThink(float delay) {
@@ -1153,37 +1172,72 @@ void CRagdollProp::Event_Killed(const CTakeDamageInfo &info) {
 	CSoundParameters params;
 	CRecipientFilter filter;
 	EmitSound_t ep;
+	CBasePlayer *owner;
+	EHANDLE eh = this;
 
-	if (GetParametersForSound( CORPSE_GIB_SOUND, params, NULL )) {
-		origin = GetAbsOrigin();
+	if (isKamiRagdoll) {
+		
+		owner = ToBasePlayer(explosionOwner.Get());
+		if (owner) {
+			//
+			// not sure if this is needed, but we wouldn't want
+			// to receive damage again before being removed
+			//
+			m_takedamage = DAMAGE_NO;
 
-		filter.AddRecipientsByPAS( origin );
+			//
+			// IGNORE (this) TO AVOID CRASHES
+			//
+			ExplosionCreate
+			(
+				GetAbsOrigin(),
+				GetAbsAngles(),
+				owner,
+				KAMI_DAMAGE * 2,
+				KAMI_RADIUS,
+				SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE,
+				1.0f,
+				this,
+				-1,
+				&eh
+			);
+		}
 
-		ep.m_nChannel = params.channel;
-		ep.m_pSoundName = params.soundname;
-		ep.m_flVolume = params.volume;
-		ep.m_SoundLevel = params.soundlevel;
-		ep.m_nFlags = 0;
-		ep.m_nPitch = params.pitch;
-		ep.m_pOrigin = &origin;
+		RemoveServerRagdoll();
 
-		EmitSound( filter, entindex(), ep );
+	} else {
+
+		if (GetParametersForSound( CORPSE_GIB_SOUND, params, NULL )) {
+			origin = GetAbsOrigin();
+
+			filter.AddRecipientsByPAS( origin );
+
+			ep.m_nChannel = params.channel;
+			ep.m_pSoundName = params.soundname;
+			ep.m_flVolume = params.volume;
+			ep.m_SoundLevel = params.soundlevel;
+			ep.m_nFlags = 0;
+			ep.m_nPitch = params.pitch;
+			ep.m_pOrigin = &origin;
+
+			EmitSound( filter, entindex(), ep );
+		}
+
+		if (gib1 != NULL)
+			CGib::SpawnSpecificGibs(this, 1, 100, 500, gib1, 10);
+		if (gib2 != NULL)
+			CGib::SpawnSpecificGibs(this, 1, 100, 500, gib2, 10);
+		if (gib3 != NULL)
+			CGib::SpawnSpecificGibs(this, 1, 100, 500, gib3, 15);
+		if (gib4 != NULL)
+			CGib::SpawnSpecificGibs(this, 1, 100, 500, gib4, 10);
+		if (gib5 != NULL)
+			CGib::SpawnSpecificGibs(this, 1, 100, 500, gib5, 15);
+
+		BaseClass::Event_Killed(info);
+
+		RemoveServerRagdoll();
 	}
-
-	if (gib1 != NULL)
-		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib1, 10);
-	if (gib2 != NULL)
-		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib2, 10);
-	if (gib3 != NULL)
-		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib3, 15);
-	if (gib4 != NULL)
-		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib4, 10);
-	if (gib5 != NULL)
-		CGib::SpawnSpecificGibs(this, 1, 100, 500, gib5, 15);
-
-	BaseClass::Event_Killed(info);
-
-	RemoveServerRagdoll();
 }
 
 void CRagdollProp::FadeOutThink(void) 

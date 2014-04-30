@@ -7,6 +7,8 @@
  
 #include "weapon_hl2mpbasehlmpcombatweapon.h"
 
+#define KAMI_DAMAGE			400
+#define KAMI_RADIUS			400
  
 #ifndef CLIENT_DLL
 	#include "props.h"

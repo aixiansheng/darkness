@@ -457,17 +457,6 @@ void CWeaponEngy::PrimaryAttack(void) {
 
 					other->RefilAmmo(true);
 
-				} else {
-					// damage the ent a little
-					ClearMultiDamage();
-
-					UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + dir * 16, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
-
-					CTakeDamageInfo dmg(this, GetOwner(), ENGY_DAMAGE, DMG_BULLET);
-					CalculateMeleeDamageForce(&dmg, dir, tr.endpos);
-					other->DispatchTraceAttack(dmg, dir, &tr);
-
-					ApplyMultiDamage();
 				}
 			}
 
