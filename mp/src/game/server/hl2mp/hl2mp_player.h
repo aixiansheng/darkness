@@ -249,6 +249,7 @@ public:
 	void ForceNoRagdoll(bool force);
 
 	CNetworkVar(bool, stopped);
+	CNetworkVar(int, spawnNumber);
 
 private:
 

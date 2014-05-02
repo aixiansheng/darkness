@@ -24,6 +24,8 @@
 #include "explode.h"
 #include "weapon_hatchy.h"
 
+#define KAMI_CORPSE_HEALTH 25
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1114,8 +1116,8 @@ void CRagdollProp::RemoveServerRagdoll(void) {
 void CRagdollProp::TurnOnDamage(void) {
 	m_takedamage = DAMAGE_YES;
 	if (isKamiRagdoll) {
-		SetMaxHealth(50);
-		SetHealth(50);
+		SetMaxHealth(KAMI_CORPSE_HEALTH);
+		SetHealth(KAMI_CORPSE_HEALTH);
 	}
 }
 

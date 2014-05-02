@@ -115,6 +115,7 @@ public:
 
 	int grenade_type;
 	bool bugGlow;
+	int spawnNumber;
 
 	int GrenadeType(void);
 
@@ -190,6 +191,8 @@ public:
 	void UpdateOnRemove( void );
 	virtual void SetupWeights( const matrix3x4_t *pBoneToWorld, int nFlexWeightCount, float *pFlexWeights, float *pFlexDelayedWeights );
 	
+	int spawnNumber;
+
 private:
 	
 	C_HL2MPRagdoll( const C_HL2MPRagdoll & ) {}
@@ -202,6 +205,8 @@ private:
 	EHANDLE	m_hPlayer;
 	CNetworkVector( m_vecRagdollVelocity );
 	CNetworkVector( m_vecRagdollOrigin );
+
+	
 };
 
 #endif //HL2MP_PLAYER_H

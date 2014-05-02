@@ -3,15 +3,7 @@ ROADMAP
 
 Before 1.6:
 
-- test kami corpse explosion points
-
-- set spawn number in ragdoll to prevent following old ragdoll on death with server side ragdoll
-- for server side ragdoll spawns, just stay at point of death
-
 - fix all crashes (video mode change, change server)
-- mech crush hachy/kami w/out landing on them (Dot prod at touch: fwd x dir, must be on ground)
-
-- credits button
 
 - spacewreck improvements (more eggs) (bottom hallways higher/wider)
 - geofusion (more eggs)

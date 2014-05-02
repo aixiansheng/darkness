@@ -55,6 +55,7 @@ IMPLEMENT_CLIENTCLASS_DT(C_HL2MP_Player, DT_HL2MP_Player, CHL2MP_Player)
 	RecvPropInt( RECVINFO( powerArmorEnabled ) ),
 	RecvPropBool( RECVINFO( attackMotion ) ),
 	RecvPropBool( RECVINFO( bugGlow ) ),
+	RecvPropInt( RECVINFO( spawnNumber ) ),
 
 END_RECV_TABLE()
 
@@ -882,7 +883,10 @@ IRagdoll* C_HL2MP_Player::GetRepresentativeRagdoll() const
 	{
 		C_HL2MPRagdoll *pRagdoll = (C_HL2MPRagdoll*)m_hRagdoll.Get();
 
-		return pRagdoll->GetIRagdoll();
+		// ragdolls from previous deaths aren't representative
+		if (pRagdoll && pRagdoll->spawnNumber == spawnNumber) {
+			return pRagdoll->GetIRagdoll();
+		}
 	}
 	else
 	{
@@ -899,7 +903,8 @@ IMPLEMENT_CLIENTCLASS_DT_NOBASE( C_HL2MPRagdoll, DT_HL2MPRagdoll, CHL2MPRagdoll 
 	RecvPropInt( RECVINFO( m_nModelIndex ) ),
 	RecvPropInt( RECVINFO(m_nForceBone) ),
 	RecvPropVector( RECVINFO(m_vecForce) ),
-	RecvPropVector( RECVINFO( m_vecRagdollVelocity ) )
+	RecvPropVector( RECVINFO( m_vecRagdollVelocity ) ),
+	RecvPropInt( RECVINFO(spawnNumber) ),
 END_RECV_TABLE()
 
 

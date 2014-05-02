@@ -123,6 +123,7 @@ IMPLEMENT_SERVERCLASS_ST(CHL2MP_Player, DT_HL2MP_Player)
 	SendPropBool( SENDINFO( powerArmorEnabled ) ),
 	SendPropBool( SENDINFO( attackMotion ) ),
 	SendPropBool( SENDINFO( bugGlow ) ),
+	SendPropInt( SENDINFO( spawnNumber ), 8, SPROP_UNSIGNED),
 END_SEND_TABLE()
 
 BEGIN_DATADESC( CHL2MP_Player )
@@ -212,6 +213,8 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	spec_weapon = NULL;
 	attackMotion = false;
 	powerArmorEnabled = true;
+
+	spawnNumber = 0;
 
 	RegisterThinkContext(DRONE_SPIT_CTX);
 	RegisterThinkContext(PLASMA_THINK_CTX);
@@ -1136,6 +1139,8 @@ void CHL2MP_Player::Spawn(void)
 	shouldDetectGlow = false;
 
 	hatchy_ammo_type = GetAmmoDef()->Index("hatchy_slash");
+
+	spawnNumber++;
 }
 
 void CHL2MP_Player::SpawnHackPowerArmorUpdateThink(void) {
@@ -1289,81 +1294,125 @@ void CHL2MP_Player::Slash(CBaseEntity *other, bool force) {
 	Vector endpos;
 	CTeleporterEntity *tele;
 
-	// first, is this player a hatchy or kami
-	if (GetTeamNumber() == TEAM_SPIDERS) {
-		if (m_iClassNumber == CLASS_HATCHY_IDX || m_iClassNumber == CLASS_KAMI_IDX) {
-			if (other->GetTeamNumber() == TEAM_HUMANS) {
-				if (m_flNextHitTime < gpGlobals->curtime) {
+	if (other->GetTeamNumber() == TEAM_HUMANS) {
+		if (m_flNextHitTime < gpGlobals->curtime) {
 
+			CDisablePredictionFiltering foo;
 
-					CDisablePredictionFiltering foo;
+			m_flNextHitTime =  gpGlobals->curtime + HATCHY_HIT_RATE;
 
-					m_flNextHitTime =  gpGlobals->curtime + HATCHY_HIT_RATE;
-
-					// don't even bother slashing teleporters
-					if ((tele = dynamic_cast<CTeleporterEntity *>(other)) != NULL)
-						return;
+			// don't even bother slashing teleporters
+			if ((tele = dynamic_cast<CTeleporterEntity *>(other)) != NULL)
+				return;
 					
-					EmitSound(HATCHY_SLASH_SOUND);
+			EmitSound(HATCHY_SLASH_SOUND);
 
-					ClearMultiDamage();
+			ClearMultiDamage();
 					
-					AngleVectors(GetLocalAngles(), &forward, NULL, NULL);
+			AngleVectors(GetLocalAngles(), &forward, NULL, NULL);
 
-					UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + forward * 16, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+			UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + forward * 16, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
 
-					endpos = tr.endpos;
+			endpos = tr.endpos;
 
-					CTakeDamageInfo dmg(this, this, HATCHY_DAMAGE, DMG_SLASH|DMG_NEVERGIB);
-					dmg.SetAmmoType(hatchy_ammo_type);
+			CTakeDamageInfo dmg(this, this, HATCHY_DAMAGE, DMG_SLASH|DMG_NEVERGIB);
+			dmg.SetAmmoType(hatchy_ammo_type);
 
-					CalculateMeleeDamageForce(&dmg, forward, endpos);
+			CalculateMeleeDamageForce(&dmg, forward, endpos);
 					
-					other->DispatchTraceAttack(dmg, forward, &tr);
+			other->DispatchTraceAttack(dmg, forward, &tr);
 					
-					ApplyMultiDamage();
-				}
-			}
+			ApplyMultiDamage();
 		}
 	}
+	
 }
 
 void CHL2MP_Player::StartTouch(CBaseEntity *other) {
-	Slash(other, true);
+	if (m_iClassNumber == CLASS_HATCHY_IDX ||
+		m_iClassNumber == CLASS_KAMI_IDX) {
+			Slash(other, true);
+	}
 	BaseClass::StartTouch(other);
 }
 
 void CHL2MP_Player::Touch(CBaseEntity *other) {
-	Slash(other, false);
+	int otherTeam;
+	Vector dirToOther;
+	Vector vel;
+	trace_t tr;
+	CHL2MP_Player *p;
 
-	if (other == GetGroundEntity()) {
-		if (other->IsPlayer() && IsAlive() &&
-			(
-				(GetTeamNumber() == TEAM_SPIDERS &&
-				other->GetTeamNumber() == TEAM_HUMANS &&
-				m_iClassNumber == CLASS_STALKER_IDX) 
-			||
+	if (m_iClassNumber == CLASS_HATCHY_IDX ||
+		m_iClassNumber == CLASS_KAMI_IDX) {
+		Slash(other, false);
+	}
 
-				(GetTeamNumber() == TEAM_HUMANS &&
-				other->GetTeamNumber() == TEAM_SPIDERS &&
-				m_iClassNumber == CLASS_MECH_IDX)
-			)
-			) {
+	otherTeam = other->GetTeamNumber();
+
+	if (other->IsPlayer() && IsAlive()) {
+		vel = GetAbsVelocity();
+
+		if (other == GetGroundEntity()) {
+		
+			if (otherTeam == TEAM_HUMANS &&
+				m_iClassNumber != CLASS_STALKER_IDX) {
+					return;
+			}
+
+			if (otherTeam == TEAM_SPIDERS &&
+				m_iClassNumber != CLASS_MECH_IDX) {
+					return;
+			}
+
 				
-				//
-				// stalkers/mechs crush players they stand on
-				//
-				Vector crushDir = Vector(0,0,-1);
-				trace_t tr;
+			//
+			// stalkers/mechs crush players they stand on
+			//
 
-				ClearMultiDamage();
-				CTakeDamageInfo dmg(this, this, 1500, DMG_CRUSH);
-				CalculateMeleeDamageForce(&dmg,crushDir, GetAbsOrigin(), 0.05f);
-				other->DispatchTraceAttack(dmg, crushDir, &tr);
-				ApplyMultiDamage();
+			ClearMultiDamage();
+			CTakeDamageInfo dmg(this, this, 1500, DMG_CRUSH);
+			CalculateMeleeDamageForce(&dmg, vel, GetAbsOrigin(), 0.05f);
+			other->DispatchTraceAttack(dmg, vel, &tr);
+			ApplyMultiDamage();
+
+			return;
 		}
 			
-		return;
+		//
+		// mechs crush hatchies and kamis they "step on"
+		// this means:
+		// - they are trying to walk toward the spider
+		// - (they are touching the spider)
+		// - the spider is on the ground
+		// - the mech is on the ground
+		//
+
+		if (!(p = ToHL2MPPlayer(other)))
+			return;
+
+		if (p->m_iClassNumber != CLASS_HATCHY_IDX &&
+			p->m_iClassNumber != CLASS_KAMI_IDX)
+			return;
+
+		if (!other->GetGroundEntity() || !GetGroundEntity())
+			return;
+
+		//
+		// technically, if the mech is not moving
+		// we'll fail to stomp the hatchy, but that
+		// won't happen often
+		//
+		dirToOther = other->GetAbsOrigin() - GetAbsOrigin();
+		
+		if (dirToOther.Dot(vel) > 0) {
+			ClearMultiDamage();
+			CTakeDamageInfo dmg(this, this, 1500, DMG_CRUSH);
+			CalculateMeleeDamageForce(&dmg, vel, GetAbsOrigin(), 0.05f);
+			other->DispatchTraceAttack(dmg, vel, &tr);
+			ApplyMultiDamage();
+		}
+
 	}
 
 	if (other->GetMoveType() != MOVETYPE_VPHYSICS || other->GetSolid() != SOLID_VPHYSICS || (other->GetSolidFlags() & FSOLID_TRIGGER))
@@ -2707,6 +2756,7 @@ public:
 	CNetworkHandle( CBaseEntity, m_hPlayer );	// networked entity handle 
 	CNetworkVector( m_vecRagdollVelocity );
 	CNetworkVector( m_vecRagdollOrigin );
+	CNetworkVar(int, spawnNumber);
 };
 
 LINK_ENTITY_TO_CLASS( hl2mp_ragdoll, CHL2MPRagdoll );
@@ -2717,7 +2767,8 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CHL2MPRagdoll, DT_HL2MPRagdoll )
 	SendPropModelIndex( SENDINFO( m_nModelIndex ) ),
 	SendPropInt		( SENDINFO(m_nForceBone), 8, 0 ),
 	SendPropVector	( SENDINFO(m_vecForce), -1, SPROP_NOSCALE ),
-	SendPropVector( SENDINFO( m_vecRagdollVelocity ) )
+	SendPropVector( SENDINFO( m_vecRagdollVelocity ) ),
+	SendPropInt( SENDINFO(spawnNumber), 8, SPROP_UNSIGNED),
 END_SEND_TABLE()
 
 
@@ -2745,6 +2796,7 @@ void CHL2MP_Player::CreateRagdollEntity( void )
 		pRagdoll->m_nForceBone = m_nForceBone;
 		pRagdoll->m_vecForce = m_vecTotalBulletForce;
 		pRagdoll->SetAbsOrigin( GetAbsOrigin() );
+		pRagdoll->spawnNumber = spawnNumber;
 	}
 
 	// ragdolls will be removed on round restart automatically
