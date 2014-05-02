@@ -5629,18 +5629,16 @@ CBaseEntity	*CBasePlayer::GiveNamedItem( const char *pszName, int iSubType )
 	EHANDLE pent;
 
 	pent = CreateEntityByName(pszName);
-	if ( pent == NULL )
-	{
+	if (pent == NULL) {
 		Msg( "NULL Ent in GiveNamedItem!\n" );
 		return NULL;
 	}
-
-	pent->SetLocalOrigin( GetLocalOrigin() );
+	
+	pent->SetLocalOrigin( GetLocalOrigin() + Vector(0,0,10));
 	pent->AddSpawnFlags( SF_NORESPAWN );
 
 	CBaseCombatWeapon *pWeapon = dynamic_cast<CBaseCombatWeapon*>( (CBaseEntity*)pent );
-	if ( pWeapon )
-	{
+	if (pWeapon) {
 		pWeapon->SetSubType( iSubType );
 	}
 
@@ -6573,7 +6571,14 @@ bool CBasePlayer::BumpWeapon( CBaseCombatWeapon *pWeapon )
 	else
 	{
 		// Don't let the player fetch weapons through walls (use MASK_SOLID so that you can't pickup through windows)
-		if( pWeapon->FVisible( this, MASK_SOLID ) == false && !(GetFlags() & FL_NOTARGET) )
+		//if (pWeapon->FVisible( this, MASK_SOLID ) == false && !(GetFlags() & FL_NOTARGET))
+		//	return false;
+
+		//
+		// Darkness doesn't have weapons lying on the ground, so we can just
+		// get rid of the LOS requirement
+		//
+		if (!(GetFlags() & FL_NOTARGET))
 			return false;
 	}
 	
