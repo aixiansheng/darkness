@@ -71,7 +71,7 @@ typedef struct class_info_t class_info_t;
 
 // WRAITH / MEDIC?
 
-#define NORMAL_SPEED		335.0f
+#define NORMAL_SPEED		320.0f
 // unit speeds
 #define ENGINEER_SPEED		(NORMAL_SPEED)
 #define GRUNT_SPEED			(NORMAL_SPEED)
@@ -82,7 +82,7 @@ typedef struct class_info_t class_info_t;
 #define MECH_SPEED			(NORMAL_SPEED * 0.8f)
 
 #define BREEDER_SPEED		(NORMAL_SPEED)
-#define HATCHY_SPEED		(NORMAL_SPEED * 1.5f)
+#define HATCHY_SPEED		(NORMAL_SPEED * 1.45f)
 #define DRONE_SPEED			(NORMAL_SPEED * 1.25f)
 #define KAMI_SPEED			HATCHY_SPEED
 #define STINGER_SPEED		(NORMAL_SPEED * 1.3f)

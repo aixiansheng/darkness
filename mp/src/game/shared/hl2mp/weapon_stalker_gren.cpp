@@ -51,6 +51,7 @@ public:
 	bool	Deploy( void );
 	bool	Holster( CBaseCombatWeapon *pSwitchingTo = NULL );
 	bool	Reload( void );
+	virtual void Drop(const Vector &vecVelocity);
 	virtual bool ShouldDraw(void) { return false; }
 
 #ifndef CLIENT_DLL
@@ -179,6 +180,9 @@ bool CWeaponStalkerGren::Holster( CBaseCombatWeapon *pSwitchingTo ) {
 	m_fDrawbackFinished = false;
 
 	return BaseClass::Holster( pSwitchingTo );
+}
+
+void CWeaponStalkerGren::Drop(const Vector &vecVelocity) {
 }
 
 bool CWeaponStalkerGren::Reload( void ) {

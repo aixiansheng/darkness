@@ -10,9 +10,11 @@ CMateriel::CMateriel(int team, struct item_info_t *info) : CBaseAnimating() {
 	active = false;
 	dmg_sprite = NULL;
 	last_dmg_sprite = 0.0f;
+
 #ifndef CLIENT_DLL
 	creator.Term();
 #endif
+
 }
 
 CMateriel::~CMateriel(void) {}
@@ -77,6 +79,8 @@ void CMateriel::EndTouch(CBaseEntity *e) {
 }
 
 void CMateriel::Spawn(void) {
+	CTeam *team;
+
 	Precache();
 	BaseClass::Spawn();
 
@@ -92,7 +96,10 @@ void CMateriel::Spawn(void) {
 	
 	(void)VPhysicsInitStatic();
 
-	GetTeam()->spend_points(item_info->value);
+	team = GetTeam();
+	if (team) {
+		team->spend_points(item_info->value);
+	}
 
 	active = false;
 }
@@ -219,6 +226,7 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 	int ammo_type;
 	float hull_height;
 	float wpn_factor;
+	Vector loc;
 	CTakeDamageInfo newinfo = info;
 
 	ret = 0;
@@ -256,8 +264,16 @@ int CMateriel::OnTakeDamage(const CTakeDamageInfo &info) {
 
 	if (ret > 0 && dmg_sprite) {
 		if (last_dmg_sprite < gpGlobals->curtime) {
+			
 			hull_height = CollisionProp()->OBBMaxs().z;
-			DispatchParticleEffect(dmg_sprite, GetAbsOrigin() + Vector(random->RandomFloat(-10.0f, 10.0f), random->RandomFloat(-10.0f, 10.0f), hull_height -2.0f), GetAbsAngles(), this);
+			loc = GetAbsOrigin() + Vector
+			(
+				random->RandomFloat(-10.0f, 10.0f),
+				random->RandomFloat(-10.0f, 10.0f),
+				hull_height - 2.0f
+			);
+
+			DispatchParticleEffect(dmg_sprite, loc, GetAbsAngles(), this);
 			last_dmg_sprite = gpGlobals->curtime + DMG_SPRITE_INT;
 		}
 	}

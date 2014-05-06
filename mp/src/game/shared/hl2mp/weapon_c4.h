@@ -48,6 +48,7 @@ public:
 	void	DecrementAmmo( CBaseCombatCharacter *pOwner );
 	void	ItemPostFrame( void );
 
+	virtual void Drop(const Vector &vecVelocity) {}
 	bool	Deploy( void );
 	bool	Holster( CBaseCombatWeapon *pSwitchingTo = NULL );
 	bool	Reload( void );

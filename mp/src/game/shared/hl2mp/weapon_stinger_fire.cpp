@@ -208,10 +208,11 @@ void CWeaponStingerFire::PrimaryAttack(void) {
 	VectorAngles(fwd, angles);
 
 	fire = CStingerFire::Create(muzzle, angles, owner->edict());
-	fire->m_hOwner = this;
-	fire->SetDamage(50);
-
-	owner->RemoveAmmo(1, m_iPrimaryAmmoType);
+	if (fire) {
+		fire->m_hOwner = this;
+		fire->SetDamage(50);
+		owner->RemoveAmmo(1, m_iPrimaryAmmoType);
+	}
 
 #endif
 
@@ -300,9 +301,11 @@ unsigned int CStingerFire::PhysicsSolidMaskForEntity( void ) const {
 }
 
 void CStingerFire::FlameTouch( CBaseEntity *pOther ) {
-	Assert( pOther );
-	
-	//if ( pOther->IsSolidFlagSet(FSOLID_TRIGGER|FSOLID_VOLUME_CONTENTS) && pOther->GetCollisionGroup() != COLLISION_GROUP_WEAPON )
+	if (pOther == NULL)
+		return;
+
+	//if ( pOther->IsSolidFlagSet(FSOLID_TRIGGER|FSOLID_VOLUME_CONTENTS) &&
+	// pOther->GetCollisionGroup() != COLLISION_GROUP_WEAPON )
 	//	return;
 
 	Vector forward;
@@ -310,11 +313,19 @@ void CStingerFire::FlameTouch( CBaseEntity *pOther ) {
 	GetVectors( &forward, NULL, NULL );
 
 	trace_t tr;
-	UTIL_TraceLine( GetAbsOrigin(), GetAbsOrigin() + forward * 16, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr );
+	UTIL_TraceLine
+	(
+		GetAbsOrigin(),
+		GetAbsOrigin() + forward * 16,
+		MASK_SHOT,
+		this,
+		COLLISION_GROUP_NONE,
+		&tr
+	);
 
 	SetSolid(SOLID_NONE);
 
-	if( tr.fraction == 1.0 || !(tr.surface.flags & SURF_SKY) ) {
+	if (tr.fraction == 1.0 || !(tr.surface.flags & SURF_SKY)) {
 		CTakeDamageInfo info(m_hOwner, this, STINGER_FLAME_DMG, DMG_BURN);
 		info.SetAmmoType(GetAmmoDef()->Index("stingerfire"));
 
@@ -330,15 +341,17 @@ CStingerFire *CStingerFire::Create( const Vector &vecOrigin, const QAngle &vecAn
 	Vector vecForward;
 
 	pFlame = (CStingerFire *) CBaseEntity::Create( "stinger_fireball", vecOrigin, vecAngles, CBaseEntity::Instance( pentOwner ) );
-	pFlame->SetOwnerEntity( Instance( pentOwner ) );
-	pFlame->Spawn();
-	pFlame->AddEffects( EF_NOSHADOW );
+	if (pFlame) {
+		pFlame->SetOwnerEntity( Instance( pentOwner ) );
+		pFlame->Spawn();
+		pFlame->AddEffects( EF_NOSHADOW );
 	
-	AngleVectors( vecAngles, &vecForward );
+		AngleVectors( vecAngles, &vecForward );
 
-	pFlame->SetAbsVelocity( vecForward * 1200);
+		pFlame->SetAbsVelocity( vecForward * 1200);
 
-	pFlame->CreateSprite();
+		pFlame->CreateSprite();
+	}
 
 	return pFlame;
 }

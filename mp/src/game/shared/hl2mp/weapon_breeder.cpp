@@ -32,22 +32,33 @@
 #define	BREEDER_REFIRE	2.0f
 #define BREEDER_DAMAGE	1.0f
 #define BREEDER_WELDER_RANGE 85.0f
-#define BREEDER_DESTROY_WAIT 3.2f
-#define BREEDER_DESTROY_BEEP 1.0f
-#define BREEDER_WARN_TIME	1.0f
-#define BREEDER_ITEM_CREATION_INTERVAL 1.5f
-#define BREEDER_MENU_INTERVAL 0.5f
 
-#define ITEM_UPDATE_INTERVAL	0.3f
+#define BREEDER_DESTROY_BEEP 1.8f
+#define BREEDER_DESTROY_WAIT (BREEDER_DESTROY_BEEP * 3.1f)
+
+#define BREEDER_DIGEST_SND_TIME 1.3f
+
+#define EGG_TIMER 30.0f
+#define EGG_WAIT_FX_TIME 1.8f
+
+#define DEFAULT_HATCH_TIMER 3.0f
+
+#define DIGESTION_TIME 10.0f
+
+#define ITEM_UPDATE_INTERVAL	0.8f
 
 
 IMPLEMENT_NETWORKCLASS_ALIASED( WeaponBreeder, DT_WeaponBreeder )
 
 BEGIN_NETWORK_TABLE( CWeaponBreeder, DT_WeaponBreeder )
 #ifdef CLIENT_DLL
-	RecvPropTime(RECVINFO(m_flNextDestroyBeep)),
+	RecvPropTime(RECVINFO(m_flNextHatchTime)),
+	RecvPropTime(RECVINFO(m_flNextFXTime)),
+	RecvPropInt(RECVINFO(hatch_state)),
 #else
-	SendPropTime(SENDINFO(m_flNextDestroyBeep)),
+	SendPropTime(SENDINFO(m_flNextHatchTime)),
+	SendPropTime(SENDINFO(m_flNextFXTime)),
+	SendPropInt(SENDINFO(hatch_state), 3, SPROP_UNSIGNED),
 #endif
 END_NETWORK_TABLE()
 
@@ -72,9 +83,12 @@ IMPLEMENT_ACTTABLE(CWeaponBreeder);
 
 CWeaponBreeder::CWeaponBreeder( void ) {
 	invisible = true;
+	hatch_state = STATE_OFF;
 	m_flNextItemStatus = 0.0f;
-	destroy_state = STATE_OFF;
-	m_flNextDestroyBeep = FLT_MAX;
+	m_flNextHatchTime = 0.0f;
+	m_flNextFXTime = 0.0f;
+	m_flNextPrimaryAttack = 0.0f;
+	m_flNextSecondaryAttack = 0.0f;
 }
 
 float CWeaponBreeder::GetDamageForActivity( Activity hitActivity ) {
@@ -85,17 +99,20 @@ bool CWeaponBreeder::Deploy(void) {
 	bool ret;
 	
 	m_flNextItemStatus = 0.0f;
-	m_flNextDestroyBeep = FLT_MAX;
+	m_flNextHatchTime = 0.0f;
+	m_flNextFXTime = 0.0f;
+	m_flNextPrimaryAttack = 0.0f;
+	m_flNextSecondaryAttack = 0.0f;
 
 	ret = BaseClass::Deploy();
 
 	invisible = true;
-	destroy_state = STATE_OFF;
+	hatch_state = STATE_OFF;
 
 	return ret;
 }
 
-void CWeaponBreeder::Drop( const Vector &vecVelocity ) {
+void CWeaponBreeder::Drop(const Vector &vecVelocity) {
 }
 
 float CWeaponBreeder::GetRange(void) {
@@ -107,6 +124,7 @@ float CWeaponBreeder::GetFireRate(void) {
 }
 
 #ifndef CLIENT_DLL
+
 void CWeaponBreeder::ItemStatusUpdate(CBasePlayer *player, int health, int armor) {
 	CSingleUserRecipientFilter user(player);
 	UserMessageBegin(user, "ItemInfo");
@@ -114,9 +132,24 @@ void CWeaponBreeder::ItemStatusUpdate(CBasePlayer *player, int health, int armor
 		WRITE_SHORT(health);
 	MessageEnd();
 }
+
+void CWeaponBreeder::Precache(void) {
+	BaseClass::Precache();
+}
 #endif
 
-void CWeaponBreeder::ItemPostFrame( void ) {
+void CWeaponBreeder::StartDestroyCharge(void) {
+	m_flNextHatchTime = gpGlobals->curtime + BREEDER_DESTROY_WAIT;
+	m_flNextFXTime = gpGlobals->curtime;
+}
+
+void CWeaponBreeder::HandleItemUpdate(void) {
+#ifndef CLIENT_DLL
+	int health;
+	int armor;
+	CBaseEntity *ent;
+	CHL2MP_Player *other;
+	CSpiderMateriel *mat;
 	Vector start;
 	Vector end;
 	Vector dir;
@@ -126,14 +159,6 @@ void CWeaponBreeder::ItemPostFrame( void ) {
 	p = ToBasePlayer(GetOwner());
 	if (!p)
 		return;
-
-#ifndef CLIENT_DLL
-	int health;
-	int armor;
-	CBaseEntity *ent;
-	CHL2MP_Player *other;
-	CSpiderMateriel *mat;
-
 
 	if (m_flNextItemStatus < gpGlobals->curtime) {
 		m_flNextItemStatus = gpGlobals->curtime + ITEM_UPDATE_INTERVAL;
@@ -171,57 +196,89 @@ void CWeaponBreeder::ItemPostFrame( void ) {
 
 	} // m_flNextItemStatus < curtime
 #endif
+}
 
-	if ((p->m_nButtons & IN_ATTACK2) && m_flNextSecondaryAttack < gpGlobals->curtime) {
-		m_flNextSecondaryAttack = gpGlobals->curtime + BREEDER_REFIRE;
-		SecondaryAttack();
-	} else {
+void CWeaponBreeder::ItemPostFrame( void ) {
+	CBasePlayer *p;
+	
+	p = ToBasePlayer(GetOwner());
+	if (!p)
+		return;
 
-		switch (destroy_state) {
+	//
+	// handle display of health/status of objects in front of
+	// breeder/under the crosshair
+	//
+	HandleItemUpdate();
+
+	//
+	// previous section was just for displaying item health
+	// all other postframe stuff goes here...
+	//
+
+	switch (hatch_state) {
+	case STATE_OFF:
+		if (p->m_nButtons & IN_ATTACK && m_flNextPrimaryAttack < gpGlobals->curtime) {
+			m_flNextPrimaryAttack = gpGlobals->curtime + BREEDER_REFIRE;
+			StartDestroyCharge();
+			hatch_state = STATE_CHARGING_DESTROY;
+		} else if (p->m_nButtons & IN_ATTACK2 && m_flNextSecondaryAttack < gpGlobals->curtime) {
+			m_flNextSecondaryAttack = gpGlobals->curtime + BREEDER_REFIRE;
+			hatch_state = BreederSecondaryAttack();
 			//
-			// Consider moving UTIL_Trace here:
-			// - destroy beep sound would only play when something was actually being destroyed
-			// - player couldn't charge destroy unless he/she was actually focused on an object
+			// usually returns STATE_OFF since MakeItem callbacks
+			// can only create items from there
 			//
-		case STATE_OFF:
-			if ((p->m_nButtons & IN_ATTACK) && m_flNextPrimaryAttack < gpGlobals->curtime) {
-
-				destroy_state = STATE_CHARGING;
-				m_flNextPrimaryAttack = gpGlobals->curtime + BREEDER_REFIRE;
-				m_flDestroyTime = gpGlobals->curtime + BREEDER_DESTROY_WAIT;
-				m_flNextDestroyBeep = gpGlobals->curtime + BREEDER_DESTROY_BEEP;
-#ifndef CLIENT_DLL
-				WarnPlayer();
-#endif
-			}
-
-			break;
-
-		case STATE_CHARGING:
-			if ((p->m_nButtons & IN_ATTACK)) {
-				if (m_flDestroyTime < gpGlobals->curtime) {
-					destroy_state = STATE_OFF;
-					PrimaryAttack();
-					m_flNextDestroyBeep = FLT_MAX;
-				} else {
-					if (m_flNextDestroyBeep < gpGlobals->curtime) {
-						WeaponSound(SPECIAL1);
-						m_flNextDestroyBeep = gpGlobals->curtime + BREEDER_DESTROY_BEEP;
-#ifndef CLIENT_DLL
-				WarnPlayer();
-#endif
-					}
-				}
-			} else {
-				destroy_state = STATE_OFF;
-				m_flNextDestroyBeep = FLT_MAX;
-			}
-
-			break;
-
-		default:
-			break;
 		}
+
+		break;
+
+	case STATE_WAITING_EGG:
+		if (m_flNextHatchTime < gpGlobals->curtime) {
+			WeaponSound(MELEE_MISS);
+			hatch_state = STATE_OFF;
+		} else if (m_flNextFXTime < gpGlobals->curtime) {
+			m_flNextFXTime = gpGlobals->curtime + EGG_WAIT_FX_TIME;
+			WeaponSound(SPECIAL1);
+		}
+
+		break;
+
+	case STATE_WAITING_NORMAL:
+		if (m_flNextHatchTime < gpGlobals->curtime) {
+			hatch_state = STATE_OFF;
+		}
+
+		break;
+
+	case STATE_CHARGING_DESTROY:
+		if (p->m_nButtons & IN_ATTACK) {
+			if (m_flNextHatchTime < gpGlobals->curtime) {
+				hatch_state = BreederPrimaryAttack();
+			} else if (m_flNextFXTime < gpGlobals->curtime) {
+				m_flNextFXTime = gpGlobals->curtime + BREEDER_DESTROY_BEEP;
+				WeaponSound(RELOAD);
+			}
+		} else {
+			hatch_state = STATE_OFF;
+		}
+
+		break;
+
+	case STATE_DIGESTING:
+		if (m_flNextHatchTime < gpGlobals->curtime) {
+			WeaponSound(MELEE_HIT);
+			hatch_state = STATE_OFF;
+		} else if (m_flNextFXTime < gpGlobals->curtime) {
+			m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
+			WeaponSound(SINGLE);
+		}
+
+		break;
+
+	default:
+		Warning("bad hatch state\n");
+		hatch_state = STATE_OFF;
 	}
 
 	// can't call BaseClass
@@ -229,9 +286,7 @@ void CWeaponBreeder::ItemPostFrame( void ) {
 	// BaseClass::ItemPostFrame();
 }
 
-void CWeaponBreeder::SecondaryAttack(void) {
-	
-	m_flNextSecondaryAttack = gpGlobals->curtime + BREEDER_MENU_INTERVAL;
+enum hatch_state CWeaponBreeder::BreederSecondaryAttack(void) {
 
 #ifndef CLIENT_DLL
 	CHL2MP_Player *p;
@@ -242,6 +297,8 @@ void CWeaponBreeder::SecondaryAttack(void) {
 	}
 
 #endif
+
+	return STATE_OFF;
 }
 
 int foo = 0;
@@ -250,15 +307,18 @@ int foo = 0;
 // Use Secondary o show build menu
 //
 void CWeaponBreeder::MakeItem(int idx) {
-#ifndef CLIENT_DLL
+
+	#ifndef CLIENT_DLL
+
 	CBaseEntity *ent = NULL;
 	CEggEntity *egg = NULL;
 	CHealerEntity *healer = NULL;
 	CObstacleEntity *obs = NULL;
 	CSpikerEntity *spiker = NULL;
 	CGasserEntity *gasser = NULL;
+	color32 red = { 255, 0, 0, 80 };
 
-#endif
+	#endif
 
 	CHL2MP_Player *p;
 	QAngle stick_ang;
@@ -267,7 +327,8 @@ void CWeaponBreeder::MakeItem(int idx) {
 	trace_t tr;
 	int cost;
 
-	m_flNextItemCreation = gpGlobals->curtime + BREEDER_ITEM_CREATION_INTERVAL;
+	if (hatch_state != STATE_OFF)
+		return;
 
 	p = ToHL2MPPlayer(GetOwner());
 	if (!p) {
@@ -283,186 +344,224 @@ void CWeaponBreeder::MakeItem(int idx) {
 	dst = p->GetAbsOrigin() + (fwd * 60) + Vector(0, 0, 30);
 	QAngle ang(0, p->GetAbsAngles().y - 90, 0);
 
-	if (p->GetTeamNumber() == TEAM_SPIDERS) {
-		switch(idx) {
-		case ITEM_EGG_IDX:
+	hatch_state = STATE_WAITING_NORMAL;
 
-			//
-			// trace largest unit's hull to avoid stuck spawns
-			//
-			UTIL_TraceHull(dst, dst, dk_classes[CLASS_STALKER_IDX].vectors->m_vHullMin, dk_classes[CLASS_STALKER_IDX].vectors->m_vHullMax, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-			cost = dk_items[ITEM_EGG_IDX].value;
-
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(dk_items[ITEM_EGG_IDX].ent_name);
-				if (ent) {
-					egg = dynamic_cast<CEggEntity *>(ent);
-					if (!egg) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					egg->SetAbsOrigin(dst);
-					egg->SetAbsAngles(ang);
-					egg->SetCreator(p);
-					DispatchSpawn(egg);
-				}
-
-				#endif
-				WeaponSound(SINGLE);
-			}
-
-			break;
-
-		case ITEM_HEALER_IDX:
-
-			UTIL_TraceHull(dst, dst, HEALER_HULL_MIN, HEALER_HULL_MAX, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-			cost = dk_items[ITEM_HEALER_IDX].value;
-
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(dk_items[ITEM_HEALER_IDX].ent_name);
-				if (ent) {
-					healer = dynamic_cast<CHealerEntity *>(ent);
-					if (!healer) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					healer->SetAbsOrigin(dst);
-					healer->SetAbsAngles(ang);
-					healer->SetCreator(p);
-					DispatchSpawn(healer);
-				}
-
-				#endif
-				WeaponSound(SINGLE);
-			}
-			
-
-			break;
-
-		case ITEM_OBSTACLE_IDX:
-
-			UTIL_TraceHull(dst - (fwd * 20), dst - (fwd * 20), OBSTACLE_HULL_MIN, OBSTACLE_HULL_MAX, MASK_SHOT, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-			cost = dk_items[ITEM_OBSTACLE_IDX].value;
-
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(dk_items[ITEM_OBSTACLE_IDX].ent_name);
-				if (ent) {
-					obs = dynamic_cast<CObstacleEntity *>(ent);
-					if (!obs) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					//
-					// breeder might use obs/spiker for stacking/climbing, bring it in closer
-					// to make climbing easier
-					//
-					obs->SetAbsOrigin(dst - (fwd * 20));
-					obs->SetAbsAngles(ang);
-					obs->SetCreator(p);
-					DispatchSpawn(obs);
-				}
-
-				#endif
-				WeaponSound(SINGLE);
-			}
-
-			break;
-
-		case ITEM_SPIKER_IDX:
-
-			UTIL_TraceHull(dst - (fwd * 20), dst - (fwd * 20), SPIKER_HULL_MIN, SPIKER_HULL_MAX, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-			cost = dk_items[ITEM_SPIKER_IDX].value;
-
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(dk_items[ITEM_SPIKER_IDX].ent_name);
-				if (ent) {
-					spiker = dynamic_cast<CSpikerEntity *>(ent);
-					if (!spiker) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					//
-					// breeder might use obs/spiker for stacking/climbing, bring it in closer
-					// to make climbing easier
-					//
-					spiker->SetAbsOrigin(dst - (fwd * 20));
-					spiker->SetAbsAngles(ang);
-					spiker->SetCreator(p);
-					DispatchSpawn(spiker);
-				}
-
-				#endif
-				WeaponSound(SINGLE);
-			}
-			
-
-			break;
-
-
-		case ITEM_GASSER_IDX:
-
-			UTIL_TraceHull(dst, dst, GASSER_HULL_MIN, GASSER_HULL_MAX, MASK_SOLID, NULL, &tr);
-			if (tr.DidHit()) {
-				WeaponSound(EMPTY);
-				break;
-			}
-
-			cost = dk_items[ITEM_GASSER_IDX].value;
-
-			if (cost < p->GetTeam()->asset_points) {
-				#ifndef CLIENT_DLL
-				ent = CreateEntityByName(dk_items[ITEM_GASSER_IDX].ent_name);
-				if (ent) {
-					gasser = dynamic_cast<CGasserEntity *>(ent);
-					if (!gasser) {
-						UTIL_Remove(ent);
-						return;
-					}
-
-					gasser->SetAbsOrigin(dst);
-					gasser->SetAbsAngles(turned);
-					gasser->SetCreator(p);
-					DispatchSpawn(gasser);
-				}
-
-				#endif
-				WeaponSound(SINGLE);
-			}
-			
-			break;
+	if (m_flNextHatchTime < gpGlobals->curtime) {
 		
-		default:
-			break;
-		}
-	}
+		m_flNextHatchTime = gpGlobals->curtime + DEFAULT_HATCH_TIMER;
+
+		if (p->GetTeamNumber() == TEAM_SPIDERS) {
+			switch(idx) {
+			case ITEM_EGG_IDX:
+
+				//
+				// trace largest unit's hull to avoid stuck spawns
+				//
+				UTIL_TraceHull
+				(
+					dst,
+					dst,
+					dk_classes[CLASS_STALKER_IDX].vectors->m_vHullMin,
+					dk_classes[CLASS_STALKER_IDX].vectors->m_vHullMax,
+					MASK_SOLID,
+					NULL,
+					&tr
+				);
+
+				if (tr.DidHit()) {
+					WeaponSound(EMPTY);
+					break;
+				}
+
+				cost = dk_items[ITEM_EGG_IDX].value;
+
+				if (cost < p->GetTeam()->asset_points) {
+					#ifndef CLIENT_DLL
+					ent = CreateEntityByName(dk_items[ITEM_EGG_IDX].ent_name);
+					if (ent) {
+						egg = dynamic_cast<CEggEntity *>(ent);
+						if (!egg) {
+							UTIL_Remove(ent);
+							return;
+						}
+
+						egg->SetAbsOrigin(dst);
+						egg->SetAbsAngles(ang);
+						egg->SetCreator(p);
+						DispatchSpawn(egg);
+
+						m_flNextHatchTime = gpGlobals->curtime + EGG_TIMER;
+						p->SpeedPenalty(EGG_TIMER);
+					}
+
+					UTIL_ScreenFade(p, red, 1.0f, EGG_TIMER, FFADE_MODULATE);
+
+					#endif
+
+					WeaponSound(SPECIAL2);
+
+					hatch_state = STATE_WAITING_EGG;
+				}
+
+				break;
+
+			case ITEM_HEALER_IDX:
+
+				UTIL_TraceHull(dst, dst, HEALER_HULL_MIN, HEALER_HULL_MAX, MASK_SOLID, NULL, &tr);
+				if (tr.DidHit()) {
+					WeaponSound(EMPTY);
+					break;
+				}
+
+				cost = dk_items[ITEM_HEALER_IDX].value;
+
+				if (cost < p->GetTeam()->asset_points) {
+					#ifndef CLIENT_DLL
+					ent = CreateEntityByName(dk_items[ITEM_HEALER_IDX].ent_name);
+					if (ent) {
+						healer = dynamic_cast<CHealerEntity *>(ent);
+						if (!healer) {
+							UTIL_Remove(ent);
+							return;
+						}
+
+						healer->SetAbsOrigin(dst);
+						healer->SetAbsAngles(ang);
+						healer->SetCreator(p);
+						DispatchSpawn(healer);
+					}
+
+					#endif
+				
+				}
+			
+
+				break;
+
+			case ITEM_OBSTACLE_IDX:
+
+				UTIL_TraceHull
+				(
+					dst - (fwd * 25),
+					dst - (fwd * 25),
+					OBSTACLE_HULL_MIN,
+					OBSTACLE_HULL_MAX,
+					MASK_SHOT,
+					NULL,
+					&tr
+				);
+
+				if (tr.DidHit()) {
+					WeaponSound(EMPTY);
+					break;
+				}
+
+				cost = dk_items[ITEM_OBSTACLE_IDX].value;
+
+				if (cost < p->GetTeam()->asset_points) {
+					#ifndef CLIENT_DLL
+					ent = CreateEntityByName(dk_items[ITEM_OBSTACLE_IDX].ent_name);
+					if (ent) {
+						obs = dynamic_cast<CObstacleEntity *>(ent);
+						if (!obs) {
+							UTIL_Remove(ent);
+							return;
+						}
+
+						//
+						// breeder might use obs/spiker for stacking/climbing, bring it in closer
+						// to make climbing easier
+						//
+						obs->SetAbsOrigin(dst - (fwd * 25));
+						obs->SetAbsAngles(ang);
+						obs->SetCreator(p);
+						DispatchSpawn(obs);
+					}
+
+					#endif
+				
+				}
+
+				break;
+
+			case ITEM_SPIKER_IDX:
+
+				UTIL_TraceHull(dst - (fwd * 20), dst - (fwd * 20), SPIKER_HULL_MIN, SPIKER_HULL_MAX, MASK_SOLID, NULL, &tr);
+				if (tr.DidHit()) {
+					WeaponSound(EMPTY);
+					break;
+				}
+
+				cost = dk_items[ITEM_SPIKER_IDX].value;
+
+				if (cost < p->GetTeam()->asset_points) {
+					#ifndef CLIENT_DLL
+					ent = CreateEntityByName(dk_items[ITEM_SPIKER_IDX].ent_name);
+					if (ent) {
+						spiker = dynamic_cast<CSpikerEntity *>(ent);
+						if (!spiker) {
+							UTIL_Remove(ent);
+							return;
+						}
+
+						//
+						// breeder might use obs/spiker for stacking/climbing, bring it in closer
+						// to make climbing easier
+						//
+						spiker->SetAbsOrigin(dst - (fwd * 20));
+						spiker->SetAbsAngles(ang);
+						spiker->SetCreator(p);
+						DispatchSpawn(spiker);
+					}
+
+					#endif
+				
+				}
+			
+
+				break;
+
+
+			case ITEM_GASSER_IDX:
+
+				UTIL_TraceHull(dst, dst, GASSER_HULL_MIN, GASSER_HULL_MAX, MASK_SOLID, NULL, &tr);
+				if (tr.DidHit()) {
+					WeaponSound(EMPTY);
+					break;
+				}
+
+				cost = dk_items[ITEM_GASSER_IDX].value;
+
+				if (cost < p->GetTeam()->asset_points) {
+					#ifndef CLIENT_DLL
+					ent = CreateEntityByName(dk_items[ITEM_GASSER_IDX].ent_name);
+					if (ent) {
+						gasser = dynamic_cast<CGasserEntity *>(ent);
+						if (!gasser) {
+							UTIL_Remove(ent);
+							return;
+						}
+
+						gasser->SetAbsOrigin(dst);
+						gasser->SetAbsAngles(turned);
+						gasser->SetCreator(p);
+						DispatchSpawn(gasser);
+					}
+
+					#endif
+				
+				}
+			
+				break;
+		
+			default:
+				hatch_state = STATE_OFF;
+				break;
+			} // switch
+
+		} // if (TEAM_SPIDERS)
+
+	} //if (m_flNextHatchTime < gpGlobals->curtime)
 }
 
 //
@@ -470,7 +569,7 @@ void CWeaponBreeder::MakeItem(int idx) {
 // is for destruction of entities.
 // It must be held down...
 //
-void CWeaponBreeder::PrimaryAttack(void) {
+enum hatch_state CWeaponBreeder::BreederPrimaryAttack(void) {
 #ifndef CLIENT_DLL
 	Vector start;
 	Vector end;
@@ -501,41 +600,38 @@ void CWeaponBreeder::PrimaryAttack(void) {
 				team->RemoveSpawnpoint(egg->SpawnPoint());
 				team->reclaim_points(dk_items[ITEM_EGG_IDX].value);
 				UTIL_Remove(egg);
+				m_flNextHatchTime = gpGlobals->curtime + DIGESTION_TIME;
+				m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
+				return STATE_DIGESTING;
 			} else if ((healer = dynamic_cast<CHealerEntity *>(ent)) != NULL) {
 				team->reclaim_points(dk_items[ITEM_HEALER_IDX].value);
 				UTIL_Remove(healer);
+				m_flNextHatchTime = gpGlobals->curtime + DIGESTION_TIME;
+				m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
+				return STATE_DIGESTING;
 			} else if ((obs = dynamic_cast<CObstacleEntity *>(ent)) != NULL) {
 				team->reclaim_points(dk_items[ITEM_OBSTACLE_IDX].value);
 				UTIL_Remove(obs);
+				m_flNextHatchTime = gpGlobals->curtime + DIGESTION_TIME;
+				m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
+				return STATE_DIGESTING;
 			} else if ((spiker = dynamic_cast<CSpikerEntity *>(ent)) != NULL) {
 				team->reclaim_points(dk_items[ITEM_SPIKER_IDX].value);
 				UTIL_Remove(spiker);
+				m_flNextHatchTime = gpGlobals->curtime + DIGESTION_TIME;
+				m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
+				return STATE_DIGESTING;
 			} else if ((gasser = dynamic_cast<CGasserEntity *>(ent)) != NULL) {
 				team->reclaim_points(dk_items[ITEM_GASSER_IDX].value);
 				UTIL_Remove(gasser);
+				m_flNextHatchTime = gpGlobals->curtime + DIGESTION_TIME;
+				m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
+				return STATE_DIGESTING;
 			}
 		}
 	}
 
 #endif
-
-	//WeaponSound(SINGLE);
-	//m_flNextPrimaryAttack = gpGlobals->curtime + BREEDER_REFIRE;
-	
-	//BaseClass::PrimaryAttack();
+	WeaponSound(BURST);
+	return STATE_OFF;
 }
-
-#ifndef CLIENT_DLL
-
-void CWeaponBreeder::WarnPlayer(void) {
-	char buf[64];
-	CHL2MP_Player *p;
-
-	p = ToHL2MPPlayer(GetOwner());
-	if (p) {
-		Q_snprintf(buf, sizeof(buf), "Destroying entity in %.0f seconds!\n", m_flDestroyTime - gpGlobals->curtime);
-		UTIL_SayText(buf, p);
-	}
-}
-
-#endif

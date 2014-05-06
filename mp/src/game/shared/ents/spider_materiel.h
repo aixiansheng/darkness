@@ -5,7 +5,7 @@
 #include "materiel.h"
 
 #define SELF_HEAL_CTX "SelfHeal"
-#define SELF_HEAL_INTERVAL 3.0f
+#define SELF_HEAL_INTERVAL 4.0f
 #define DEFAULT_HEAL_AMT 1
 
 #ifdef CLIENT_DLL

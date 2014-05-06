@@ -32,6 +32,7 @@ public:
 
 	CWeapon357( void );
 
+	virtual void Drop(const Vector &vecVelocity) {}
 	void	PrimaryAttack( void );
 	DECLARE_NETWORKCLASS(); 
 	DECLARE_PREDICTABLE();

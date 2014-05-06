@@ -23,7 +23,9 @@ CTeleporterEntity::CTeleporterEntity() : CHumanMateriel(&dk_items[ITEM_TELEPORTE
 
 CTeleporterEntity::~CTeleporterEntity() {
 #ifndef CLIENT_DLL
-	UTIL_Remove(spawnpoint);
+	if (spawnpoint) {
+		UTIL_Remove(spawnpoint);
+	}
 #endif
 }
 
@@ -59,9 +61,11 @@ void CTeleporterEntity::Spawn(void) {
 
 	SetHealth(item_info->max_health);
 
-	spawnpoint->SetAbsOrigin(GetAbsOrigin());
-	spawnpoint->SetAbsAngles(GetAbsAngles());
-	spawnpoint->SetParent(this);
+	if (spawnpoint) {
+		spawnpoint->SetAbsOrigin(GetAbsOrigin());
+		spawnpoint->SetAbsAngles(GetAbsAngles());
+		spawnpoint->SetParent(this);
+	}
 }
 
 //
@@ -106,7 +110,9 @@ int CTeleporterEntity::TakeHealth(int amt, int type) {
 		ret = BaseClass::TakeHealth(amt, type);
 		health = GetHealth();
 
-		spawnpoint->SetCycleEfficiency(((float)health)/((float)item_info->max_health));
+		if (spawnpoint) {
+			spawnpoint->SetCycleEfficiency(((float)health)/((float)item_info->max_health));
+		}
 
 		return ret;
 	}
@@ -122,7 +128,9 @@ int CTeleporterEntity::OnTakeDamage(const CTakeDamageInfo &info) {
 
 	health = GetHealth();
 
-	spawnpoint->SetCycleEfficiency(((float)health)/((float)item_info->max_health));
+	if (spawnpoint) {
+		spawnpoint->SetCycleEfficiency(((float)health)/((float)item_info->max_health));
+	}
 
 	return ret;
 }
@@ -138,7 +146,7 @@ CTeamSpawnPoint *CTeleporterEntity::SpawnPoint(void) {
 void CTeleporterEntity::SpawnSound(void) {
 	CSoundParameters params;
 
-	if ( GetParametersForSound( TELEPORTER_SPAWN_PLAYER_SOUND, params, NULL ) == false )
+	if (GetParametersForSound( TELEPORTER_SPAWN_PLAYER_SOUND, params, NULL) == false)
 		return;
 
 	Vector vecOrigin = GetAbsOrigin();
@@ -167,7 +175,10 @@ void CTeleporterEntity::EnableEntity(void) {
 
 void CTeleporterEntity::DisableEntity(void) {
 	if (active == true) {
-		GetTeam()->RemoveSpawnpoint(SpawnPoint());
+		if (spawnpoint) {
+			GetTeam()->RemoveSpawnpoint(SpawnPoint());
+		}
+
 		BaseClass::DisableEntity();
 	}
 }

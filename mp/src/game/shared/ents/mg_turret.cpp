@@ -79,11 +79,22 @@ void CMGTurretEntity::DetectThink(void) {
 			(ent = sphere.GetCurrentEntity()) != NULL; 
 			sphere.NextEntity()) 
 		{
-			UTIL_TraceLine(GetAbsOrigin(), ent->GetAbsOrigin(), MASK_SOLID, this, COLLISION_GROUP_NONE, &tr);
+			UTIL_TraceLine
+			(
+				GetAbsOrigin(),
+				ent->GetAbsOrigin(),
+				MASK_SOLID,
+				this,
+				COLLISION_GROUP_NONE,
+				&tr
+			);
 		
-			if (tr.DidHit()) {
+			if (tr.DidHit() && tr.m_pEnt) {
 
-				if (tr.m_pEnt->IsPlayer() && tr.m_pEnt->GetTeamNumber() == TEAM_SPIDERS && tr.m_pEnt->IsAlive()) {
+				if (tr.m_pEnt->IsPlayer() &&
+					tr.m_pEnt->GetTeamNumber() == TEAM_SPIDERS &&
+					tr.m_pEnt->IsAlive()) {
+
 					// do somethinf about the target
 					turretHead->PossibleTarget(tr.m_pEnt);
 					//Warning("Aiming At Target\n");
@@ -152,9 +163,8 @@ void CMGTurretHead::Spawn(void) {
 	Vector vecWorldBarrelPos;
 	QAngle worldBarrelAngle;
 
-	pAnim->GetAttachment( m_nBarrelAttachment, vecWorldBarrelPos, worldBarrelAngle );
-	VectorITransform( vecWorldBarrelPos, EntityToWorldTransform( ), m_barrelPos );
-
+	pAnim->GetAttachment(m_nBarrelAttachment, vecWorldBarrelPos, worldBarrelAngle);
+	VectorITransform(vecWorldBarrelPos, EntityToWorldTransform( ), m_barrelPos);
 
 	m_yawRate = SMG_YAW_RATE;
 	m_yawRange = SMG_YAW_RANGE;
@@ -318,7 +328,16 @@ void CMGTurretHead::ShootAt(CBaseEntity *ent) {
 	endpos = ent->BodyTarget(shootpos, false);
 	dir = endpos - shootpos;
 
-	UTIL_TraceLine(shootpos, endpos, MASK_SOLID, GetParent(), COLLISION_GROUP_NONE, &tr);
+	UTIL_TraceLine
+	(
+		shootpos,
+		endpos,
+		MASK_SOLID,
+		GetParent(),
+		COLLISION_GROUP_NONE,
+		&tr
+	);
+
 	CTakeDamageInfo info(this, GetParent(), SMG_TURRET_DAMAGE, DMG_BULLET);
 	info.SetAmmoType(m_iAmmoType);
 

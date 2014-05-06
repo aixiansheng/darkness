@@ -156,7 +156,7 @@ typedef struct item_info_t item_info_t;
 #define SMG_TURRET_HULL_MAX Vector(16,16,16)
 #define MSL_TURRET_HULL_MIN SMG_TURRET_HULL_MIN
 #define MSL_TURRET_HULL_MAX SMG_TURRET_HULL_MAX
-#define EGG_HULL_MIN -Vector(14,14,0)
+#define EGG_HULL_MIN -Vector(14,14,1)
 #define EGG_HULL_MAX Vector(14,14,35)
 #define HEALER_HULL_MIN -Vector(15,15,0)
 #define HEALER_HULL_MAX Vector(15,15,22)

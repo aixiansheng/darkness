@@ -56,7 +56,12 @@ void CExpMineEntity::SolidThink(void) {
 		sphere.NextEntity()) 
 	{
 		if (ent->IsPlayer()) {
-			SetContextThink(&CExpMineEntity::SolidThink, gpGlobals->curtime + MINE_SOLID_THINK_INT, MINE_SOLID_CTX);
+			SetContextThink
+			(
+				&CExpMineEntity::SolidThink,
+				gpGlobals->curtime + MINE_SOLID_THINK_INT,
+				MINE_SOLID_CTX
+			);
 			return;
 		}
 	}
@@ -107,15 +112,27 @@ void CExpMineEntity::SetupThink(void) {
 	trace_t tr;
 
 	if (surfaceNorm == vec3_origin) {
+		if (laser) {
+			UTIL_Remove(laser);
+		}
+
 		UTIL_Remove(this);
 	}
 
 	endpos = GetAbsOrigin() + (surfaceNorm * 4096);
 
-	UTIL_TraceLine(GetAbsOrigin(), endpos, MASK_SOLID, this, COLLISION_GROUP_DEBRIS, &tr);
+	UTIL_TraceLine
+	(
+		GetAbsOrigin(),
+		endpos,
+		MASK_SOLID,
+		this,
+		COLLISION_GROUP_DEBRIS,
+		&tr
+	);
 
 	laser = CBeam::BeamCreate( MINE_BEAM_SPRITE, MINE_BEAM_WIDTH );
-	if (laser == NULL) {
+	if (!laser) {
 		UTIL_Remove(this);
 	}
 
@@ -130,6 +147,14 @@ void CExpMineEntity::SetupThink(void) {
 
 	SetThink(&CExpMineEntity::DetectThink);
 	SetNextThink(gpGlobals->curtime + EXPMINE_THINK_INTERVAL);
+}
+
+void CExpMineEntity::Event_Killed(const CTakeDamageInfo &info) {
+	if (laser) {
+		UTIL_Remove(laser);
+	}
+
+	BaseClass::Event_Killed(info);
 }
 
 #endif

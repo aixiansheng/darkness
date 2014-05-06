@@ -7,7 +7,7 @@
  
 #include "weapon_hl2mpbasehlmpcombatweapon.h"
 
-#define KAMI_DAMAGE			400
+#define KAMI_DAMAGE			600
 #define KAMI_RADIUS			400
  
 #ifndef CLIENT_DLL
@@ -79,7 +79,8 @@ public:
 	virtual bool	SendWeaponAnim( int iActivity );
 	void			NotifyHookDied( void );
 	bool			HasAnyAmmo( void );
- 
+	virtual void Drop(const Vector &vecVelocity);
+
 	CBaseEntity		*GetHook( void ) { return m_hHook; }
  
 	DECLARE_NETWORKCLASS(); 

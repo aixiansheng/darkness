@@ -879,8 +879,7 @@ void C_HL2MP_Player::CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNea
 
 IRagdoll* C_HL2MP_Player::GetRepresentativeRagdoll() const
 {
-	if ( m_hRagdoll.Get() )
-	{
+	if (m_hRagdoll.Get()) {
 		C_HL2MPRagdoll *pRagdoll = (C_HL2MPRagdoll*)m_hRagdoll.Get();
 
 		// ragdolls from previous deaths aren't representative
@@ -888,10 +887,8 @@ IRagdoll* C_HL2MP_Player::GetRepresentativeRagdoll() const
 			return pRagdoll->GetIRagdoll();
 		}
 	}
-	else
-	{
-		return NULL;
-	}
+
+	return NULL;
 }
 
 //HL2MPRAGDOLL

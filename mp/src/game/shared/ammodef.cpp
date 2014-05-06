@@ -1092,9 +1092,9 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_MSL_TURRET_IDX]		= 0.8f;
 	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_EGG_IDX]			= 0.0f;
 	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_HEALER_IDX]			= 0.0f;
-	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_OBSTACLE_IDX]		= 0.0f;
-	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_SPIKER_IDX]			= 0.0f;
-	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_GASSER_IDX]			= 0.0f;
+	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_OBSTACLE_IDX]		= 0.4f;
+	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_SPIKER_IDX]			= 0.4f;
+	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_GASSER_IDX]			= 0.1f;
 
 	item_dmg_factors[WPN_DRONE_SLASH][ITEM_TELEPORTER_IDX]		= 0.7f;
 	item_dmg_factors[WPN_DRONE_SLASH][ITEM_AMMO_CRATE_IDX]		= 1.0f;
@@ -1105,8 +1105,8 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_DRONE_SLASH][ITEM_MSL_TURRET_IDX]		= 1.0f;
 	item_dmg_factors[WPN_DRONE_SLASH][ITEM_EGG_IDX]				= 0.0f;
 	item_dmg_factors[WPN_DRONE_SLASH][ITEM_HEALER_IDX]			= 0.2f;
-	item_dmg_factors[WPN_DRONE_SLASH][ITEM_OBSTACLE_IDX]		= 0.3f;
-	item_dmg_factors[WPN_DRONE_SLASH][ITEM_SPIKER_IDX]			= 0.2f;
+	item_dmg_factors[WPN_DRONE_SLASH][ITEM_OBSTACLE_IDX]		= 1.0f;
+	item_dmg_factors[WPN_DRONE_SLASH][ITEM_SPIKER_IDX]			= 0.4f;
 	item_dmg_factors[WPN_DRONE_SLASH][ITEM_GASSER_IDX]			= 0.1f;
 
 	item_dmg_factors[WPN_KAMI_SLASH][ITEM_TELEPORTER_IDX]		= 0.0f;
@@ -1117,10 +1117,10 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_KAMI_SLASH][ITEM_DETECTOR_IDX]			= 1.0f;
 	item_dmg_factors[WPN_KAMI_SLASH][ITEM_MSL_TURRET_IDX]		= 1.5f;
 	item_dmg_factors[WPN_KAMI_SLASH][ITEM_EGG_IDX]				= 0.0f;
-	item_dmg_factors[WPN_KAMI_SLASH][ITEM_HEALER_IDX]			= 0.0f;
-	item_dmg_factors[WPN_KAMI_SLASH][ITEM_OBSTACLE_IDX]			= 0.0f;
-	item_dmg_factors[WPN_KAMI_SLASH][ITEM_SPIKER_IDX]			= 0.0f;
-	item_dmg_factors[WPN_KAMI_SLASH][ITEM_GASSER_IDX]			= 0.0f;
+	item_dmg_factors[WPN_KAMI_SLASH][ITEM_HEALER_IDX]			= 0.4f;
+	item_dmg_factors[WPN_KAMI_SLASH][ITEM_OBSTACLE_IDX]			= 0.4f;
+	item_dmg_factors[WPN_KAMI_SLASH][ITEM_SPIKER_IDX]			= 0.4f;
+	item_dmg_factors[WPN_KAMI_SLASH][ITEM_GASSER_IDX]			= 0.1f;
 
 	item_dmg_factors[WPN_STINGER_SLASH][ITEM_TELEPORTER_IDX]	= 1.0f;
 	item_dmg_factors[WPN_STINGER_SLASH][ITEM_AMMO_CRATE_IDX]	= 0.8f;
@@ -1131,8 +1131,8 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_STINGER_SLASH][ITEM_MSL_TURRET_IDX]	= 0.8f;
 	item_dmg_factors[WPN_STINGER_SLASH][ITEM_EGG_IDX]			= 0.1f;
 	item_dmg_factors[WPN_STINGER_SLASH][ITEM_HEALER_IDX]		= 0.2f;
-	item_dmg_factors[WPN_STINGER_SLASH][ITEM_OBSTACLE_IDX]		= 0.3f;
-	item_dmg_factors[WPN_STINGER_SLASH][ITEM_SPIKER_IDX]		= 0.2f;
+	item_dmg_factors[WPN_STINGER_SLASH][ITEM_OBSTACLE_IDX]		= 0.8f;
+	item_dmg_factors[WPN_STINGER_SLASH][ITEM_SPIKER_IDX]		= 0.4f;
 	item_dmg_factors[WPN_STINGER_SLASH][ITEM_GASSER_IDX]		= 0.1f;
 
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_TELEPORTER_IDX]		= 1.0f;
@@ -1144,8 +1144,8 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_MSL_TURRET_IDX]		= 0.9f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_EGG_IDX]			= 0.1f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_HEALER_IDX]			= 0.2f;
-	item_dmg_factors[WPN_STINGER_FIRE][ITEM_OBSTACLE_IDX]		= 0.3f;
-	item_dmg_factors[WPN_STINGER_FIRE][ITEM_SPIKER_IDX]			= 0.2f;
+	item_dmg_factors[WPN_STINGER_FIRE][ITEM_OBSTACLE_IDX]		= 0.7f;
+	item_dmg_factors[WPN_STINGER_FIRE][ITEM_SPIKER_IDX]			= 0.3f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_GASSER_IDX]			= 0.1f;
 
 	item_dmg_factors[WPN_ACID_GREN][ITEM_TELEPORTER_IDX]		= 0.2f;
@@ -1171,8 +1171,8 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_GUARDIAN_SLASH][ITEM_MSL_TURRET_IDX]	= 1.0f;
 	item_dmg_factors[WPN_GUARDIAN_SLASH][ITEM_EGG_IDX]			= 0.1f;
 	item_dmg_factors[WPN_GUARDIAN_SLASH][ITEM_HEALER_IDX]		= 0.2f;
-	item_dmg_factors[WPN_GUARDIAN_SLASH][ITEM_OBSTACLE_IDX]		= 0.3f;
-	item_dmg_factors[WPN_GUARDIAN_SLASH][ITEM_SPIKER_IDX]		= 0.2f;
+	item_dmg_factors[WPN_GUARDIAN_SLASH][ITEM_OBSTACLE_IDX]		= 1.0f;
+	item_dmg_factors[WPN_GUARDIAN_SLASH][ITEM_SPIKER_IDX]		= 0.6f;
 	item_dmg_factors[WPN_GUARDIAN_SLASH][ITEM_GASSER_IDX]		= 0.1f;
 
 	item_dmg_factors[WPN_GUARDIAN_SPIKE][ITEM_TELEPORTER_IDX]	= 1.0f;
@@ -1197,7 +1197,7 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_STALKER_SLASH][ITEM_MSL_TURRET_IDX]	= 0.8f;
 	item_dmg_factors[WPN_STALKER_SLASH][ITEM_EGG_IDX]			= 0.2f;
 	item_dmg_factors[WPN_STALKER_SLASH][ITEM_HEALER_IDX]		= 0.2f;
-	item_dmg_factors[WPN_STALKER_SLASH][ITEM_OBSTACLE_IDX]		= 0.2f;
+	item_dmg_factors[WPN_STALKER_SLASH][ITEM_OBSTACLE_IDX]		= 0.6f;
 	item_dmg_factors[WPN_STALKER_SLASH][ITEM_SPIKER_IDX]		= 0.4f;
 	item_dmg_factors[WPN_STALKER_SLASH][ITEM_GASSER_IDX]		= 0.1f;
 
@@ -1234,11 +1234,11 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_KAMI_XP][ITEM_SMG_TURRET_IDX]		= 1.0f;
 	item_dmg_factors[WPN_KAMI_XP][ITEM_DETECTOR_IDX]		= 1.0f;
 	item_dmg_factors[WPN_KAMI_XP][ITEM_MSL_TURRET_IDX]		= 1.0f;
-	item_dmg_factors[WPN_KAMI_XP][ITEM_EGG_IDX]				= 1.0f;
-	item_dmg_factors[WPN_KAMI_XP][ITEM_HEALER_IDX]			= 1.0f;
+	item_dmg_factors[WPN_KAMI_XP][ITEM_EGG_IDX]				= 1.1f;
+	item_dmg_factors[WPN_KAMI_XP][ITEM_HEALER_IDX]			= 1.1f;
 	item_dmg_factors[WPN_KAMI_XP][ITEM_OBSTACLE_IDX]		= 0.7f;
-	item_dmg_factors[WPN_KAMI_XP][ITEM_SPIKER_IDX]			= 1.0f;
-	item_dmg_factors[WPN_KAMI_XP][ITEM_GASSER_IDX]			= 1.0f;
+	item_dmg_factors[WPN_KAMI_XP][ITEM_SPIKER_IDX]			= 1.1f;
+	item_dmg_factors[WPN_KAMI_XP][ITEM_GASSER_IDX]			= 1.1f;
 
 	item_dmg_factors[WPN_OBSTACLE][ITEM_TELEPORTER_IDX]		= 1.0f;
 	item_dmg_factors[WPN_OBSTACLE][ITEM_AMMO_CRATE_IDX]		= 1.0f;

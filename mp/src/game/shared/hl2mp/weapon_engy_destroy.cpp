@@ -850,6 +850,8 @@ void CWeaponEngyDestroy::UpdateElementPosition(void) {
 	float flElementPosition;
 
 	pOwner = ToBasePlayer(GetOwner());
+	if (!pOwner)
+		return;
 
 	flElementPosition = m_ElementParameter.Interp(gpGlobals->curtime);
 
@@ -1191,7 +1193,15 @@ void CWeaponEngyDestroy::DoEffectLaunch(Vector *pos) {
 			pOwner->EyeVectors( &shotDir );
 
 			trace_t	tr;
-			UTIL_TraceLine( endPos, endPos + ( shotDir * MAX_TRACE_LENGTH ), MASK_SHOT, pOwner, COLLISION_GROUP_NONE, &tr );
+			UTIL_TraceLine
+			(
+				endPos,
+				endPos + ( shotDir * MAX_TRACE_LENGTH ),
+				MASK_SHOT,
+				pOwner,
+				COLLISION_GROUP_NONE,
+				&tr
+			);
 			
 			endPos = tr.endpos;
 			shotDir = endPos - pOwner->Weapon_ShootPosition();
@@ -1322,7 +1332,7 @@ void CWeaponEngyDestroy::GetEffectParameters(EffectType_t effectID, color32 &col
 	if ( ShouldDrawUsingViewModel() ) {
 		CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 		
-		if ( pOwner != NULL ) {
+		if (pOwner) {
 			pOwner->GetViewModel()->GetAttachment( attachment, vecAttachment, angles );
 			::FormatViewModelAttachment( vecAttachment, true );
 		}

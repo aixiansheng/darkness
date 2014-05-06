@@ -44,7 +44,12 @@ void CDetectorEntity::Spawn(void) {
 	SetNextThink(gpGlobals->curtime + DETECTOR_ARM_TIME);
 
 	RegisterThinkContext(DETECTOR_SOLID_CTX);
-	SetContextThink(&CDetectorEntity::SolidThink, gpGlobals->curtime + DETECTOR_SOLID_THINK_INT, DETECTOR_SOLID_CTX);
+	SetContextThink
+	(
+		&CDetectorEntity::SolidThink,
+		gpGlobals->curtime + DETECTOR_SOLID_THINK_INT,
+		DETECTOR_SOLID_CTX
+	);
 }
 
 void CDetectorEntity::SolidThink(void) {
@@ -55,7 +60,13 @@ void CDetectorEntity::SolidThink(void) {
 		sphere.NextEntity()) 
 	{
 		if (ent->IsPlayer()) {
-			SetContextThink(&CDetectorEntity::SolidThink, gpGlobals->curtime + DETECTOR_SOLID_THINK_INT, DETECTOR_SOLID_CTX);
+			SetContextThink
+			(
+				&CDetectorEntity::SolidThink,
+				gpGlobals->curtime + DETECTOR_SOLID_THINK_INT,
+				DETECTOR_SOLID_CTX
+			);
+
 			return;
 		}
 	}
@@ -80,7 +91,7 @@ void CDetectorEntity::DetectThink(void) {
 		sphere.NextEntity()) 
 	{
 		if (ent->IsPlayer() && ent->GetTeamNumber() == TEAM_SPIDERS && ent->IsAlive()) {
-			if (GetParametersForSound( DETECTOR_SOUND, params, NULL )) {
+			if (GetParametersForSound(DETECTOR_SOUND, params, NULL)) {
 
 				origin = GetAbsOrigin();
 

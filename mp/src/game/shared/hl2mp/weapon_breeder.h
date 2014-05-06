@@ -10,9 +10,12 @@
 #endif
 
 
-enum destroy_state {
+enum hatch_state {
 	STATE_OFF,
-	STATE_CHARGING
+	STATE_WAITING_EGG,
+	STATE_WAITING_NORMAL,
+	STATE_CHARGING_DESTROY,
+	STATE_DIGESTING
 };
 
 #ifdef CLIENT_DLL
@@ -32,9 +35,10 @@ public:
 	float		GetRange( void );
 	float		GetFireRate( void );
 
-	float		GetDamageForActivity( Activity hitActivity );
-	void		SecondaryAttack(void);
-	void		PrimaryAttack(void);
+	float		GetDamageForActivity(Activity hitActivity);
+
+	enum hatch_state BreederSecondaryAttack(void);
+	enum hatch_state BreederPrimaryAttack(void);
 
 	void		Drop( const Vector &vecVelocity );
 	bool		Deploy( void );
@@ -44,23 +48,26 @@ public:
 
 	CWeaponBreeder( const CWeaponBreeder & );
 
+	void StartDestroyCharge(void);
+
+	void HandleItemUpdate(void);
 
 #ifndef CLIENT_DLL
 
+	virtual void Precache(void);
 	void ItemStatusUpdate(CBasePlayer *player, int health, int armor);
-	void WarnPlayer(void);
-
+	
 #endif
 
 private:
+
 	float m_flNextItemStatus;
 
-	enum destroy_state destroy_state;
-	float m_flDestroyTime;
 	float m_flNextItemCreation;
 
-	CNetworkVar(float, m_flNextDestroyBeep);
-
+	CNetworkVar(float, m_flNextFXTime);
+	CNetworkVar(float, m_flNextHatchTime);
+	CNetworkVar(enum hatch_state, hatch_state);
 };
 
 

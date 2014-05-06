@@ -113,6 +113,9 @@ bool CWeaponShotgun::StartReload( void )
 	return true;
 }
 
+void CWeaponShotgun::Drop(const Vector &vecVelocity) {
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Override so only reload one shell at a time
 //-----------------------------------------------------------------------------

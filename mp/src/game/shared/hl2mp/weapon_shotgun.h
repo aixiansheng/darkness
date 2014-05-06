@@ -60,6 +60,7 @@ public:
 	void PrimaryAttack( void );
 	void DryFire( void );
 	virtual float GetFireRate( void ) { return 0.7; };
+	virtual void Drop(const Vector &vecVelocity);
 
 	DECLARE_ACTTABLE();
 

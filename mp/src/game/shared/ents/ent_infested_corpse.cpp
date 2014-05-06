@@ -102,7 +102,12 @@ void CInfestedCorpse::Spawn(void) {
 	SetNextThink(gpGlobals->curtime + CORPSE_DMG_INT);
 
 	RegisterThinkContext(CORPSE_SND_CTX);
-	SetContextThink(&CInfestedCorpse::SoundThink, gpGlobals->curtime + CORPSE_SND_INT, CORPSE_SND_CTX);
+	SetContextThink
+	(
+		&CInfestedCorpse::SoundThink,
+		gpGlobals->curtime + CORPSE_SND_INT,
+		CORPSE_SND_CTX
+	);
 	
 	ChangeTeam(TEAM_SPIDERS);
 }
@@ -172,7 +177,15 @@ void CInfestedCorpse::DamageThink(void) {
 		(ent = sphere.GetCurrentEntity()) != NULL; 
 		sphere.NextEntity()) 
 	{
-		UTIL_TraceLine(GetAbsOrigin(), ent->GetAbsOrigin(), MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+		UTIL_TraceLine
+		(
+			GetAbsOrigin(),
+			ent->GetAbsOrigin(),
+			MASK_SHOT,
+			this,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
 		
 		if (tr.DidHit() && tr.m_pEnt != ent)
 			continue; // something's in the way

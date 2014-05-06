@@ -57,22 +57,22 @@ void CSpikerEntity::SetSpikes(void) {
 	s4 = NULL;
 
 	if (GetAttachment("arm1", vec, ang)) {
-		s1 =  Spike_Create(vec, ang, Vector(0,0,0), this, SPIKER_DAMAGE, false);
+		s1 = Spike_Create(vec, ang, Vector(0,0,0), this, SPIKER_DAMAGE, false);
 		s1->SetParent(this);
 	}
 	
 	if (GetAttachment("arm2", vec, ang)) {
-		s2 =  Spike_Create(vec, ang, Vector(0,0,0), this, SPIKER_DAMAGE, false);
+		s2 = Spike_Create(vec, ang, Vector(0,0,0), this, SPIKER_DAMAGE, false);
 		s2->SetParent(this);
 	}
 	
 	if (GetAttachment("arm3", vec, ang)) {
-		s3 =  Spike_Create(vec, ang, Vector(0,0,0), this, SPIKER_DAMAGE, false);
+		s3 = Spike_Create(vec, ang, Vector(0,0,0), this, SPIKER_DAMAGE, false);
 		s3->SetParent(this);
 	}
 	
 	if (GetAttachment("arm4", vec, ang)) {
-		s4 =  Spike_Create(vec, ang, Vector(0,0,0), this, SPIKER_DAMAGE, false);
+		s4 = Spike_Create(vec, ang, Vector(0,0,0), this, SPIKER_DAMAGE, false);
 		s4->SetParent(this);
 	}
 
@@ -88,7 +88,15 @@ void CSpikerEntity::DetectThink(void) {
 		(ent = sphere.GetCurrentEntity()) != NULL; 
 		sphere.NextEntity()) 
 	{
-		UTIL_TraceLine(GetAbsOrigin(), ent->GetAbsOrigin(), MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+		UTIL_TraceLine
+		(
+			GetAbsOrigin(),
+			ent->GetAbsOrigin(),
+			MASK_SHOT,
+			this,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
 		
 		if (tr.DidHit() && tr.m_pEnt != ent)
 			continue; // something's in the way

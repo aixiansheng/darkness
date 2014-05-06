@@ -1763,11 +1763,8 @@ void CWeaponRPG::StopGuiding( void )
 
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Toggle the guiding laser
-//-----------------------------------------------------------------------------
-void CWeaponRPG::ToggleGuiding( void )
-{
+
+void CWeaponRPG::ToggleGuiding(void) {
 	if ( IsGuiding() ) {
 		StopGuiding();
 	} else {
@@ -1775,19 +1772,11 @@ void CWeaponRPG::ToggleGuiding( void )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CWeaponRPG::Drop( const Vector &vecVelocity )
-{
-	StopGuiding();
 
-	BaseClass::Drop( vecVelocity );
+void CWeaponRPG::Drop(const Vector &vecVelocity) {
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
+
 void CWeaponRPG::UpdateLaserPosition( Vector vecMuzzlePos, Vector vecEndPos )
 {
 

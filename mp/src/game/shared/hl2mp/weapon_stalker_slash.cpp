@@ -80,7 +80,7 @@ bool CWeaponStalkerSlash::Deploy(void) {
 void CWeaponStalkerSlash::AddViewKick(void) {
 	CBasePlayer *pPlayer  = ToBasePlayer( GetOwner() );
 	
-	if ( pPlayer == NULL )
+	if (pPlayer == NULL)
 		return;
 
 	QAngle punchAng;
@@ -132,8 +132,7 @@ void CWeaponStalkerSlash::HandleAnimEventMeleeHit( animevent_t *pEvent, CBaseCom
 		Vector(-16,-16,-16), Vector(36,36,36), GetDamageForActivity( GetActivity() ), DMG_CLUB, 0.75 );
 	
 	// did I hit someone?
-	if ( pHurt )
-	{
+	if (pHurt) {
 		// play sound
 		WeaponSound( MELEE_HIT );
 
@@ -252,8 +251,8 @@ void CWeaponStalkerSlash::SecondaryAttack(void) {
 	Vector src_right;
 	Vector fwd, right, up;
 	QAngle angles;
-	CSpike *left_spike;
-	CSpike *right_spike;
+	//CSpike *left_spike;
+	//CSpike *right_spike;
 	
 	owner = ToBasePlayer(GetOwner());
 	if (!owner)
@@ -266,10 +265,8 @@ void CWeaponStalkerSlash::SecondaryAttack(void) {
 	VectorAngles(fwd, angles);
 	(void)VectorNormalize(fwd);
 
-	left_spike = Spike_Create(src_left, angles, fwd * STALKER_SPIKE_SPEED, owner, STALKER_SPIKE_DMG, true);
-	right_spike = Spike_Create(src_right, angles, fwd * STALKER_SPIKE_SPEED, owner, STALKER_SPIKE_DMG, true);
-	(void)left_spike;
-	(void)right_spike;
+	(void)Spike_Create(src_left, angles, fwd * STALKER_SPIKE_SPEED, owner, STALKER_SPIKE_DMG, true);
+	(void)Spike_Create(src_right, angles, fwd * STALKER_SPIKE_SPEED, owner, STALKER_SPIKE_DMG, true);
 
 	owner->RemoveAmmo(2, m_iSecondaryAmmoType);
 

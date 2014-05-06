@@ -52,17 +52,35 @@ BEGIN_DATADESC( CGrapplingHook )
  
 END_DATADESC()
 
-CGrapplingHook *CGrapplingHook::HookCreate( const Vector &vecOrigin, const QAngle &angAngles, CBaseEntity *pentOwner ) {
-	CGrapplingHook *pHook = (CGrapplingHook *)CreateEntityByName( "grapple_hook" );
-	UTIL_SetOrigin( pHook, vecOrigin );
-	pHook->SetAbsAngles( angAngles );
+CGrapplingHook *CGrapplingHook::HookCreate(
+	const Vector &vecOrigin,
+	const QAngle &angAngles,
+	CBaseEntity *pentOwner)
+{
+	CGrapplingHook *pHook;
+	CWeaponGrapple *pOwner;
+	CBasePlayer *pPlayer;
+
+	pOwner = (CWeaponGrapple *)pentOwner;
+	if (!pOwner)
+		return NULL;
+
+	pPlayer = ToBasePlayer(pOwner->GetOwner());
+	if (!pPlayer)
+		return NULL;
+
+	pHook = (CGrapplingHook *)CreateEntityByName("grapple_hook");
+	if (!pHook)
+		return NULL;
+
+	UTIL_SetOrigin(pHook, vecOrigin);
+	pHook->SetAbsAngles(angAngles);
 	pHook->Spawn();
  
-	CWeaponGrapple *pOwner = (CWeaponGrapple *)pentOwner;
 	pHook->m_hOwner = pOwner;
-	pHook->SetOwnerEntity( pOwner->GetOwner() );
-	pHook->m_hPlayer = (CBasePlayer *)pOwner->GetOwner();
- 
+	pHook->SetOwnerEntity(pPlayer);
+	pHook->m_hPlayer = pPlayer;
+
 	return pHook;
 }
 
@@ -313,7 +331,7 @@ void CWeaponGrapple::Precache( void ) {
 }
 
 void CWeaponGrapple::PrimaryAttack( void ) {
-	if ( m_hHook != NULL )
+	if (m_hHook)
 		return;
  
 	FireHook();
@@ -331,14 +349,28 @@ void CWeaponGrapple::SecondaryAttack( void ) {
 	if (!p)
 		return;
 	
+	//
+	// exploding kami's shouldn't leave bodies behind
+	//
 	p->ForceNoRagdoll(true);
 
-	ExplosionCreate(GetAbsOrigin(), GetAbsAngles(), GetOwnerEntity(), KAMI_DAMAGE, KAMI_RADIUS,
-		SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, this);
+	//
+	// must ignore the owner to avoid crashes
+	//
+	ExplosionCreate
+	(
+		GetAbsOrigin(),
+		GetAbsAngles(),
+		GetOwnerEntity(),
+		KAMI_DAMAGE,
+		KAMI_RADIUS,
+		SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE,
+		0.0f,
+		this
+	);
 
 	//
-	// sometimes the player won't die from his own explosion
-	// so make sure it happens (maybe the owner cant blow himself up)
+	// manually kill the player since explosion ignored him
 	//
 	if (p->IsAlive()) {
 		p->CommitSuicide(true, true);
@@ -347,9 +379,12 @@ void CWeaponGrapple::SecondaryAttack( void ) {
 #endif
 }
 
+void CWeaponGrapple::Drop(const Vector &vecVelocity) {
+}
+
 bool CWeaponGrapple::Reload( void ) {
-	if ( ( m_bMustReload ) && ( m_flNextPrimaryAttack <= gpGlobals->curtime ) ) {
-		SendWeaponAnim( ACT_VM_RELOAD );
+	if (m_bMustReload && ( m_flNextPrimaryAttack <= gpGlobals->curtime)) {
+		SendWeaponAnim(ACT_VM_RELOAD);
 		m_flNextPrimaryAttack = gpGlobals->curtime + 0.1f;
 		m_bMustReload = false;
 	}
@@ -358,18 +393,22 @@ bool CWeaponGrapple::Reload( void ) {
 }
 
 void CWeaponGrapple::ItemPostFrame( void ) {
-	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+	CBasePlayer *pOwner;
+
+	pOwner = ToBasePlayer(GetOwner());
+	if (!pOwner)
+		return;
  
-	if ( ( pOwner->m_nButtons & IN_ATTACK2 ) && exploder == true ) {
+	if ((pOwner->m_nButtons & IN_ATTACK2) && exploder == true) {
 		SecondaryAttack();
 		return;
 	}
 
-	if ( ( pOwner->m_nButtons & IN_ATTACK ) ) {
-		if ( m_flNextPrimaryAttack < gpGlobals->curtime ) {
+	if (pOwner->m_nButtons & IN_ATTACK) {
+		if (m_flNextPrimaryAttack < gpGlobals->curtime) {
 			PrimaryAttack();
 		}
-	} else if ( m_bMustReload ) {
+	} else if (m_bMustReload) {
 		Reload();
 	}
  
@@ -402,7 +441,7 @@ void CWeaponGrapple::FireHook( void ) {
  
 	pOwner = ToBasePlayer( GetOwner() );
  
-	if (pOwner == NULL)
+	if (!pOwner)
 		return;
  
 #ifndef CLIENT_DLL
@@ -417,8 +456,10 @@ void CWeaponGrapple::FireHook( void ) {
 	VectorAngles(vecAiming, angAiming);
  
 	pHook = CGrapplingHook::HookCreate(vecSrc, angAiming, this);
+	if (!pHook)
+		return;
+
 	pHook->SetAbsVelocity( vecAiming * BOLT_VELOCITY );
- 
 	m_hHook = pHook;
 
 #endif
@@ -436,6 +477,7 @@ bool CWeaponGrapple::Deploy( void ) {
 #ifndef CLIENT_DLL
 	CHL2MP_Player *p;
 	p =  ToHL2MPPlayer(GetOwner());
+
 	if (p && p->GetTeamNumber() == TEAM_SPIDERS && p->m_iClassNumber == CLASS_KAMI_IDX) {
 		exploder = true;
 	}

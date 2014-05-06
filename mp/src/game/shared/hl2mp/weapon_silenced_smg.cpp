@@ -35,6 +35,7 @@ public:
 
 	int		GetMinBurst() { return 3; }
 	int		GetMaxBurst() { return 3; }
+	virtual void Drop(const Vector &vecVelocity);
 
 	virtual void Equip( CBaseCombatCharacter *pOwner );
 	bool	Reload( void );
@@ -113,10 +114,6 @@ void CWeaponSilencedSMG1::Equip( CBaseCombatCharacter *pOwner )
 	BaseClass::Equip( pOwner );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Output : Activity
-//-----------------------------------------------------------------------------
 Activity CWeaponSilencedSMG1::GetPrimaryAttackActivity( void )
 {
 	if ( m_nShotsFired < 2 )
@@ -131,8 +128,9 @@ Activity CWeaponSilencedSMG1::GetPrimaryAttackActivity( void )
 	return ACT_VM_RECOIL3;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+void CWeaponSilencedSMG1::Drop(const Vector &vecVelocity) {
+}
+
 bool CWeaponSilencedSMG1::Reload( void )
 {
 	bool fRet;
@@ -154,9 +152,6 @@ bool CWeaponSilencedSMG1::Reload( void )
 	return fRet;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CWeaponSilencedSMG1::AddViewKick( void )
 {
 	#define	EASY_DAMPEN			0.5f

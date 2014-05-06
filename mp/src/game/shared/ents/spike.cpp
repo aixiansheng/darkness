@@ -31,17 +31,26 @@ void CSpike::SpikeTouch(CBaseEntity *other) {
 	}
 
 	if (other->GetTeamNumber() == TEAM_HUMANS) {
+		CDisablePredictionFiltering pfilter;
+
 		tr = BaseClass::GetTouchTrace();
 		forward = tr.endpos - tr.startpos;
-
-		CDisablePredictionFiltering foo;
 
 		// opt for some fleshy hit sound...
 		// EmitSound(SPIKE_HIT_SOUND);
 
 		SetSolid(SOLID_NONE);
 
-		CTakeDamageInfo info(this, GetOwnerEntity(), GetAbsVelocity(), GetAbsOrigin(), spikeDamage, DMG_SLASH | DMG_ALWAYSGIB);
+		CTakeDamageInfo info
+		(
+			this,
+			GetOwnerEntity(),
+			GetAbsVelocity(),
+			GetAbsOrigin(),
+			spikeDamage,
+			DMG_SLASH | DMG_ALWAYSGIB
+		);
+
 		info.SetAmmoType(GetAmmoDef()->Index("stalker_spike"));
 
 		CalculateMeleeDamageForce(&info, forward, tr.endpos, 0.5f);
@@ -94,16 +103,25 @@ void CSpike::FireAt(Vector v) {
 	SetTouch(&CSpike::SpikeTouch);
 }
 
-CSpike *Spike_Create( const Vector &position, const QAngle &angles, const Vector &velocity, CBaseEntity *pOwner, float damage, bool fire_now) {
-	CSpike *s = (CSpike *)CBaseEntity::Create( "ent_spike", position, angles, pOwner );
-
-	s->spikeDamage = damage;
-
-	if (fire_now) {
-		s->FireAt(velocity);
+CSpike *Spike_Create(
+	const Vector &position,
+	const QAngle &angles,
+	const Vector &velocity,
+	CBaseEntity *pOwner,
+	float damage,
+	bool fire_now)
+{
+	CSpike *spike;
+	
+	spike = (CSpike *)CBaseEntity::Create("ent_spike", position, angles, pOwner);
+	if (spike) {
+		spike->spikeDamage = damage;
+		if (fire_now) {
+			spike->FireAt(velocity);
+		}
 	}
 
-	return s;
+	return spike;
 }
 
 #endif

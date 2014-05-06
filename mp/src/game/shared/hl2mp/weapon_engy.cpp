@@ -84,9 +84,11 @@ CWeaponEngy::CWeaponEngy( void ) {
 	AddEffects(EF_NODRAW);
 	m_flNextItemStatus = 0.0f;
 	m_flNextItemCreation = 0.0f;
+
 #ifndef CLIENT_DLL
 	repaired_total = 0;
 #endif
+
 }
 
 float CWeaponEngy::GetDamageForActivity( Activity hitActivity ) {
@@ -312,12 +314,23 @@ void CWeaponEngy::MakeItem(int idx) {
 
 #ifndef CLIENT_DLL
 
-bool CWeaponEngy::WallStickParams(CHL2MP_Player *player, Vector &position, QAngle &angles, trace_t &tr) {
+bool
+CWeaponEngy::WallStickParams(
+	CHL2MP_Player *player,
+	Vector &position,
+	QAngle &angles,
+	trace_t &tr)
+{
+	CBasePlayer *basePlayer;
 	Vector direction;
 	Vector start;
 	Vector end;
 
-	direction = ToBasePlayer(player)->GetAutoaimVector(0);
+	basePlayer = ToBasePlayer(player);
+	if (!basePlayer)
+		return false;
+
+	direction = basePlayer->GetAutoaimVector(0);
 	start = player->Weapon_ShootPosition();
 	end = start + (direction * ENGY_WELDER_RANGE);
 
@@ -371,7 +384,6 @@ CWeaponEngy::SpawnItem(
 // Secondary attack makes the build menu appear
 //
 void CWeaponEngy::SecondaryAttack(void) {
-	
 	m_flNextSecondaryAttack = gpGlobals->curtime + ENGY_MENU_INTERVAL;
 
 #ifndef CLIENT_DLL
@@ -381,8 +393,8 @@ void CWeaponEngy::SecondaryAttack(void) {
 	if (p) {
 		p->ShowViewPortPanel(PANEL_BUILD, true, NULL);
 	}
-
 #endif
+
 }
 
 void CWeaponEngy::PrimaryAttack(void) {
@@ -392,14 +404,17 @@ void CWeaponEngy::PrimaryAttack(void) {
 	Vector dir;
 	trace_t tr;
 	CBasePlayer *p;
+	CHL2MP_Player *hl2mpPlayer;
 	CBaseEntity *ent;
 	CHumanMateriel *mat;
 	CHL2MP_Player *other;
 	int healAmt = ENGY_HEAL_AMT;
 	int before, after;
+	int last_inc, this_inc;
 
 	p = ToBasePlayer(GetOwner());
-	if (p) {
+	hl2mpPlayer = ToHL2MPPlayer(GetOwner());
+	if (p && hl2mpPlayer) {
 		dir = p->GetAutoaimVector(0);
 		start = p->Weapon_ShootPosition();
 		end = start + (dir * ENGY_WELDER_RANGE);
@@ -420,17 +435,16 @@ void CWeaponEngy::PrimaryAttack(void) {
 				//
 				other = mat->GetCreator();
 				if (other == NULL || other->GetTeamNumber() != GetTeamNumber()) {
-					mat->SetCreator(ToHL2MPPlayer(p));
+					mat->SetCreator(hl2mpPlayer);
 				}
 
 				if (after - before > 0) {
+					last_inc = repaired_total / 300;
 					repaired_total += (after - before);
+					this_inc = repaired_total / 300;
 
-					if (repaired_total % 300 == 0) {
-						other = ToHL2MPPlayer(p);
-						if (other) {
-							other->IncrementFragCount(1);
-						}
+					if (this_inc > last_inc) {
+						hl2mpPlayer->IncrementFragCount(1);
 					}
 				}
 
@@ -445,22 +459,20 @@ void CWeaponEngy::PrimaryAttack(void) {
 					after = other->ArmorValue();
 
 					if (after - before > 0) {
+						last_inc = repaired_total / 300;
 						repaired_total += (after - before);
+						this_inc = repaired_total / 300;
 
-						if (repaired_total % 300 == 0) {
-							other = ToHL2MPPlayer(p);
-							if (other) {
-								other->IncrementFragCount(1);
-							}
+						if (this_inc > last_inc) {
+							hl2mpPlayer->IncrementFragCount(1);
 						}
 					}
 
 					other->RefilAmmo(true);
-
 				}
 			}
 
-			CDisablePredictionFiltering foo;
+			CDisablePredictionFiltering pfilter;
 			DispatchParticleEffect(ENGY_FIX_PARTICLE, tr.endpos + Vector(0,0,5), GetAbsAngles(), ent);
 		}
 	}

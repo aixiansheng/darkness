@@ -30,7 +30,12 @@ void CSpiderMateriel::Spawn(void) {
 	healAmount = DEFAULT_HEAL_AMT;
 
 	RegisterThinkContext(SELF_HEAL_CTX);
-	SetContextThink(&CSpiderMateriel::SelfHealThink, gpGlobals->curtime + SELF_HEAL_INTERVAL, SELF_HEAL_CTX);
+	SetContextThink
+	(
+		&CSpiderMateriel::SelfHealThink,
+		gpGlobals->curtime + SELF_HEAL_INTERVAL,
+		SELF_HEAL_CTX
+	);
 
 	nextNudge = 0.0f;
 }
@@ -50,12 +55,12 @@ void CSpiderMateriel::SetSelfHealAmt(int amt) {
 }
 
 void CSpiderMateriel::Event_Killed(const CTakeDamageInfo &info) {
+	CDisablePredictionFiltering pfilter;
 	Vector dir;
 	Vector origin;
 	Vector traceDir;
 	trace_t tr;
 	int i;
-	CDisablePredictionFiltering foo2;
 
 	origin = WorldSpaceCenter();
 	dir = info.GetDamageForce();
@@ -69,7 +74,16 @@ void CSpiderMateriel::Event_Killed(const CTakeDamageInfo &info) {
 		traceDir.y += random->RandomFloat(-0.1f, 0.1f);
 		traceDir.z += random->RandomFloat(-0.1f, 0.1f);
 
-		UTIL_TraceLine(origin, origin + (dir * 175.0f), MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr);
+		UTIL_TraceLine
+		(
+			origin,
+			origin + (dir * 175.0f),
+			MASK_SOLID_BRUSHONLY,
+			this,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
+
 		if (tr.fraction != 1.0) {
 			UTIL_BloodDecalTrace(&tr, BLOOD_COLOR_RED);
 		}
@@ -88,7 +102,7 @@ void CSpiderMateriel::StartTouch(CBaseEntity *e) {
 	float speed;
 	
 	p = ToHL2MPPlayer(e);
-	if (!p || p->GetTeamNumber() == TEAM_HUMANS || p->m_iClassNumber != CLASS_BREEDER_IDX)
+	if (!p || p->m_iClassNumber != CLASS_BREEDER_IDX)
 		return;
 
 	vel = e->GetAbsVelocity();

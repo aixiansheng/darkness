@@ -74,13 +74,26 @@ void CHumanMateriel::SelfDestructThink(void) {
 //
 void CHumanMateriel::DamagedThink(void) {
 	float hull_height;
+	Vector loc;
 
-	SetNextThink(gpGlobals->curtime + DAMAGED_THINK_INT + random->RandomFloat(-1.0f, 5.0f), DAMAGED_EFFECTS_CTX);
+	SetNextThink
+	(
+		gpGlobals->curtime + DAMAGED_THINK_INT + random->RandomFloat(-1.0f, 5.0f),
+		DAMAGED_EFFECTS_CTX
+	);
 
 	if (active == false) {
 		EmitSound(DAMAGED_EFFECT_SOUND);
 		hull_height = CollisionProp()->OBBMaxs().z;
-		DispatchParticleEffect(DAMAGE_SPARKS_FX, GetAbsOrigin() + Vector(random->RandomFloat(-5.0f, 5.0f), random->RandomFloat(-5.0f, 5.0f), hull_height + 3.0f), GetAbsAngles(), this);
+
+		loc = GetAbsOrigin() + Vector
+		(
+			random->RandomFloat(-5.0f, 5.0f),
+			random->RandomFloat(-5.0f, 5.0f),
+			hull_height + 3.0f
+		);
+
+		DispatchParticleEffect(DAMAGE_SPARKS_FX, loc, GetAbsAngles(), this);
 	}
 }
 

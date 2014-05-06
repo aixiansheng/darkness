@@ -38,6 +38,7 @@ class CExpMineEntity : public CHumanMateriel {
 		void SetupThink(void);
 		void DetectThink(void);
 		void SolidThink(void);
+		virtual void Event_Killed(const CTakeDamageInfo &info);
 
 		Vector endpos;
 		Vector surfaceNorm;

@@ -98,6 +98,9 @@ public:
 	void DropC4OnHit(bool value);
 	void TogglePowerArmor(void);
 
+	void SpeedPenalty(float duration);
+	void SetNormalSpeed(void);
+
 	void NoAttackMotion(void);
 	void AttackMotion(void);
 	CNetworkVar(bool, attackMotion);
@@ -221,6 +224,8 @@ public:
 	
 	void JetOnThink(void);
 	void JetIgniteThink(void);
+
+	virtual void CommitSuicide(bool bExplode = false, bool bForce = false);
 
 	void GuardianArmorRechargeThink(void);
 	void ResetGuardianArmorRecharge(void);

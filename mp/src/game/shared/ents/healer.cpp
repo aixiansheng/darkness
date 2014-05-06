@@ -47,6 +47,7 @@ void CHealerEntity::Spawn(void) {
 
 void CHealerEntity::HealThink(void) {
 	int before, after;
+	int last_inc, this_inc;
 	trace_t tr;
 	CHL2MP_Player *p;
 	CBaseEntity *ent;
@@ -60,13 +61,20 @@ void CHealerEntity::HealThink(void) {
 		(ent = sphere.GetCurrentEntity()) != NULL;
 		sphere.NextEntity())
 	{
-		UTIL_TraceLine(GetAbsOrigin() + Vector(0,0,10), ent->GetAbsOrigin(), MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+		UTIL_TraceLine
+		(
+			GetAbsOrigin() + Vector(0,0,10),
+			ent->GetAbsOrigin(),
+			MASK_SHOT,
+			this,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
 	
 		if (tr.DidHit() && tr.m_pEnt && tr.m_pEnt->edict() != ent->edict())
 			continue;
 
 		p = dynamic_cast<CHL2MP_Player *>(ent);
-
 		if (p && p->GetTeamNumber() == TEAM_SPIDERS) {
 			if (active) {
 				before = p->GetHealth();
@@ -75,13 +83,14 @@ void CHealerEntity::HealThink(void) {
 				p->RefilAmmo(false);
 
 				if (after - before > 0) {
+					last_inc = healed_total / 300;
 					healed_total += (after - before);
+					this_inc = healed_total / 300;
 
 					//
-					// give creator frags for maintaining a useful medipad every 100 pts of healing
+					// give creator frags for maintaining a useful medipad every so often
 					//
-
-					if (healed_total % 100 == 0 && GetCreator() && GetCreator()->GetTeamNumber() == GetTeamNumber()) {
+					if (this_inc > last_inc && GetCreator() && GetCreator()->GetTeamNumber() == GetTeamNumber()) {
 						GetCreator()->IncrementFragCount(1);
 					}
 				}
@@ -93,7 +102,7 @@ void CHealerEntity::HealThink(void) {
 	if (next_gargle < gpGlobals->curtime) {
 		next_gargle = gpGlobals->curtime + HEALER_GARGLE_INTERVAL;
 
-		if (GetParametersForSound( HEALER_GARGLE_SOUND, params, NULL ) == false)
+		if (GetParametersForSound(HEALER_GARGLE_SOUND, params, NULL ) == false)
 			return;
 
 		vecOrigin = GetAbsOrigin();

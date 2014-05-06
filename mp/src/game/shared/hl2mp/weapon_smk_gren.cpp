@@ -57,6 +57,7 @@ public:
 	void	DecrementAmmo( CBaseCombatCharacter *pOwner );
 	void	ItemPostFrame( void );
 
+	virtual void Drop(const Vector &vecVelocity);
 	bool	Deploy( void );
 	bool	Holster( CBaseCombatWeapon *pSwitchingTo = NULL );
 	
@@ -219,10 +220,9 @@ bool CWeaponSmkGren::Holster( CBaseCombatWeapon *pSwitchingTo )
 	return BaseClass::Holster( pSwitchingTo );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Output : Returns true on success, false on failure.
-//-----------------------------------------------------------------------------
+void CWeaponSmkGren::Drop(const Vector &vecVelocity) {
+}
+
 bool CWeaponSmkGren::Reload( void )
 {
 	if ( !HasPrimaryAmmo() )

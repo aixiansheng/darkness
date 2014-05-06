@@ -45,14 +45,23 @@ void CGasserEntity::RechargeThink(void) {
 	a = GetAbsAngles();
 	AngleVectors(a, &v);
 
-
 	v.x += random->RandomFloat(-0.1f, 0.1f);
 	v.y += random->RandomFloat(0.0f, 0.2f);
 	v.z += 10.0f;
 
 	SetNextThink(gpGlobals->curtime + GASSER_RECHARGE_TIME);
 
-	gren = AcidGren_Create(GetAbsOrigin(), a, v * 30, vec3_origin, this, 2.0f, false);
+	gren = AcidGren_Create
+	(
+		GetAbsOrigin(),
+		a,
+		v * 30,
+		vec3_origin,
+		this,
+		2.0f,
+		false
+	);
+
 	if (gren) {
 		gren->SetDamage(GASSER_DPS);
 	}

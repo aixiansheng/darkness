@@ -21,7 +21,9 @@ CEggEntity::CEggEntity() : CSpiderMateriel(&dk_items[ITEM_EGG_IDX]) {
 CEggEntity::~CEggEntity() {
 #ifndef CLIENT_DLL
 	noclip_ents.Purge();
-	UTIL_Remove(spawnpoint);
+	if (spawnpoint) {
+		UTIL_Remove(spawnpoint);
+	}
 #endif
 }
 
@@ -51,12 +53,14 @@ void CEggEntity::Spawn(void) {
 		return;
 
 	noclip_ents.Purge();
-	t->AddSpawnpoint(SpawnPoint());
 
-	spawnpoint->SetAbsOrigin(GetAbsOrigin());
-	spawnpoint->SetAbsAngles(GetAbsAngles());
-	spawnpoint->SetParent(this);
-	spawnpoint->SetCycleEfficiency(0.35f);
+	if (spawnpoint) {
+		t->AddSpawnpoint(spawnpoint);
+		spawnpoint->SetAbsOrigin(GetAbsOrigin());
+		spawnpoint->SetAbsAngles(GetAbsAngles());
+		spawnpoint->SetParent(this);
+		spawnpoint->SetCycleEfficiency(0.35f);
+	}
 
 	SetSequence(LookupSequence("idle"));
 	SetPlaybackRate(1.0f);
@@ -76,12 +80,12 @@ void CEggEntity::Event_Killed(const CTakeDamageInfo &info) {
 	CSoundParameters params;
 
 	t = GetGlobalTeam(TEAM_SPIDERS);
-	if (!t) {
-		Warning("Unable to reclaim Egg points\n");
+	if (!t)
 		return;
-	}
 
-	t->RemoveSpawnpoint(SpawnPoint());
+	if (spawnpoint) {
+		t->RemoveSpawnpoint(spawnpoint);
+	}
 	
 	// BaseClass will reclaim points
 	BaseClass::Event_Killed(info);
@@ -90,7 +94,7 @@ void CEggEntity::Event_Killed(const CTakeDamageInfo &info) {
 void CEggEntity::SpawnSound(void) {
 	CSoundParameters params;
 
-	if ( GetParametersForSound( EGG_SPAWN_PLAYER_SOUND, params, NULL ) == false )
+	if (GetParametersForSound(EGG_SPAWN_PLAYER_SOUND, params, NULL) == false)
 		return;
 
 	Vector vecOrigin = GetAbsOrigin();

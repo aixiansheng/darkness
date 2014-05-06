@@ -44,10 +44,12 @@ CMSLTurretHead::~CMSLTurretHead() {}
 
 CSeekerMissile::CSeekerMissile() {}
 CSeekerMissile::~CSeekerMissile() {
+
 #ifndef CLIENT_DLL
 	StopSound(SEEKER_MISSILE_SOUND);
 	StopParticleEffects(this);
 #endif
+
 }
 
 
@@ -77,15 +79,17 @@ void CMSLTurretEntity::Spawn(void) {
 	//SetSolid(SOLID_VPHYSICS);
 	//SetCollisionGroup(COLLISION_GROUP_PLAYER);
 	
-	turretHead = (CMSLTurretHead *) CreateEntityByName("msl_turret_head");
-	turretHead->SetAbsOrigin(GetAbsOrigin() + Vector(0,0,12));
-	turretHead->SetAbsAngles(vec3_angle);
-	turretHead->SetParent(this);
-	turretHead->ChangeTeam(TEAM_HUMANS);
-	DispatchSpawn(turretHead);
+	turretHead = (CMSLTurretHead *)CreateEntityByName("msl_turret_head");
+	if (turretHead) {
+		turretHead->SetAbsOrigin(GetAbsOrigin() + Vector(0,0,12));
+		turretHead->SetAbsAngles(vec3_angle);
+		turretHead->SetParent(this);
+		turretHead->ChangeTeam(TEAM_HUMANS);
+		DispatchSpawn(turretHead);
 
-	SetThink(&CMSLTurretEntity::DetectThink);
-	SetNextThink(gpGlobals->curtime + MSL_TURRET_DETECT_INTERVAL);
+		SetThink(&CMSLTurretEntity::DetectThink);
+		SetNextThink(gpGlobals->curtime + MSL_TURRET_DETECT_INTERVAL);
+	}
 }
 
 void CMSLTurretEntity::DetectThink(void) {
@@ -99,14 +103,26 @@ void CMSLTurretEntity::DetectThink(void) {
 			(ent = sphere.GetCurrentEntity()) != NULL; 
 			sphere.NextEntity()) 
 		{
-			UTIL_TraceLine(GetAbsOrigin(), ent->GetAbsOrigin(), MASK_SOLID, this, COLLISION_GROUP_NONE, &tr);
+			UTIL_TraceLine
+			(
+				GetAbsOrigin(),
+				ent->GetAbsOrigin(),
+				MASK_SOLID,
+				this,
+				COLLISION_GROUP_NONE,
+				&tr
+			);
 		
-			if (tr.DidHit()) {
+			if (tr.DidHit() && tr.m_pEnt) {
 
-				if (tr.m_pEnt->IsPlayer() && tr.m_pEnt->GetTeamNumber() == TEAM_SPIDERS && tr.m_pEnt->IsAlive()) {
+				if (tr.m_pEnt->IsPlayer() && 
+					tr.m_pEnt->GetTeamNumber() == TEAM_SPIDERS && 
+					tr.m_pEnt->IsAlive()) {
+
 					// do somethinf about the target
 					turretHead->PossibleTarget(tr.m_pEnt);
 					//Warning("Aiming At Target\n");
+
 				}
 			}
 		}
@@ -256,8 +272,7 @@ bool CMSLTurretHead::RotateToAngles( const QAngle &angles, float *pDistX, float 
 	//
 	SetLocalAngles(QAngle(GetLocalAngles().x + distX, GetLocalAngles().y + distY, 0.0f));
 
-	if ( pDistX && pDistY )
-	{
+	if (pDistX && pDistY) {
 		*pDistX = distX;
 		*pDistY = distY;
 	}
@@ -294,7 +309,7 @@ QAngle CMSLTurretHead::AimBarrelAt(const Vector &parentTarget) {
 
 		float targetToCenterPitch = atan2( target.z, sqrt( quadTargetXY ) );
 		float centerToGunPitch = atan2( -m_barrelPos.z, sqrt( quadTarget - (m_barrelPos.z*m_barrelPos.z) ) );
-		return QAngle( -RAD2DEG(targetToCenterPitch+centerToGunPitch), RAD2DEG( targetToCenterYaw + centerToGunYaw ), 0 );
+		return QAngle(-RAD2DEG(targetToCenterPitch+centerToGunPitch), RAD2DEG( targetToCenterYaw + centerToGunYaw ), 0);
 	}
 }
 
@@ -335,7 +350,7 @@ void CMSLTurretHead::ShootAt(CBaseEntity *ent) {
 	Vector dir;
 	Vector endpos;
 	Vector shootpos;
-
+	CSeekerMissile *msl;
 	trace_t tr;
 
 	m_flNextFireTime = gpGlobals->curtime + MSL_TURRET_SHOT_DELAY;
@@ -345,7 +360,7 @@ void CMSLTurretHead::ShootAt(CBaseEntity *ent) {
 	dir = endpos - shootpos;
 
 	UTIL_TraceLine(shootpos, endpos, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
-	if (tr.DidHit()) {
+	if (tr.DidHit() && tr.m_pEnt) {
 		if (tr.m_pEnt != target && 
 			tr.m_pEnt->ClassMatches("msl_turret_head") == false &&
 			tr.m_pEnt->ClassMatches("ent_msl_turret") == false) {
@@ -355,18 +370,16 @@ void CMSLTurretHead::ShootAt(CBaseEntity *ent) {
 
 	(void)VectorNormalize(dir);
 
-	CSeekerMissile *m = (CSeekerMissile *)CBaseEntity::Create("ent_seeker_msl", shootpos, GetAbsAngles(), GetCreator());
-	if (m) {
+	msl = (CSeekerMissile *)CBaseEntity::Create("ent_seeker_msl", shootpos, GetAbsAngles(), GetCreator());
+	if (msl) {
 		dir *= SEEKER_MISSILE_SPEED;
-		m->SetTargetPlayer(ent);
-		m->SetAbsVelocity(dir);
-		// could set abs velocity/angles better
+		msl->SetTargetPlayer(ent);
+		msl->SetAbsVelocity(dir);
 	}
 
 	EmitSound(MSL_TURRET_FIRE_SND);
 
 	//DebugDrawLine(GetAbsOrigin(), ent->BodyTarget(GetAbsOrigin(), false), 255, 0, 0, false, 0.5f);
-
 }
 
 void CMSLTurretHead::UpdateMatrix(void) {
@@ -385,7 +398,6 @@ void CMSLTurretHead::TrackTargetThink(void) {
 	Vector toTarget;
 
 	SetNextThink(gpGlobals->curtime + MSL_HAVE_TARGET_INTERVAL);
-	
 	SetLocalAngularVelocity(vec3_angle);
 
 	if (target == NULL) {
@@ -424,8 +436,6 @@ void CSeekerMissile::Spawn(void) {
 
 	SetMoveType(MOVETYPE_FLY);
 	SetModel(SEEKER_MISSILE_MODEL);
-
-	
 
 	AddEffects(EF_NOSHADOW);
 
@@ -478,7 +488,7 @@ void CSeekerMissile::SeekThink(void) {
     SetNextThink( gpGlobals->curtime );
 
     if (IsSimulatingOnAlternateTicks())
-            flHomingSpeed *= 2;
+		flHomingSpeed *= 2;
 
     VectorSubtract(targetPos, origin, vTargetDir);
     flDist = VectorNormalize(vTargetDir);
@@ -488,16 +498,16 @@ void CSeekerMissile::SeekThink(void) {
     vNewVelocity = vDir;
 
     if (gpGlobals->frametime > 0.0f) {
-            if (flSpeed != 0) {
-                    vNewVelocity = ( flHomingSpeed * vTargetDir ) + ( ( 1 - flHomingSpeed ) * vDir );
+        if (flSpeed != 0) {
+            vNewVelocity = ( flHomingSpeed * vTargetDir ) + ( ( 1 - flHomingSpeed ) * vDir );
 
-                    // This computation may happen to cancel itself out exactly. If so, slam to targetdir.
-                    if ( VectorNormalize( vNewVelocity ) < 1e-3 ) {
-                            vNewVelocity = (flDist != 0) ? vTargetDir : vDir;
-                    }
-            } else {
-                    vNewVelocity = vTargetDir;
+            // This computation may happen to cancel itself out exactly. If so, slam to targetdir.
+            if ( VectorNormalize( vNewVelocity ) < 1e-3 ) {
+                vNewVelocity = (flDist != 0) ? vTargetDir : vDir;
             }
+        } else {
+            vNewVelocity = vTargetDir;
+        }
     }
 
     
@@ -530,15 +540,23 @@ void CSeekerMissile::MissileTouch(CBaseEntity *other) {
 
 		SetSolid(SOLID_NONE);
 
-		//CTakeDamageInfo info(GetContainingEntity(INDEXENT(0)), GetParent(), GetAbsVelocity(), GetAbsOrigin(), SEEKER_MISSILE_DMG, DMG_BULLET | DMG_ALWAYSGIB);
-		CTakeDamageInfo info(this, GetOwnerEntity(), GetAbsVelocity(), GetAbsOrigin(), SEEKER_MISSILE_DMG, DMG_BULLET | DMG_ALWAYSGIB);
+		CTakeDamageInfo info
+		(
+			this,
+			GetOwnerEntity(),
+			GetAbsVelocity(),
+			GetAbsOrigin(),
+			SEEKER_MISSILE_DMG,
+			DMG_BULLET | DMG_ALWAYSGIB
+		);
+
 		info.SetAmmoType(GetAmmoDef()->Index("turret_missile"));
 
 		other->DispatchTraceAttack(info, forward, &tr);
 		ApplyMultiDamage();
 
 		
-		UTIL_Remove( this );
+		UTIL_Remove(this);
 		return;
 	}
 

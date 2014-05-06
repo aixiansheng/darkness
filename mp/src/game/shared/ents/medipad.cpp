@@ -59,6 +59,7 @@ void CMedipadEntity::InputToggle(inputdata_t &input) {
 void CMedipadEntity::HealThink(void) {
 	int i;
 	int before, after;
+	int last_inc, this_inc;
 	trace_t tr;
 	CHL2MP_Player *p;
 	EHANDLE ent;
@@ -68,26 +69,26 @@ void CMedipadEntity::HealThink(void) {
 	for (i = 0; i < touching.Count(); i++) {
 		ent = touching[i];
 		p = dynamic_cast<CHL2MP_Player *>(ent.Get());
-
 		if (!ent || !p) {
-
 			touching.Remove(i);
-
 		} else {
-	
 			if (active) {
 				before = p->GetHealth();
 				p->TakeHealth(MEDIPAD_HEAL_VALUE, DMG_GENERIC);
 				after = p->GetHealth();
 
 				if (after - before > 0) {
+					last_inc = healed_total / 300;
 					healed_total += (after - before);
+					this_inc = healed_total / 300;
 
 					//
-					// give creator frags for maintaining a useful medipad every 100 pts of healing
+					// give creator frags for maintaining a useful medipad every so often
 					//
-
-					if (healed_total % 100 == 0 && GetCreator() && GetCreator()->GetTeamNumber() == GetTeamNumber()) {
+					if (this_inc > last_inc &&
+						GetCreator() &&
+						GetCreator()->GetTeamNumber() == GetTeamNumber())
+					{
 						GetCreator()->IncrementFragCount(1);
 					}
 				}
@@ -106,7 +107,9 @@ void CMedipadEntity::StartTouch(CBaseEntity *e) {
 	EHANDLE ent;
 	ent = e;
 
-	if ((p = dynamic_cast<CHL2MP_Player *>(e)) != NULL && p->GetTeamNumber() == GetTeamNumber()) {
+	if ((p = dynamic_cast<CHL2MP_Player *>(e)) != NULL &&
+		p->GetTeamNumber() == GetTeamNumber())
+	{
 		if (touching.Find(ent) == touching.InvalidIndex()) {
 			touching.AddToTail(ent);
 		}

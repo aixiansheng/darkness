@@ -146,7 +146,7 @@ extern HL2MPViewVectors g_HL2MPViewVectors;
 
 #define PLASMA_THINK_CTX			"plasma_think"
 #define PLASMA_RECHARGE_INTERVAL	0.15f
-#define PLASMA_RECHARGE_DELAY		2.5f
+#define PLASMA_RECHARGE_DELAY		1.5f
 #define PLASMA_RECHARGE_MAX_AMT		25
 
 #define HINT_THINK_CTX				"hint_think_ctx"
@@ -158,7 +158,7 @@ extern HL2MPViewVectors g_HL2MPViewVectors;
 #define JET_ON_CTX					"jet_on_think"
 #define JET_ON_INTERVAL				0.1f
 #define EXTERM_JETBURST_SOUND		"Exterm.JetBurst"
-#define JET_BURST_MIN_PLASMA		25
+#define JET_BURST_MIN_PLASMA		20
 
 #define GUARDIAN_SWALLOW_SND		"Guardian.SwallowC4"
 
@@ -170,6 +170,7 @@ extern HL2MPViewVectors g_HL2MPViewVectors;
 #define PLASMA_SHIELD_OFF			"PlasmaShield.Off"
 
 #define PLASMA_SHIELD_CTX			"plasma_shield_ctx"
+#define MAX_SPEED_CTX				"max_speed_ctx"
 
 ConVar dk_team_balance( "dk_team_balance", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "if enabled, players won't be allowed to join a team with too many players" );
 
@@ -224,6 +225,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	RegisterThinkContext(HINT_THINK_CTX);
 	RegisterThinkContext(PLASMA_SHIELD_CTX);
 	RegisterThinkContext(UNDETECT_CTX);
+	RegisterThinkContext(MAX_SPEED_CTX);
 
 	BaseClass::ChangeTeam( 0 );
 }
@@ -233,10 +235,7 @@ void CHL2MP_Player::SwallowC4Sound(void) {
 }
 
 void CHL2MP_Player::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) {
-	if (GetTeamNumber() == TEAM_HUMANS &&
-		m_iClassNumber == CLASS_EXTERMINATOR_IDX &&
-		!IsDead()) {
-
+	if (m_iClassNumber == CLASS_EXTERMINATOR_IDX && !IsDead()) {
 			if (ucmd->buttons & IN_JUMP) {
 				if (!(m_Local.m_nOldButtons & IN_JUMP)) {
 					StartJetPack();
@@ -247,19 +246,7 @@ void CHL2MP_Player::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) {
 				}
 			}
 
-	} 
-	//else if (GetTeamNumber() == TEAM_SPIDERS &&
-	//	m_iClassNumber == CLASS_GUARDIAN_IDX &&
-	//	!IsDead()) {
-
-	//		if (ucmd->buttons & IN_ATTACK2) {
-	//			if (!(m_Local.m_nOldButtons & IN_ATTACK2)) {
-	//				if (next_infestation < gpGlobals->curtime) {
-	//					InfestCorpse();
-	//				}
-	//			}
-	//		}
-	//}
+	}
 
 	BaseClass::PlayerRunCommand(ucmd, moveHelper);
 }
@@ -271,7 +258,12 @@ void CHL2MP_Player::NoAttackMotion(void) {
 void CHL2MP_Player::AttackMotion(void) {
 	attackMotion = true;
 
-	SetContextThink(&CHL2MP_Player::NoAttackMotion, gpGlobals->curtime + GUARDIAN_ATTACK_MOTION_INT, GUARDIAN_ATTACK_MOTION_CTX);
+	SetContextThink
+	(
+		&CHL2MP_Player::NoAttackMotion,
+		gpGlobals->curtime + GUARDIAN_ATTACK_MOTION_INT,
+		GUARDIAN_ATTACK_MOTION_CTX
+	);
 }
 
 void CHL2MP_Player::GuardianArmorRechargeThink(void) {
@@ -282,23 +274,34 @@ void CHL2MP_Player::GuardianArmorRechargeThink(void) {
 	if (IsStopped()) {
 		if (ArmorValue() < maxArmor) {
 			IncrementArmorValue(1, maxArmor);
-			SetNextThink(gpGlobals->curtime + GUARDIAN_ARMOR_RECHARGE_INT, GUARDIAN_ARMOR_CTX);
+			SetNextThink
+			(
+				gpGlobals->curtime + GUARDIAN_ARMOR_RECHARGE_INT,
+				GUARDIAN_ARMOR_CTX
+			);
 		}
 	}
 }
 
 void CHL2MP_Player::ResetGuardianArmorRecharge(void) {
-	if (GetTeamNumber() == TEAM_SPIDERS &&
-		m_iClassNumber == CLASS_GUARDIAN_IDX) {
-			
-			SetContextThink(&CHL2MP_Player::GuardianArmorRechargeThink, gpGlobals->curtime + GUARDIAN_ARMOR_RECHARGE_INT, GUARDIAN_ARMOR_CTX);
-
+	if (m_iClassNumber == CLASS_GUARDIAN_IDX) {
+		SetContextThink
+		(
+			&CHL2MP_Player::GuardianArmorRechargeThink,
+			gpGlobals->curtime + GUARDIAN_ARMOR_RECHARGE_INT,
+			GUARDIAN_ARMOR_CTX
+		);
 	}
 }
 
 void CHL2MP_Player::Detected(void) {
 	shouldDetectGlow = true;
-	SetContextThink(&CHL2MP_Player::UnDetectThink, gpGlobals->curtime + UNDETECT_INT, UNDETECT_CTX);
+	SetContextThink
+	(
+		&CHL2MP_Player::UnDetectThink,
+		gpGlobals->curtime + UNDETECT_INT,
+		UNDETECT_CTX
+	);
 }
 
 void CHL2MP_Player::UnDetectThink(void) {
@@ -310,6 +313,7 @@ void CHL2MP_Player::UnDetectThink(void) {
 void CHL2MP_Player::InfestCorpse(void) {
 	CInfestedCorpse *c;
 	CRagdollProp *raggy;
+	CBasePlayer *p;
 	Vector dir;
 	Vector start;
 	Vector end;
@@ -319,7 +323,11 @@ void CHL2MP_Player::InfestCorpse(void) {
 
 	next_infestation = gpGlobals->curtime + GUARDIAN_INFESTATION_INTERVAL;
 
-	dir = ToBasePlayer(this)->GetAutoaimVector(0);
+	p = ToBasePlayer(this);
+	if (!p)
+		return;
+
+	dir = p->GetAutoaimVector(0);
 	start = Weapon_ShootPosition();
 	end = start + (dir * INFEST_CORPSE_RANGE);
 
@@ -347,7 +355,12 @@ void CHL2MP_Player::InfestCorpse(void) {
 }
 
 void CHL2MP_Player::StartJetPack(void) {
-	SetContextThink(&CHL2MP_Player::JetIgniteThink, gpGlobals->curtime + JET_IGNITE_DELAY, JET_IGNITE_CTX);
+	SetContextThink
+	(
+		&CHL2MP_Player::JetIgniteThink,
+		gpGlobals->curtime + JET_IGNITE_DELAY,
+		JET_IGNITE_CTX
+	);
 }
 
 void CHL2MP_Player::StopJetPack(void) {
@@ -360,11 +373,23 @@ void CHL2MP_Player::StopJetPack(void) {
 
 void CHL2MP_Player::JetIgniteThink(void) {
 	if (PlasmaReady()) {
+		CDisablePredictionFiltering pfilter;
 		jetpack_on = true;
-		SetContextThink(&CHL2MP_Player::JetOnThink, gpGlobals->curtime + JET_ON_INTERVAL, JET_ON_CTX);
 
-		CDisablePredictionFiltering foo2;
-		DispatchParticleEffect(JETPACK_PARTICLES, GetAbsOrigin() + Vector(0,0,32), GetAbsAngles(), this);
+		SetContextThink
+		(
+			&CHL2MP_Player::JetOnThink,
+			gpGlobals->curtime + JET_ON_INTERVAL,
+			JET_ON_CTX
+		);
+
+		DispatchParticleEffect
+		(
+			JETPACK_PARTICLES,
+			GetAbsOrigin() + Vector(0,0,32),
+			GetAbsAngles(),
+			this
+		);
 	}
 }
 
@@ -378,6 +403,7 @@ void CHL2MP_Player::JetOnThink(void) {
 	EmitSound_t ep;
 
 	if (PlasmaReady() && GetAmmoCount(plasma_ammo_type) >= JET_BURST_MIN_PLASMA) {
+		CDisablePredictionFiltering pfilter;
 
 		if (GetParametersForSound( EXTERM_JETBURST_SOUND, params, NULL )) {
 			origin = GetAbsOrigin();
@@ -395,13 +421,17 @@ void CHL2MP_Player::JetOnThink(void) {
 			EmitSound( filter, entindex(), ep );
 		}
 
-		CDisablePredictionFiltering foo2;
-		DispatchParticleEffect(JETPACK_PARTICLES, GetAbsOrigin() + Vector(0,0,32), GetAbsAngles(), this);
+		
+		DispatchParticleEffect
+		(
+			JETPACK_PARTICLES,
+			GetAbsOrigin() + Vector(0,0,32),
+			GetAbsAngles(),
+			this
+		);
 
 		RemoveAmmo(JET_BURST_MIN_PLASMA, plasma_ammo_type);
-
 		SetNextThink(gpGlobals->curtime + JET_ON_INTERVAL, JET_ON_CTX);
-
 		SendPowerArmorUpdate();
 
 	} else {
@@ -431,7 +461,12 @@ void CHL2MP_Player::RegularRecharge(void) {
 	if (plasma_ready == true) {
 		recharge_mul = 0;
 		recharge_start = gpGlobals->curtime;
-		SetContextThink(&CHL2MP_Player::RechargeThink, gpGlobals->curtime + PLASMA_RECHARGE_DELAY, PLASMA_THINK_CTX);
+		SetContextThink
+		(
+			&CHL2MP_Player::RechargeThink,
+			gpGlobals->curtime + PLASMA_RECHARGE_DELAY,
+			PLASMA_THINK_CTX
+		);
 	}
 
 	SendPowerArmorUpdate();
@@ -459,7 +494,7 @@ void CHL2MP_Player::RechargeThink(void) {
 
 	if (jetpack_on == false) {
 
-		x = 1.5f * (gpGlobals->curtime - recharge_start);
+		x = 1.7f * (gpGlobals->curtime - recharge_start);
 		x = clamp(x, 0, PLASMA_RECHARGE_MAX_AMT);
 
 		CBasePlayer::GiveAmmo(x, plasma_ammo_type, true);
@@ -498,10 +533,23 @@ void CHL2MP_Player::DisablePlasma(bool dmg) {
 	SetAmmoCount(0, plasma_ammo_type);
 	plasma_ready = false;
 	if (dmg) {
-		SetContextThink(&CHL2MP_Player::RechargeThink, gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 7.0f, PLASMA_THINK_CTX);
+
+		SetContextThink
+		(
+			&CHL2MP_Player::RechargeThink,
+			gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 7.0f,
+			PLASMA_THINK_CTX
+		);
+
 		plasma_recovering = true;
+
 	} else {
-		SetContextThink(&CHL2MP_Player::RechargeThink, gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 3.0f, PLASMA_THINK_CTX);
+		SetContextThink
+		(
+			&CHL2MP_Player::RechargeThink,
+			gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 3.0f,
+			PLASMA_THINK_CTX
+		);
 	}
 	
 	SendPowerArmorUpdate();
@@ -533,7 +581,7 @@ void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
 		dmg = info.GetDamage();
 
 		if (PlasmaReady() && powerArmorEnabled) {
-			CDisablePredictionFiltering foo;
+			CDisablePredictionFiltering pfilter;
 
 			if (dmg > (float)initial_plasma) {
 				//
@@ -562,9 +610,16 @@ void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
 
 			EmitSound(XT_PLASMA_HIT);
 		
-			UTIL_ScreenFade( this, blue, 0.2, 0.3, FFADE_MODULATE );
-			m_Local.m_vecPunchAngle.SetX( RandomFloat( -3, -10 ) );
-			DispatchParticleEffect(JETPACK_SPARK, GetAbsOrigin() + Vector(0,0,32), GetAbsAngles(), this);
+			UTIL_ScreenFade(this, blue, 0.2, 0.3, FFADE_MODULATE);
+			m_Local.m_vecPunchAngle.SetX(RandomFloat( -3, -10 ));
+
+			DispatchParticleEffect
+			(
+				JETPACK_SPARK,
+				GetAbsOrigin() + Vector(0,0,32),
+				GetAbsAngles(),
+				this
+			);
 			
 			flashed = true;
 		}
@@ -582,7 +637,6 @@ void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
 	}
 
 	armor_bonus = DEFAULT_ARMOR_BONUS;
-
 	armor -= armor_bonus * dmg;
 
 	if (armor > 0) {
@@ -592,7 +646,6 @@ void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
 		info.SetDamage(armor * -1.0f);
 		SetArmorValue(0);
 	}
-
 }
 
 int CHL2MP_Player::PlasmaCharge(void) {
@@ -647,16 +700,15 @@ void CHL2MP_Player::SendPowerArmorUpdate(void) {
 	else
 		val = 0;
 
-	if (GetTeamNumber() == TEAM_HUMANS &&
-		(m_iClassNumber == CLASS_ENGINEER_IDX ||
-		m_iClassNumber == CLASS_EXTERMINATOR_IDX)) {
+	if (m_iClassNumber == CLASS_ENGINEER_IDX ||
+		m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
 
 		CSingleUserRecipientFilter user(this);
 		user.MakeReliable();
 
 		if (usermessages->LookupUserMessage( "Battery" ) != -1) {
 			UserMessageBegin(user, "Battery" );
-					WRITE_SHORT(val);
+				WRITE_SHORT(val);
 			MessageEnd();
 		}
 
@@ -665,11 +717,10 @@ void CHL2MP_Player::SendPowerArmorUpdate(void) {
 
 void CHL2MP_Player::TogglePowerArmor(void) {
 	
-	if (GetTeamNumber() == TEAM_HUMANS &&
-		(m_iClassNumber == CLASS_ENGINEER_IDX ||
-		m_iClassNumber == CLASS_EXTERMINATOR_IDX)) {
+	if (m_iClassNumber == CLASS_ENGINEER_IDX ||
+		m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
 
-		CDisablePredictionFiltering foo;
+		CDisablePredictionFiltering pfilter;
 
 		if (powerArmorEnabled) {
 			EmitSound(PLASMA_SHIELD_OFF);
@@ -681,6 +732,7 @@ void CHL2MP_Player::TogglePowerArmor(void) {
 
 		SendPowerArmorUpdate();
 	}
+
 }
 
 void CHL2MP_Player::AddPlayerPoints(int i) {
@@ -689,6 +741,7 @@ void CHL2MP_Player::AddPlayerPoints(int i) {
 		m_iPlayerPoints = MAX_PLAYER_POINTS;
 
 	CSingleUserRecipientFilter user(this);
+
 	UserMessageBegin(user, "Points");
 		WRITE_BYTE((unsigned char)m_iPlayerPoints);
 	MessageEnd();
@@ -700,6 +753,7 @@ void CHL2MP_Player::SubtractPlayerPoints(int i) {
 		m_iPlayerPoints = 0;
 
 	CSingleUserRecipientFilter user(this);
+
 	UserMessageBegin(user, "Points");
 		WRITE_BYTE((unsigned char)m_iPlayerPoints);
 	MessageEnd();
@@ -769,41 +823,8 @@ void CHL2MP_Player::Precache( void )
 
 }
 
-void CHL2MP_Player::GiveAllItems( void )
-{
+void CHL2MP_Player::GiveAllItems(void) {
 	EquipSuit(false);
-
-	CBasePlayer::GiveAmmo( 255,	"Pistol");
-	CBasePlayer::GiveAmmo( 255,	"AR2" );
-	CBasePlayer::GiveAmmo( 5,	"AR2AltFire" );
-	CBasePlayer::GiveAmmo( 255,	"SMG1");
-	CBasePlayer::GiveAmmo( 1,	"smg1_grenade");
-	CBasePlayer::GiveAmmo( 255,	"Buckshot");
-	CBasePlayer::GiveAmmo( 32,	"357" );
-	CBasePlayer::GiveAmmo( 3,	"rpg_round");
-
-	CBasePlayer::GiveAmmo( 1,	"grenade" );
-	CBasePlayer::GiveAmmo( 2,	"slam" );
-
-	GiveNamedItem( "weapon_crowbar" );
-	GiveNamedItem( "weapon_stunstick" );
-	GiveNamedItem( "weapon_pistol" );
-	GiveNamedItem( "weapon_357" );
-
-	GiveNamedItem( "weapon_smg1" );
-	GiveNamedItem( "weapon_ar2" );
-	
-	GiveNamedItem( "weapon_shotgun" );
-	GiveNamedItem( "weapon_frag" );
-	
-	GiveNamedItem( "weapon_crossbow" );
-	
-	GiveNamedItem( "weapon_rpg" );
-
-	GiveNamedItem( "weapon_slam" );
-
-	GiveNamedItem( "weapon_physcannon" );
-	
 }
 
 #define GRENADE_REFIL_TIMEOUT 20.0f
@@ -832,7 +853,12 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 			m_flNextRefilTime = gpGlobals->curtime + GRENADE_REFIL_TIMEOUT;
 
 			if (Q_strcmp(dk_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
-				CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type, true);
+				CBasePlayer::GiveAmmo
+				(
+					dk_classes[m_iClassNumber].max_grenades,
+					dk_classes[m_iClassNumber].grenade_type,
+					true
+				);
 		}
 
 		break;
@@ -865,7 +891,11 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 				m_flNextRefilTime = gpGlobals->curtime + GRENADE_REFIL_TIMEOUT;
 
 				if (Q_strcmp(dk_classes[m_iClassNumber].grenade_type, GRENADE_NULL))
-					CBasePlayer::GiveAmmo(dk_classes[m_iClassNumber].max_grenades, dk_classes[m_iClassNumber].grenade_type);
+					CBasePlayer::GiveAmmo
+					(
+						dk_classes[m_iClassNumber].max_grenades,
+						dk_classes[m_iClassNumber].grenade_type
+					);
 
 				// shock trooper's extra shells are special :)
 				if (m_iClassNumber == CLASS_SHOCK_IDX) {
@@ -974,7 +1004,6 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 
 		// give commando C4
 		if (m_iClassNumber == CLASS_COMMANDO_IDX) {
-			//CBasePlayer::GiveAmmo(1, "grenade_c4");
 			GiveNamedItem("weapon_c4");
 			spec_weapon = Weapon_OwnsThisType("weapon_c4");
 		}
@@ -1110,7 +1139,12 @@ void CHL2MP_Player::Spawn(void)
 	if (!IsObserver() && IsAlive()) {
 		if (num_hints < 3) {
 			num_hints++;
-			SetContextThink(&CHL2MP_Player::ShowHelpHint, gpGlobals->curtime + HINT_THINK_DELAY, HINT_THINK_CTX);
+			SetContextThink
+			(
+				&CHL2MP_Player::ShowHelpHint,
+				gpGlobals->curtime + HINT_THINK_DELAY,
+				HINT_THINK_CTX
+			);
 		}
 
 	
@@ -1140,11 +1174,19 @@ void CHL2MP_Player::Spawn(void)
 
 	hatchy_ammo_type = GetAmmoDef()->Index("hatchy_slash");
 
-	spawnNumber++;
+	if (spawnNumber == 256)
+		spawnNumber = 0;
+	else
+		spawnNumber++;
 }
 
 void CHL2MP_Player::SpawnHackPowerArmorUpdateThink(void) {
-	SetContextThink(&CHL2MP_Player::SendPowerArmorUpdate, gpGlobals->curtime + 0.1f, PLASMA_SHIELD_CTX);
+	SetContextThink
+	(
+		&CHL2MP_Player::SendPowerArmorUpdate,
+		gpGlobals->curtime + 0.1f,
+		PLASMA_SHIELD_CTX
+	);
 }
 
 void CHL2MP_Player::ShowHelpHint(void) {
@@ -1152,67 +1194,62 @@ void CHL2MP_Player::ShowHelpHint(void) {
 }
 
 void CHL2MP_Player::ShowDetailedHint(void) {
-	int team = GetTeamNumber();
+	CBasePlayer *player;
 	const char *hint = NULL;
 
-	if (team == TEAM_SPIDERS) {
-		switch (m_iClassNumber) {
-		case CLASS_BREEDER_IDX:
-			hint = "#DK_Hint_ClassBreeder";
-			break;
-		case CLASS_HATCHY_IDX:
-			hint = "#DK_Hint_ClassHatchy";
-			break;
-		case CLASS_DRONE_IDX:
-			hint = "#DK_Hint_ClassDrone";
-			break;
-		case CLASS_KAMI_IDX:
-			hint = "#DK_Hint_ClassKami";
-			break;
-		case CLASS_STINGER_IDX:
-			hint = "#DK_Hint_ClassStinger";
-			break;
-		case CLASS_GUARDIAN_IDX:
-			hint = "#DK_Hint_ClassGuardian";
-			break;
-		case CLASS_STALKER_IDX:
-			hint = "#DK_Hint_ClassStalker";
-			break;
-		default:
-			Warning("No Such Spider Class!\n");
-		}
-	} else if (team == TEAM_HUMANS) {
-		switch (m_iClassNumber) {
-		case CLASS_ENGINEER_IDX:
-			hint = "#DK_Hint_ClassEngy";
-			break;
-		case CLASS_GRUNT_IDX:
-			hint = "#DK_Hint_ClassGrunt";
-			break;
-		case CLASS_SHOCK_IDX:
-			hint = "#DK_Hint_ClassShock";
-			break;
-		case CLASS_HEAVY_IDX:
-			hint = "#DK_Hint_ClassHeavy";
-			break;
-		case CLASS_COMMANDO_IDX:
-			hint = "#DK_Hint_ClassCommando";
-			break;
-		case CLASS_EXTERMINATOR_IDX:
-			hint = "#DK_Hint_ClassExterm";
-			break;
-		case CLASS_MECH_IDX:
-			hint = "#DK_Hint_ClassMech";
-			break;
-		default:
-			Warning("No Such Human Class\n");
-		}
-	} else {
-		Warning("Bad Team, Couldn't select Hint\n");
+	player = ToBasePlayer(this);
+	if (!player)
+		return;
+
+	switch (m_iClassNumber) {
+	case CLASS_BREEDER_IDX:
+		hint = "#DK_Hint_ClassBreeder";
+		break;
+	case CLASS_HATCHY_IDX:
+		hint = "#DK_Hint_ClassHatchy";
+		break;
+	case CLASS_DRONE_IDX:
+		hint = "#DK_Hint_ClassDrone";
+		break;
+	case CLASS_KAMI_IDX:
+		hint = "#DK_Hint_ClassKami";
+		break;
+	case CLASS_STINGER_IDX:
+		hint = "#DK_Hint_ClassStinger";
+		break;
+	case CLASS_GUARDIAN_IDX:
+		hint = "#DK_Hint_ClassGuardian";
+		break;
+	case CLASS_STALKER_IDX:
+		hint = "#DK_Hint_ClassStalker";
+		break;
+	case CLASS_ENGINEER_IDX:
+		hint = "#DK_Hint_ClassEngy";
+		break;
+	case CLASS_GRUNT_IDX:
+		hint = "#DK_Hint_ClassGrunt";
+		break;
+	case CLASS_SHOCK_IDX:
+		hint = "#DK_Hint_ClassShock";
+		break;
+	case CLASS_HEAVY_IDX:
+		hint = "#DK_Hint_ClassHeavy";
+		break;
+	case CLASS_COMMANDO_IDX:
+		hint = "#DK_Hint_ClassCommando";
+		break;
+	case CLASS_EXTERMINATOR_IDX:
+		hint = "#DK_Hint_ClassExterm";
+		break;
+	case CLASS_MECH_IDX:
+		hint = "#DK_Hint_ClassMech";
+		break;
+	default:
+		Warning("No Such Class\n");
 	}
 
 	if (hint) {
-		UTIL_HudHintText(ToBasePlayer(this), hint);
+		UTIL_HudHintText(player, hint);
 	}
 }
 
@@ -1245,7 +1282,6 @@ void CHL2MP_Player::MovementThink(void) {
 		SetContextThink(NULL, 0, GUARDIAN_ARMOR_CTX);
 
 		if (stopped == true) {
-
 			stopped = false;
 			stoppedTicks = 0;
 		}
@@ -1257,9 +1293,8 @@ void CHL2MP_Player::MovementThink(void) {
 	//
 
 	if (stopped && attackMotion == false) {
-
 		if (m_nSkin == 0) {
-			if (GetTeamNumber() == TEAM_SPIDERS && m_iClassNumber == CLASS_GUARDIAN_IDX) {
+			if (m_iClassNumber == CLASS_GUARDIAN_IDX) {
 				m_nSkin = 1;
 				UserMessageBegin(user, "GuardianHide");
 					WRITE_BYTE((unsigned char)true);
@@ -1268,11 +1303,9 @@ void CHL2MP_Player::MovementThink(void) {
 
 			ResetGuardianArmorRecharge();
 		}
-
 	} else {
-
 		if (m_nSkin == 1) {
-			if (GetTeamNumber() == TEAM_SPIDERS && m_iClassNumber == CLASS_GUARDIAN_IDX) {
+			if (m_iClassNumber == CLASS_GUARDIAN_IDX) {
 				m_nSkin = 0;
 
 				UserMessageBegin(user, "GuardianHide");
@@ -1280,7 +1313,6 @@ void CHL2MP_Player::MovementThink(void) {
 				MessageEnd();
 			}
 		}
-
 	}
 }
 
@@ -1294,10 +1326,9 @@ void CHL2MP_Player::Slash(CBaseEntity *other, bool force) {
 	Vector endpos;
 	CTeleporterEntity *tele;
 
-	if (other->GetTeamNumber() == TEAM_HUMANS) {
+	if (other && other->GetTeamNumber() == TEAM_HUMANS) {
 		if (m_flNextHitTime < gpGlobals->curtime) {
-
-			CDisablePredictionFiltering foo;
+			CDisablePredictionFiltering pfilter;
 
 			m_flNextHitTime =  gpGlobals->curtime + HATCHY_HIT_RATE;
 
@@ -1325,7 +1356,6 @@ void CHL2MP_Player::Slash(CBaseEntity *other, bool force) {
 			ApplyMultiDamage();
 		}
 	}
-	
 }
 
 void CHL2MP_Player::StartTouch(CBaseEntity *other) {
@@ -1350,9 +1380,14 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 
 	otherTeam = other->GetTeamNumber();
 
-	if (other->IsPlayer() && IsAlive()) {
+	if (other->IsPlayer() && IsAlive() && other->IsAlive()) {
 		vel = GetAbsVelocity();
 
+		//
+		// stalkers/mechs crush players they stand on
+		// check to see if the touching entity is this
+		// player's GroundEntity :)
+		//
 		if (other == GetGroundEntity()) {
 		
 			if (otherTeam == TEAM_HUMANS &&
@@ -1364,11 +1399,6 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 				m_iClassNumber != CLASS_MECH_IDX) {
 					return;
 			}
-
-				
-			//
-			// stalkers/mechs crush players they stand on
-			//
 
 			ClearMultiDamage();
 			CTakeDamageInfo dmg(this, this, 1500, DMG_CRUSH);
@@ -1383,12 +1413,12 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 		// mechs crush hatchies and kamis they "step on"
 		// this means:
 		// - they are trying to walk toward the spider
-		// - (they are touching the spider)
+		// - they are touching the spider
 		// - the spider is on the ground
 		// - the mech is on the ground
 		//
 
-		if (!(p = ToHL2MPPlayer(other)))
+		if ((p = ToHL2MPPlayer(other)) == NULL)
 			return;
 
 		if (p->m_iClassNumber != CLASS_HATCHY_IDX &&
@@ -1399,7 +1429,7 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 			return;
 
 		//
-		// technically, if the mech is not moving
+		// technically, if the mech is blocked/not moving
 		// we'll fail to stomp the hatchy, but that
 		// won't happen often
 		//
@@ -1415,11 +1445,14 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 
 	}
 
-	if (other->GetMoveType() != MOVETYPE_VPHYSICS || other->GetSolid() != SOLID_VPHYSICS || (other->GetSolidFlags() & FSOLID_TRIGGER))
+	if (other->GetMoveType() != MOVETYPE_VPHYSICS ||
+		other->GetSolid() != SOLID_VPHYSICS ||
+		(other->GetSolidFlags() & FSOLID_TRIGGER)) {
 		return;
+	}
 
 	IPhysicsObject *pPhys = other->VPhysicsGetObject();
-	if ( !pPhys || !pPhys->IsMoveable() )
+	if (!pPhys || !pPhys->IsMoveable())
 		return;
 
 	SetTouchedPhysics( true );
@@ -1493,10 +1526,9 @@ void CHL2MP_Player::ResetAnimation( void )
 
 bool CHL2MP_Player::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex )
 {
-	bool bRet = BaseClass::Weapon_Switch( pWeapon, viewmodelindex );
+	bool bRet = BaseClass::Weapon_Switch(pWeapon, viewmodelindex);
 
-	if ( bRet == true )
-	{
+	if (bRet == true) {
 		ResetAnimation();
 	}
 
@@ -1584,7 +1616,7 @@ void CHL2MP_Player::PlayerDeathThink()
 	}
 }
 
-void CHL2MP_Player::FireBullets ( const FireBulletsInfo_t &info )
+void CHL2MP_Player::FireBullets(const FireBulletsInfo_t &info)
 {
 	// Move other players back to history positions based on local player's lag
 	lagcompensation->StartLagCompensation( this, this->GetCurrentCommand() );
@@ -1593,8 +1625,7 @@ void CHL2MP_Player::FireBullets ( const FireBulletsInfo_t &info )
 
 	CWeaponHL2MPBase *pWeapon = dynamic_cast<CWeaponHL2MPBase *>( GetActiveWeapon() );
 
-	if ( pWeapon )
-	{
+	if (pWeapon) {
 		modinfo.m_iPlayerDamage = modinfo.m_flDamage = pWeapon->GetHL2MPWpnData().m_iPlayerDamage;
 	}
 
@@ -1609,8 +1640,7 @@ void CHL2MP_Player::FireBullets ( const FireBulletsInfo_t &info )
 void CHL2MP_Player::NoteWeaponFired( void )
 {
 	Assert( m_pCurrentCommand );
-	if( m_pCurrentCommand )
-	{
+	if (m_pCurrentCommand) {
 		m_iLastWeaponFireUsercmd = m_pCurrentCommand->command_number;
 	}
 }
@@ -1842,64 +1872,46 @@ extern int	gEvilImpulse101;
 // Input  : pWeapon - the weapon that the player bumped into.
 // Output : Returns true if player picked up the weapon
 //-----------------------------------------------------------------------------
-bool CHL2MP_Player::BumpWeapon( CBaseCombatWeapon *pWeapon )
+bool CHL2MP_Player::BumpWeapon(CBaseCombatWeapon *pWeapon)
 {
 	CBaseCombatCharacter *pOwner = pWeapon->GetOwner();
 
 	// Can I have this weapon type?
-	if ( !IsAllowedToPickupWeapons() )
+	if (!IsAllowedToPickupWeapons())
 		return false;
 
-	if ( pOwner || !Weapon_CanUse( pWeapon ) || !g_pGameRules->CanHavePlayerItem( this, pWeapon ) )
-	{
-		if ( gEvilImpulse101 )
-		{
+	if ( pOwner ||
+		!Weapon_CanUse(pWeapon) ||
+		!g_pGameRules->CanHavePlayerItem(this, pWeapon)) {
+
+		if (gEvilImpulse101) {
 			UTIL_Remove( pWeapon );
 		}
-		return false;
-	}
 
-	// Don't let the player fetch weapons through walls (use MASK_SOLID so that you can't pickup through windows)
-	if( !pWeapon->FVisible( this, MASK_SOLID ) && !(GetFlags() & FL_NOTARGET) )
-	{
 		return false;
 	}
 
 	bool bOwnsWeaponAlready = !!Weapon_OwnsThisType( pWeapon->GetClassname(), pWeapon->GetSubType());
 
-	if ( bOwnsWeaponAlready == true ) 
-	{
+	if ( bOwnsWeaponAlready == true ) {
 		//If we have room for the ammo, then "take" the weapon too.
-		 if ( Weapon_EquipAmmoOnly( pWeapon ) )
-		 {
+		 if (Weapon_EquipAmmoOnly(pWeapon)) {
 			 pWeapon->CheckRespawn();
 
 			 UTIL_Remove( pWeapon );
 			 return true;
-		 }
-		 else
-		 {
+		 } else {
 			 return false;
 		 }
 	}
 
 	pWeapon->CheckRespawn();
-	Weapon_Equip( pWeapon );
+	Weapon_Equip(pWeapon);
 
 	return true;
 }
 
-void CHL2MP_Player::ChangeTeam( int iTeam )
-{
-/*	if ( GetNextTeamChangeTime() >= gpGlobals->curtime )
-	{
-		char szReturnString[128];
-		Q_snprintf( szReturnString, sizeof( szReturnString ), "Please wait %d more seconds before trying to switch teams again.\n", (int)(GetNextTeamChangeTime() - gpGlobals->curtime) );
-
-		ClientPrint( this, HUD_PRINTTALK, szReturnString );
-		return;
-	}*/
-
+void CHL2MP_Player::ChangeTeam(int iTeam) {
 	bool bKill = false;
 
 	if ( HL2MPRules()->IsTeamplay() != true && iTeam != TEAM_SPECTATOR )
@@ -1949,17 +1961,15 @@ bool CHL2MP_Player::HandleCommand_JoinTeam( int team )
 		return true;
 	}
 
-	if ( team == TEAM_SPECTATOR ) {
+	if (team == TEAM_SPECTATOR) {
 		// Prevent this is the cvar is set
-		if ( !mp_allowspectators.GetInt() )
-		{
+		if (!mp_allowspectators.GetInt()) {
 			ClientPrint( this, HUD_PRINTCENTER, "#Cannot_Be_Spectator" );
 			ShowViewPortPanel(PANEL_TEAM, true, NULL);
 			return false;
 		}
 
-		if ( GetTeamNumber() != TEAM_UNASSIGNED && !IsDead() )
-		{
+		if (GetTeamNumber() != TEAM_UNASSIGNED && !IsDead()) {
 			m_fNextSuicideTime = gpGlobals->curtime;	// allow the suicide to work
 
 			CommitSuicide();
@@ -2025,8 +2035,17 @@ bool CHL2MP_Player::HandleCommand_JoinTeam( int team )
 void CHL2MP_Player::CheckThrowPosition(const Vector &vecEye, Vector &vecSrc) {
 	trace_t tr;
 
-	UTIL_TraceHull( vecEye, vecSrc, -Vector(GRENADE_RADIUS + 2,GRENADE_RADIUS + 2,GRENADE_RADIUS + 2), Vector(GRENADE_RADIUS + 2,GRENADE_RADIUS + 2,GRENADE_RADIUS + 2), 
-		PhysicsSolidMaskForEntity(), this, GetCollisionGroup(), &tr );
+	UTIL_TraceHull
+	(
+		vecEye,
+		vecSrc,
+		-Vector(GRENADE_RADIUS + 2,GRENADE_RADIUS + 2,GRENADE_RADIUS + 2),
+		Vector(GRENADE_RADIUS + 2,GRENADE_RADIUS + 2,GRENADE_RADIUS + 2), 
+		PhysicsSolidMaskForEntity(),
+		this,
+		GetCollisionGroup(),
+		&tr
+	);
 	
 	if (tr.DidHit()) {
 		vecSrc = tr.endpos;
@@ -2058,11 +2077,11 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 
 	
 	vecEye = EyePosition();
-	EyeVectors( &vForward, &vRight, NULL );
+	EyeVectors(&vForward, &vRight, NULL);
 	vecSrc = vecEye + vForward * 18.0f + vRight * 8.0f;
 	CheckThrowPosition(vecEye, vecSrc);
 	vForward[2] += 0.1f;
-	GetVelocity( &vecThrow, NULL );
+	GetVelocity(&vecThrow, NULL);
 
 
 	type_guardian = GetAmmoDef()->Index(GRENADE_GUARD);
@@ -2086,7 +2105,15 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 		gren_timer = 1.2f;
 
 		vecThrow += vForward * speed_factor;
-		pGrenade = GuardianGren_Create( vecSrc, vec3_angle, vecThrow, this, gren_timer, sticky);
+		pGrenade = GuardianGren_Create
+		(
+			vecSrc,
+			vec3_angle,
+			vecThrow,
+			this,
+			gren_timer,
+			sticky
+		);
 
 	} else if (type == type_smoke) {
 		speed_factor = 600;
@@ -2095,7 +2122,16 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 		gren_timer = 2.5f;
 	
 		vecThrow += vForward * speed_factor;
-		pGrenade = SmkGren_Create( vecSrc, vec3_angle, vecThrow, AngularImpulse(600,random->RandomInt(-1200,1200),0), this, gren_timer, false );
+		pGrenade = SmkGren_Create
+		(
+			vecSrc,
+			vec3_angle,
+			vecThrow,
+			AngularImpulse(600,random->RandomInt(-1200,1200),0),
+			this,
+			gren_timer,
+			false
+		);
 
 	} else if (type == type_acid) {
 		speed_factor = 500;
@@ -2104,7 +2140,16 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 		gren_timer = 1.2f;
 
 		vecThrow += vForward * speed_factor;
-		pGrenade = AcidGren_Create( vecSrc, vec3_angle, vecThrow, AngularImpulse(600,random->RandomInt(-1200,1200),0), this, gren_timer, false );
+		pGrenade = AcidGren_Create
+		(
+			vecSrc,
+			vec3_angle,
+			vecThrow,
+			AngularImpulse(600,random->RandomInt(-1200,1200),0),
+			this,
+			gren_timer,
+			false
+		);
 
 	} else if (type == type_frag) {
 		speed_factor = 600;
@@ -2113,7 +2158,16 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 		gren_timer = 2.5f;
 	
 		vecThrow += vForward * speed_factor;
-		pGrenade = Fraggrenade_Create( vecSrc, vec3_angle, vecThrow, AngularImpulse(600,random->RandomInt(-1200,1200),0), this, gren_timer, false );
+		pGrenade = Fraggrenade_Create
+		(
+			vecSrc,
+			vec3_angle,
+			vecThrow,
+			AngularImpulse(600,random->RandomInt(-1200,1200),0),
+			this,
+			gren_timer,
+			false
+		);
 
 	} else {
 		Warning("Unknown grenade type!");
@@ -2182,8 +2236,18 @@ CON_COMMAND(teleport_bot, "teleport a bot") {
 
 #endif
 
+void CHL2MP_Player::CommitSuicide(bool explode, bool force) {
+	if (IsAlive() && !IsObserver()) {
+		SubtractPlayerPoints(1);
+	}
+
+	BaseClass::CommitSuicide(explode, force);
+}
+
 bool CHL2MP_Player::ClientCommand( const CCommand &args )
 {
+	int oldPoints;
+
 	if ( FStrEq( args[0], "spectate" ) ) {
 
 		if (ShouldRunRateLimitedCommand(args)) {
@@ -2260,8 +2324,9 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 						SubtractPlayerPoints(dk_classes[classNum].cost);
 
 						if (IsAlive()) {
+							oldPoints = GetPlayerPoints();
 							CommitSuicide(true, true);
-							AddPlayerPoints(1);
+							SetPlayerPoints(oldPoints);
 						}
 
 						return true;
@@ -2321,9 +2386,7 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 		if (spec_weapon) {
 			Weapon_Switch(spec_weapon);
 			return true;
-		} else if (GetTeamNumber() == TEAM_SPIDERS &&
-			m_iClassNumber == CLASS_GUARDIAN_IDX &&
-			!IsDead()) {
+		} else if (m_iClassNumber == CLASS_GUARDIAN_IDX && !IsDead()) {
 
 				if (next_infestation < gpGlobals->curtime) {
 					InfestCorpse();
@@ -2344,7 +2407,7 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 		if (args.ArgC() < 2)
 				return true;
 
-		if (GetTeamNumber() == TEAM_HUMANS && m_iClassNumber == CLASS_ENGINEER_IDX) {
+		if (m_iClassNumber == CLASS_ENGINEER_IDX) {
 			CWeaponEngy *engy_gun;
 
 			itemNum = atoi(args.Arg(1));
@@ -2374,7 +2437,7 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 			return true;
 
-		} else if (GetTeamNumber() == TEAM_SPIDERS && m_iClassNumber == CLASS_BREEDER_IDX) {
+		} else if (m_iClassNumber == CLASS_BREEDER_IDX) {
 			CWeaponBreeder *breeder_gun;
 
 			itemNum = atoi(args.Arg(1));
@@ -2580,6 +2643,23 @@ int CHL2MP_Player::GetMaxArmor(void) {
 	return max_armor;
 }
 
+void CHL2MP_Player::SetNormalSpeed(void) {
+	if (IS_SPIDER_CLASS(m_iClassNumber)) {
+		SetMaxSpeed(dk_classes[m_iClassNumber].max_speed);
+	}
+}
+
+void CHL2MP_Player::SpeedPenalty(float duration) {
+	SetMaxSpeed(dk_classes[m_iClassNumber].max_speed * 0.4f);
+
+	SetContextThink
+	(
+		&CHL2MP_Player::SetNormalSpeed,
+		gpGlobals->curtime + duration,
+		MAX_SPEED_CTX
+	);
+}
+
 void CHL2MP_Player::SetPlayerClass(int c) {
 	int team;
 
@@ -2772,23 +2852,21 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CHL2MPRagdoll, DT_HL2MPRagdoll )
 END_SEND_TABLE()
 
 
-void CHL2MP_Player::CreateRagdollEntity( void )
-{
+void CHL2MP_Player::CreateRagdollEntity(void) {
+	CHL2MPRagdoll *pRagdoll;
 
-	if ( m_hRagdoll ) {
+	if (m_hRagdoll) {
 		UTIL_RemoveImmediate( m_hRagdoll );
 		m_hRagdoll = NULL;
 	}
 
 	// If we already have a ragdoll, don't make another one.
-	CHL2MPRagdoll *pRagdoll = dynamic_cast< CHL2MPRagdoll* >( m_hRagdoll.Get() );
-	
-	if ( !pRagdoll ) {
-		// create a new one
+	pRagdoll = dynamic_cast< CHL2MPRagdoll* >(m_hRagdoll.Get());
+	if (!pRagdoll) {
 		pRagdoll = dynamic_cast< CHL2MPRagdoll* >( CreateEntityByName( "hl2mp_ragdoll" ) );
 	}
 
-	if ( pRagdoll ) {
+	if (pRagdoll) {
 		pRagdoll->m_hPlayer = this;
 		pRagdoll->m_vecRagdollOrigin = GetAbsOrigin();
 		pRagdoll->m_vecRagdollVelocity = GetAbsVelocity();
@@ -2803,8 +2881,6 @@ void CHL2MP_Player::CreateRagdollEntity( void )
 	m_hRagdoll = pRagdoll;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 int CHL2MP_Player::FlashlightIsOn( void )
 {
 	if (GetTeamNumber() == TEAM_HUMANS) {
@@ -2816,11 +2892,10 @@ int CHL2MP_Player::FlashlightIsOn( void )
 
 extern ConVar flashlight;
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
 void CHL2MP_Player::FlashlightTurnOn( void )
 {	
-	if ( flashlight.GetInt() > 0 && IsAlive() ) {
+	if (flashlight.GetInt() > 0 && IsAlive()) {
 		if (GetTeamNumber() == TEAM_HUMANS) {
 			AddEffects( EF_DIMLIGHT );
 			EmitSound( "HL2Player.FlashlightOn" );
@@ -2830,15 +2905,12 @@ void CHL2MP_Player::FlashlightTurnOn( void )
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CHL2MP_Player::FlashlightTurnOff( void )
 {
 	bugGlow = false;
 	RemoveEffects( EF_DIMLIGHT );
 	
-	if(IsAlive()) {
+	if (IsAlive()) {
 		if (GetTeamNumber() == TEAM_HUMANS) {
 			EmitSound( "HL2Player.FlashlightOff" );
 		}
@@ -2873,28 +2945,29 @@ void CHL2MP_Player::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector *pvecT
 
 void CHL2MP_Player::RemoveSpikeGrenades(void) {
 	CBaseEntity *ent;
+	CGrenadeGuardian *g;
 
 	ent = NULL;
 
-	if (GetTeamNumber() == TEAM_SPIDERS && m_iClassNumber == CLASS_GUARDIAN_IDX || m_iClassNumber == CLASS_STALKER_IDX) {
+	if (m_iClassNumber == CLASS_GUARDIAN_IDX || m_iClassNumber == CLASS_STALKER_IDX) {
 		while ((ent = gEntList.FindEntityByClassname(ent, "grenade_guardian")) != NULL) {
-			CGrenadeGuardian *g = dynamic_cast<CGrenadeGuardian *>(ent);
-			if (g->GetThrower() == this) {
+			g = dynamic_cast<CGrenadeGuardian *>(ent);
+			if (g && g->GetThrower() == this) {
 				UTIL_Remove(g);
 			}
 		}
 	}
+
 }
 
 void CHL2MP_Player::DetonateTripmines( void )
 {
 	CBaseEntity *pEntity = NULL;
+	CSatchelCharge *pSatchel;
 
-	while ((pEntity = gEntList.FindEntityByClassname( pEntity, "npc_satchel" )) != NULL)
-	{
-		CSatchelCharge *pSatchel = dynamic_cast<CSatchelCharge *>(pEntity);
-		if (pSatchel->m_bIsLive && pSatchel->GetThrower() == this )
-		{
+	while ((pEntity = gEntList.FindEntityByClassname( pEntity, "npc_satchel" )) != NULL) {
+		pSatchel = dynamic_cast<CSatchelCharge *>(pEntity);
+		if (pSatchel && pSatchel->m_bIsLive && pSatchel->GetThrower() == this ) {
 			g_EventQueue.AddEvent( pSatchel, "Explode", 0.20, this, this );
 		}
 	}
@@ -2921,13 +2994,17 @@ bool CHL2MP_Player::ShouldGib( const CTakeDamageInfo &info ) {
 	return false;
 }
 
-void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
-{
+void CHL2MP_Player::Event_Killed(const CTakeDamageInfo &info) {
+	CBaseEntity *pAttacker;
+	CHL2MP_Player *player;
+	CHL2MPRagdoll *pRagdoll;
+	CTeam *team;
+
 	//update damage info with our accumulated physics force
 	CTakeDamageInfo subinfo = info;
-	subinfo.SetDamageForce( m_vecTotalBulletForce );
+	subinfo.SetDamageForce(m_vecTotalBulletForce);
 
-	SetNumAnimOverlays( 0 );
+	SetNumAnimOverlays(0);
 	SetThink(NULL);
 
 	PlasmaOff();
@@ -2944,9 +3021,7 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 
 	deathHealth = GetHealth();
 
-	CBaseEntity *pAttacker = info.GetAttacker();
-	CHL2MP_Player *player;
-
+	pAttacker = info.GetAttacker();
 	if (pAttacker) {
 		int iScoreToAdd = 1;
 
@@ -2957,26 +3032,45 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 		player = ToHL2MPPlayer(pAttacker);
 		if (player) {
 			if (player->GetTeamNumber() != GetTeamNumber()) {
+				//
+				// mechs and stalkers don't get points for killing other players
+				// they only get points for killing eggs/teleporters
+				//
 				if ((player->GetTeamNumber() == TEAM_HUMANS && player->m_iClassNumber != CLASS_MECH_IDX) ||
 					(player->GetTeamNumber() == TEAM_SPIDERS && player->m_iClassNumber != CLASS_STALKER_IDX)) {
 					
 					player->AddPlayerPoints(1);
 				}
-				GetGlobalTeam( pAttacker->GetTeamNumber() )->AddScore( iScoreToAdd );
+
+				team = GetGlobalTeam(pAttacker->GetTeamNumber());
+				if (team) {
+					team->AddScore(iScoreToAdd);
+				}
 			} else {
+				//
+				// team kill :D
+				//
 				player->SubtractPlayerPoints(1);
 			}
 		}
-
 	}
 
 	BaseClass::Event_Killed( subinfo );
-
-	if ( info.GetDamageType() & DMG_DISSOLVE )
-	{
-		if ( m_hRagdoll )
-		{
-			m_hRagdoll->GetBaseAnimating()->Dissolve( NULL, gpGlobals->curtime, false, ENTITY_DISSOLVE_NORMAL );
+	
+	if (info.GetDamageType() & DMG_DISSOLVE) {
+		//
+		// dissolve the player's client side ragdoll, but only
+		// if it was the ragdoll for the current spawn
+		//
+		pRagdoll = dynamic_cast< CHL2MPRagdoll* >(m_hRagdoll.Get());
+		if (m_hRagdoll && pRagdoll && pRagdoll->spawnNumber == spawnNumber) {
+			m_hRagdoll->GetBaseAnimating()->Dissolve
+			(
+				NULL,
+				gpGlobals->curtime,
+				false,
+				ENTITY_DISSOLVE_NORMAL
+			);
 		}
 	}
 
@@ -3030,7 +3124,12 @@ void CHL2MP_Player::ParalyzePlayer(void) {
 	last_spit_hit = gpGlobals->curtime;
 	m_Local.m_bAllowAutoMovement = false;
 	EnableControl(FALSE);
-	SetContextThink(&CHL2MP_Player::SpitUnFreeze, gpGlobals->curtime + DRONE_SPIT_TIME, DRONE_SPIT_CTX);
+	SetContextThink
+	(
+		&CHL2MP_Player::SpitUnFreeze,
+		gpGlobals->curtime + DRONE_SPIT_TIME,
+		DRONE_SPIT_CTX
+	);
 }
 
 int CHL2MP_Player::OnTakeDamage( const CTakeDamageInfo &inputInfo ) {
@@ -3087,7 +3186,14 @@ void CHL2MP_Player::DropC4Pack(void) {
 
 	if (HasAnyAmmoOfType(c4idx)) {
 		RemoveAmmo(1, GetAmmoDef()->Index("grenade_c4"));
-		(void)C4_Create(GetAbsOrigin(), GetAbsAngles(), vec3_origin, this, C4_TIMER);
+		(void)C4_Create
+		(
+			GetAbsOrigin(),
+			GetAbsAngles(),
+			vec3_origin,
+			this,
+			C4_TIMER
+		);
 	}
 }
 
@@ -3105,7 +3211,7 @@ Vector CHL2MP_Player::BodyTarget(const Vector &posSrc, bool noisy) {
 
 void CHL2MP_Player::DeathSound( const CTakeDamageInfo &info )
 {
-	if ( m_hRagdoll && m_hRagdoll->GetBaseAnimating()->IsDissolving() )
+	if (m_hRagdoll && m_hRagdoll->GetBaseAnimating()->IsDissolving())
 		 return;
 
 	char szStepSound[128];
@@ -3113,7 +3219,7 @@ void CHL2MP_Player::DeathSound( const CTakeDamageInfo &info )
 	Q_snprintf( szStepSound, sizeof( szStepSound ), "%s.Die", GetPlayerModelSoundPrefix() );
 
 	CSoundParameters params;
-	if ( GetParametersForSound( szStepSound, params, NULL ) == false )
+	if (GetParametersForSound( szStepSound, params, NULL ) == false)
 		return;
 
 	Vector vecOrigin = GetAbsOrigin();
@@ -3133,6 +3239,10 @@ void CHL2MP_Player::DeathSound( const CTakeDamageInfo &info )
 	EmitSound( filter, entindex(), ep );
 }
 
+//
+// make the player noclip to the egg he spawned from
+// so that he won't get stuck on it
+//
 void CHL2MP_Player::NoClipSpawn(CBaseEntity *spawn) {
 	CEggEntity *egg = NULL;
 
@@ -3145,7 +3255,7 @@ void CHL2MP_Player::NoClipSpawn(CBaseEntity *spawn) {
 
 CBaseEntity* CHL2MP_Player::EntSelectSpawnPoint( void ) {
 	CBaseEntity *pSpot = NULL;
-	CBaseEntity *pLastSpawnPoint = g_pLastSpawn;
+	CBaseEntity *pLastSpawnPoint;
 	const char *pSpawnpointName = "info_player_deathmatch";
 
 	pLastSpawnPoint = g_pLastSpawn;

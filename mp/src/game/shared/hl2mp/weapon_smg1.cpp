@@ -49,6 +49,7 @@ public:
 
 	virtual void Equip( CBaseCombatCharacter *pOwner );
 	bool	Reload( void );
+	virtual void Drop(const Vector &vecVelocity);
 
 	float	GetFireRate( void ) { return 0.125f; }	// 13.3hz
 	Activity	GetPrimaryAttackActivity( void );
@@ -130,10 +131,6 @@ void CWeaponSMG1::Equip( CBaseCombatCharacter *pOwner )
 	BaseClass::Equip( pOwner );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Output : Activity
-//-----------------------------------------------------------------------------
 Activity CWeaponSMG1::GetPrimaryAttackActivity( void )
 {
 	if ( m_nShotsFired < 2 )
@@ -148,8 +145,9 @@ Activity CWeaponSMG1::GetPrimaryAttackActivity( void )
 	return ACT_VM_RECOIL3;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+void CWeaponSMG1::Drop(const Vector &vecVelocity) {
+}
+
 bool CWeaponSMG1::Reload( void )
 {
 	bool fRet;
@@ -169,9 +167,6 @@ bool CWeaponSMG1::Reload( void )
 	return fRet;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CWeaponSMG1::AddViewKick( void )
 {
 	#define	EASY_DAMPEN			0.5f

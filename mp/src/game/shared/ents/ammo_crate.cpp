@@ -36,15 +36,17 @@ void CAmmoCrate::OnRestore( void ) {
 }
 
 void CAmmoCrate::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) {
+	CDisablePredictionFiltering pfilter;
 	CHL2MP_Player *pPlayer;
 	float wait_time;
 	char buf[64];
 
 	pPlayer = ToHL2MPPlayer( pActivator );
-	if (active == false || pPlayer == NULL || !pPlayer->IsAlive())
+	if (!pPlayer)
 		return;
 
-	CDisablePredictionFiltering foo;
+	if (active == false || !pPlayer->IsAlive())
+		return;
 
 	if (PlayerIsWaiting(pPlayer, &wait_time)) {
 		Q_snprintf(buf, sizeof(buf), "Please wait %.0f more seconds\n", wait_time - gpGlobals->curtime);

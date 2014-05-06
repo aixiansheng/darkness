@@ -53,6 +53,7 @@ public:
 	Activity	GetPrimaryAttackActivity( void );
 
 	virtual bool Reload( void );
+	virtual void Drop(const Vector &vecVelocity);
 
 	virtual const Vector& GetBulletSpread( void )
 	{		
@@ -305,8 +306,10 @@ Activity CWeaponPistol::GetPrimaryAttackActivity( void )
 	return ACT_VM_RECOIL3;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
+void CWeaponPistol::Drop(const Vector &vecVelocity) {
+}
+
 bool CWeaponPistol::Reload( void )
 {
 	bool fRet = DefaultReload( GetMaxClip1(), GetMaxClip2(), ACT_VM_RELOAD );

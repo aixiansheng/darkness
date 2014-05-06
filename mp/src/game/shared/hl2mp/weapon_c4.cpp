@@ -13,6 +13,8 @@
 #define GRENADE_PAUSED_PRIMARY		1
 #define GRENADE_PAUSED_SECONDARY	2
 
+#define NOT_PRIMED_SND				"Buttons.snd16"
+
 acttable_t	CWeaponC4::m_acttable[] = {
 	{ ACT_HL2MP_IDLE,						ACT_HL2MP_IDLE_GRENADE,					false },
 	{ ACT_HL2MP_IDLE_CROUCH,				ACT_HL2MP_IDLE_CROUCH_GRENADE,			false },
@@ -71,6 +73,8 @@ void CWeaponC4::Precache( void ) {
 
 	PrecacheScriptSound( "WeaponFrag.Throw" );
 	PrecacheScriptSound( "WeaponFrag.Roll" );
+
+	PrecacheScriptSound(NOT_PRIMED_SND);
 }
 
 #ifndef CLIENT_DLL
@@ -191,30 +195,35 @@ void CWeaponC4::PrimeThink(void) {
 	p->DropC4OnHit(true);
 
 	UTIL_SayText("Caution: C4 armed and dangerous!\n", p);
-
 #endif
 	
 }
 
 void CWeaponC4::PrimaryAttack( void ) {
-	
 	CBaseCombatCharacter *pOwner;
 	CBasePlayer *pPlayer;
 
-	if ( priming == true || primed == false)
+	if (m_bRedraw)
 		return;
 
-	if ( m_bRedraw )
+	pOwner = GetOwner();
+	if (pOwner == NULL)
 		return;
 
-	pOwner  = GetOwner();
-	if ( pOwner == NULL ) { 
+	pPlayer = ToBasePlayer(pOwner);
+	if (!pPlayer)
+		return;
+
+	if (priming == true || primed == false) {
+		m_flNextPrimaryAttack = gpGlobals->curtime + 2.0f;
+
+		#ifndef CLIENT_DLL
+		UTIL_SayText("C4 must be primed\n", pPlayer);
+		#endif
+
+		EmitSound(NOT_PRIMED_SND);
 		return;
 	}
-
-	pPlayer = ToBasePlayer( pOwner );
-	if ( !pPlayer )
-		return;
 
 	// Note that this is a primary attack and prepare the grenade attack to pause.
 	m_AttackPaused = GRENADE_PAUSED_PRIMARY;
@@ -226,7 +235,7 @@ void CWeaponC4::PrimaryAttack( void ) {
 	m_flNextPrimaryAttack = FLT_MAX;
 
 	// If I'm now out of ammo, switch away
-	if ( !HasPrimaryAmmo() ) {
+	if (!HasPrimaryAmmo()) {
 		pPlayer->SwitchToNextBestWeapon( this );
 	}
 }
