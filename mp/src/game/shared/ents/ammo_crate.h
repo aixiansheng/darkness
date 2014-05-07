@@ -20,7 +20,7 @@
 	#include "team.h"
 #endif
 
-#define AMMO_CRATE_RELOAD_TIME	30.0f
+#define AMMO_CRATE_RELOAD_TIME	90.0f
 #define AMMO_CRATE_THINK_TIME	5.0f
 
 // Ammo crate

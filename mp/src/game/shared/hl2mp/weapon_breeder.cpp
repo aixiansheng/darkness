@@ -34,7 +34,7 @@
 #define BREEDER_WELDER_RANGE 85.0f
 
 #define BREEDER_DESTROY_BEEP 1.8f
-#define BREEDER_DESTROY_WAIT (BREEDER_DESTROY_BEEP * 3.1f)
+#define BREEDER_DESTROY_WAIT (BREEDER_DESTROY_BEEP * 2.95f)
 
 #define BREEDER_DIGEST_SND_TIME 1.3f
 
@@ -43,7 +43,11 @@
 
 #define DEFAULT_HATCH_TIMER 3.0f
 
+#define BREEDER_BITE_DMG 350.0f
+
 #define DIGESTION_TIME 10.0f
+#define EGG_DIGESTION_TIME 15.0f
+#define HUMAN_DIGESTION_TIME 20.0f
 
 #define ITEM_UPDATE_INTERVAL	0.8f
 
@@ -269,6 +273,7 @@ void CWeaponBreeder::ItemPostFrame( void ) {
 		if (m_flNextHatchTime < gpGlobals->curtime) {
 			WeaponSound(MELEE_HIT);
 			hatch_state = STATE_OFF;
+			m_flNextPrimaryAttack = gpGlobals->curtime + (BREEDER_REFIRE / 2.0f);
 		} else if (m_flNextFXTime < gpGlobals->curtime) {
 			m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
 			WeaponSound(SINGLE);
@@ -317,6 +322,7 @@ void CWeaponBreeder::MakeItem(int idx) {
 	CSpikerEntity *spiker = NULL;
 	CGasserEntity *gasser = NULL;
 	color32 red = { 255, 0, 0, 80 };
+	color32 light_red = { 255, 0, 0, 30 };
 
 	#endif
 
@@ -431,6 +437,8 @@ void CWeaponBreeder::MakeItem(int idx) {
 						DispatchSpawn(healer);
 					}
 
+					UTIL_ScreenFade(p, light_red, 0.5f, DEFAULT_HATCH_TIMER, FFADE_MODULATE);
+
 					#endif
 				
 				}
@@ -478,6 +486,8 @@ void CWeaponBreeder::MakeItem(int idx) {
 						DispatchSpawn(obs);
 					}
 
+					UTIL_ScreenFade(p, light_red, 0.5f, DEFAULT_HATCH_TIMER, FFADE_MODULATE);
+
 					#endif
 				
 				}
@@ -514,6 +524,8 @@ void CWeaponBreeder::MakeItem(int idx) {
 						DispatchSpawn(spiker);
 					}
 
+					UTIL_ScreenFade(p, light_red, 0.5f, DEFAULT_HATCH_TIMER, FFADE_MODULATE);
+
 					#endif
 				
 				}
@@ -547,6 +559,8 @@ void CWeaponBreeder::MakeItem(int idx) {
 						gasser->SetCreator(p);
 						DispatchSpawn(gasser);
 					}
+
+					UTIL_ScreenFade(p, light_red, 0.5f, DEFAULT_HATCH_TIMER, FFADE_MODULATE);
 
 					#endif
 				
@@ -583,6 +597,8 @@ enum hatch_state CWeaponBreeder::BreederPrimaryAttack(void) {
 	CObstacleEntity *obs;
 	CSpikerEntity *spiker;
 	CGasserEntity *gasser;
+	CHL2MP_Player *targetPlayer;
+	float biteDmg;
 
 	team = GetTeam();
 	p = ToBasePlayer(GetOwner());
@@ -600,7 +616,7 @@ enum hatch_state CWeaponBreeder::BreederPrimaryAttack(void) {
 				team->RemoveSpawnpoint(egg->SpawnPoint());
 				team->reclaim_points(dk_items[ITEM_EGG_IDX].value);
 				UTIL_Remove(egg);
-				m_flNextHatchTime = gpGlobals->curtime + DIGESTION_TIME;
+				m_flNextHatchTime = gpGlobals->curtime + EGG_DIGESTION_TIME;
 				m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
 				return STATE_DIGESTING;
 			} else if ((healer = dynamic_cast<CHealerEntity *>(ent)) != NULL) {
@@ -627,6 +643,48 @@ enum hatch_state CWeaponBreeder::BreederPrimaryAttack(void) {
 				m_flNextHatchTime = gpGlobals->curtime + DIGESTION_TIME;
 				m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
 				return STATE_DIGESTING;
+			} else if ((targetPlayer = dynamic_cast<CHL2MP_Player *>(ent)) != NULL) {
+
+				//
+				// breeder can bite humans
+				//
+				switch (targetPlayer->m_iClassNumber) {
+				case CLASS_ENGINEER_IDX:
+				case CLASS_GRUNT_IDX:
+				case CLASS_SHOCK_IDX:
+				case CLASS_HEAVY_IDX:
+				case CLASS_COMMANDO_IDX:
+					biteDmg = BREEDER_BITE_DMG;
+					break;
+
+				case CLASS_HATCHY_IDX:
+				case CLASS_DRONE_IDX:
+				case CLASS_KAMI_IDX:
+					biteDmg = BREEDER_BITE_DMG / 4.0f;
+					break;
+
+				default:
+					// breeders, big bugs, mechs, exterms
+					biteDmg = 0.0f;
+					break;
+				}
+
+				// if the player is eaten, obviously there should be no ragdoll
+				targetPlayer->ForceNoRagdoll(true);
+
+				CTakeDamageInfo info(this, p, biteDmg, DMG_CLUB);
+				CalculateMeleeDamageForce(&info, dir, start, 5.0f);
+				targetPlayer->DispatchTraceAttack(info, dir, &tr);
+				ApplyMultiDamage();
+
+				if (!targetPlayer->IsAlive()) {
+					m_flNextHatchTime = gpGlobals->curtime + HUMAN_DIGESTION_TIME;
+					m_flNextFXTime = gpGlobals->curtime + BREEDER_DIGEST_SND_TIME;
+					return STATE_DIGESTING;
+				} else {
+					// player can ragdoll for someone else if they survived the bite
+					targetPlayer->ForceNoRagdoll(false);
+				}
 			}
 		}
 	}

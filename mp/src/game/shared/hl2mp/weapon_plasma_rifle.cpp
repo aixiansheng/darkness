@@ -121,6 +121,13 @@ void CWeaponPlasmaRifle::FireRifle(void) {
 	
 	m_nShotsFired++;
 	maxBurstAmmo = pPlayer->GetAmmoCount(m_iPrimaryAmmoType);
+	if (pHL2MPPlayer->PlasmaArmorEnabled()) {
+		// allow player to fire the last bullet, even though
+		// the suit will want to drain 2 shots...
+		if (maxBurstAmmo > 1) {
+			maxBurstAmmo = maxBurstAmmo / 2;
+		}
+	}
 
 	pPlayer->DoMuzzleFlash();
 

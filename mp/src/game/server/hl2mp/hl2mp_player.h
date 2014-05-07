@@ -252,6 +252,7 @@ public:
 	void UnDetectThink(void);
 
 	void ForceNoRagdoll(bool force);
+	bool PlasmaArmorEnabled(void);
 
 	CNetworkVar(bool, stopped);
 	CNetworkVar(int, spawnNumber);
@@ -298,6 +299,8 @@ private:
 	float last_spit_hit;
 
 	float m_flNextRefilTime;
+	float m_flNextShieldToggle;
+	float m_flNextShieldToggleTry;
 
 	float m_flNextGrenadeTime;
 	CNetworkVar(int, grenade_type);

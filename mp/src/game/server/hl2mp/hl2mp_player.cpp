@@ -145,9 +145,14 @@ END_DATADESC()
 extern HL2MPViewVectors g_HL2MPViewVectors;
 
 #define PLASMA_THINK_CTX			"plasma_think"
-#define PLASMA_RECHARGE_INTERVAL	0.15f
-#define PLASMA_RECHARGE_DELAY		1.5f
-#define PLASMA_RECHARGE_MAX_AMT		25
+#define PLASMA_RECHARGE_INTERVAL			0.15f
+#define PLASMA_NO_SHIELD_RECHARGE_INTERVAL	0.12f
+#define PLASMA_RECHARGE_DELAY				1.5f
+#define PLASMA_NO_SHIELD_RECHARGE_DELAY		1.0f
+#define PLASMA_RECHARGE_MAX_AMT				25
+
+#define ENGY_RECHARGE_INTERVAL				1.5f
+#define ENGY_RECHARGE_DELAY					10.0f
 
 #define HINT_THINK_CTX				"hint_think_ctx"
 #define HINT_THINK_DELAY			1.0f
@@ -159,6 +164,8 @@ extern HL2MPViewVectors g_HL2MPViewVectors;
 #define JET_ON_INTERVAL				0.1f
 #define EXTERM_JETBURST_SOUND		"Exterm.JetBurst"
 #define JET_BURST_MIN_PLASMA		20
+
+#define PLASMA_SHIELD_DENY			"Buttons.snd42"
 
 #define GUARDIAN_SWALLOW_SND		"Guardian.SwallowC4"
 
@@ -214,6 +221,8 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	spec_weapon = NULL;
 	attackMotion = false;
 	powerArmorEnabled = true;
+	m_flNextShieldToggle = 0.0f;
+	m_flNextShieldToggleTry = 0.0f;
 
 	spawnNumber = 0;
 
@@ -458,13 +467,22 @@ void CHL2MP_Player::RegularRecharge(void) {
 	// so don't interrupt the recharger/recharge delay
 	// if plasma is not ready (only happens after delay)
 	//
+	float thinkDelay;
+
 	if (plasma_ready == true) {
 		recharge_mul = 0;
 		recharge_start = gpGlobals->curtime;
+		
+		thinkDelay = PLASMA_RECHARGE_DELAY;
+		if (powerArmorEnabled == false)
+			thinkDelay = PLASMA_NO_SHIELD_RECHARGE_DELAY;
+		if (m_iClassNumber == CLASS_ENGINEER_IDX)
+			thinkDelay = ENGY_RECHARGE_DELAY;
+
 		SetContextThink
 		(
 			&CHL2MP_Player::RechargeThink,
-			gpGlobals->curtime + PLASMA_RECHARGE_DELAY,
+			gpGlobals->curtime + thinkDelay,
 			PLASMA_THINK_CTX
 		);
 	}
@@ -491,11 +509,20 @@ bool CHL2MP_Player::PlasmaReady(void) {
 void CHL2MP_Player::RechargeThink(void) {
 	int x;
 	int actual;
+	float thinkDelay;
+	float rechargeTime;
 
 	if (jetpack_on == false) {
 
-		x = 1.7f * (gpGlobals->curtime - recharge_start);
-		x = clamp(x, 0, PLASMA_RECHARGE_MAX_AMT);
+		rechargeTime = gpGlobals->curtime - recharge_start;
+
+		if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
+			x = 1.7f * rechargeTime;
+			x = clamp(x, 0, PLASMA_RECHARGE_MAX_AMT);
+		} else {
+			// sorry engies, slow recharge cuz of weak batteries
+			x = 1;
+		}
 
 		CBasePlayer::GiveAmmo(x, plasma_ammo_type, true);
 
@@ -511,7 +538,13 @@ void CHL2MP_Player::RechargeThink(void) {
 		SendPowerArmorUpdate();
 
 		if (GetAmmoCount(plasma_ammo_type) < max_plasma) {
-			SetNextThink(gpGlobals->curtime + PLASMA_RECHARGE_INTERVAL, PLASMA_THINK_CTX);
+			thinkDelay = PLASMA_RECHARGE_INTERVAL;
+			if (powerArmorEnabled == false)
+				thinkDelay = PLASMA_NO_SHIELD_RECHARGE_INTERVAL;
+			if (m_iClassNumber == CLASS_ENGINEER_IDX)
+				thinkDelay += ENGY_RECHARGE_INTERVAL;
+
+			SetNextThink(gpGlobals->curtime + thinkDelay, PLASMA_THINK_CTX);
 		
 			if (plasma_recovering == false)
 				plasma_ready = true;
@@ -525,11 +558,29 @@ void CHL2MP_Player::RechargeThink(void) {
 
 		plasma_ready = true;
 
+		if (powerArmorEnabled == false) {
+			//
+			// make sure players don't turn off shields just to Toggle
+			// them on again after completing a faster recharge...
+			//
+			// to be fair, penalize turning shields on by the amount
+			// of time spend recharging
+			//
+			
+			m_flNextShieldToggle = gpGlobals->curtime + rechargeTime;
+		}
+
 	}
 }
 
+
 // dmg indicates extended recovery delay
 void CHL2MP_Player::DisablePlasma(bool dmg) {
+	float engyFactor = 0.0f;
+
+	if (m_iClassNumber == CLASS_ENGINEER_IDX)
+		engyFactor = ENGY_RECHARGE_DELAY;
+
 	SetAmmoCount(0, plasma_ammo_type);
 	plasma_ready = false;
 	if (dmg) {
@@ -537,7 +588,7 @@ void CHL2MP_Player::DisablePlasma(bool dmg) {
 		SetContextThink
 		(
 			&CHL2MP_Player::RechargeThink,
-			gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 7.0f,
+			gpGlobals->curtime + (PLASMA_RECHARGE_DELAY * 7.0f) + engyFactor,
 			PLASMA_THINK_CTX
 		);
 
@@ -547,7 +598,7 @@ void CHL2MP_Player::DisablePlasma(bool dmg) {
 		SetContextThink
 		(
 			&CHL2MP_Player::RechargeThink,
-			gpGlobals->curtime + PLASMA_RECHARGE_DELAY * 3.0f,
+			gpGlobals->curtime + (PLASMA_RECHARGE_DELAY * 3.0f) + engyFactor,
 			PLASMA_THINK_CTX
 		);
 	}
@@ -576,7 +627,9 @@ void CHL2MP_Player::FilterDamageArmor(CTakeDamageInfo &info) {
 	// don't flash red adn blue at the same time ;)
 	flashed = false;
 
-	if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
+	if (m_iClassNumber == CLASS_EXTERMINATOR_IDX ||
+		m_iClassNumber == CLASS_ENGINEER_IDX) {
+
 		initial_plasma = PlasmaCharge();
 		dmg = info.GetDamage();
 
@@ -652,11 +705,20 @@ int CHL2MP_Player::PlasmaCharge(void) {
 	return GetAmmoCount(plasma_ammo_type);
 }
 
+bool CHL2MP_Player::PlasmaArmorEnabled(void) {
+	return powerArmorEnabled;
+}
+
 void CHL2MP_Player::PlasmaShot(void) {
+	int toRemove = 1;
+
 	if (plasma_ready == false)
 		return;
 
-	RemoveAmmo(1, plasma_ammo_type);
+	if (PlasmaArmorEnabled())
+		toRemove = 2;
+
+	RemoveAmmo(toRemove, plasma_ammo_type);
 
 	if (GetAmmoCount(plasma_ammo_type) <= 0) {
 		DisablePlasma(false);
@@ -716,23 +778,40 @@ void CHL2MP_Player::SendPowerArmorUpdate(void) {
 }
 
 void CHL2MP_Player::TogglePowerArmor(void) {
-	
-	if (m_iClassNumber == CLASS_ENGINEER_IDX ||
-		m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
+	if (m_flNextShieldToggleTry < gpGlobals->curtime) {
+		m_flNextShieldToggleTry = gpGlobals->curtime + 1.0f;
 
-		CDisablePredictionFiltering pfilter;
+		if (m_iClassNumber == CLASS_ENGINEER_IDX ||
+			m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
 
-		if (powerArmorEnabled) {
-			EmitSound(PLASMA_SHIELD_OFF);
-			powerArmorEnabled = false;
-		} else {
-			EmitSound(PLASMA_SHIELD_ON);
-			powerArmorEnabled = true;
+			CDisablePredictionFiltering pfilter;
+
+			if (powerArmorEnabled) {
+				EmitSound(PLASMA_SHIELD_OFF);
+				powerArmorEnabled = false;
+			} else {
+				//
+				// XT can only turn it on if power is at 100%
+				// to prevent abuse of faster charge rate
+				// when armor is off
+				//
+				if (m_iClassNumber == CLASS_EXTERMINATOR_IDX) {
+					if (m_flNextShieldToggle > gpGlobals->curtime ||
+						GetAmmoCount(plasma_ammo_type) != max_plasma) {
+
+						EmitSound(PLASMA_SHIELD_DENY);
+						return;
+
+					}
+				}
+
+				EmitSound(PLASMA_SHIELD_ON);
+				powerArmorEnabled = true;
+			}
+
+			SendPowerArmorUpdate();
 		}
-
-		SendPowerArmorUpdate();
 	}
-
 }
 
 void CHL2MP_Player::AddPlayerPoints(int i) {
@@ -1049,6 +1128,8 @@ void CHL2MP_Player::Spawn(void)
 	m_flNextTeamChangeTime = 0.0f;
 	chose_class = false;
 	classVectors = &g_HL2MPViewVectors;
+	m_flNextShieldToggle = 0.0f;
+	m_flNextShieldToggleTry = 0.0f;
 
 	PickDefaultSpawnTeam();
 
@@ -2890,12 +2971,9 @@ int CHL2MP_Player::FlashlightIsOn( void )
 	}
 }
 
-extern ConVar flashlight;
-
-
 void CHL2MP_Player::FlashlightTurnOn( void )
 {	
-	if (flashlight.GetInt() > 0 && IsAlive()) {
+	if (IsAlive()) {
 		if (GetTeamNumber() == TEAM_HUMANS) {
 			AddEffects( EF_DIMLIGHT );
 			EmitSound( "HL2Player.FlashlightOn" );
@@ -3108,9 +3186,13 @@ float CHL2MP_Player::DmgTypeFactor(int dmgtype) {
 				case CLASS_GRUNT_IDX:
 				case CLASS_SHOCK_IDX:
 				case CLASS_HEAVY_IDX:
-				case CLASS_COMMANDO_IDX:
-				case CLASS_EXTERMINATOR_IDX:
 					return 3.0f;
+
+				case CLASS_COMMANDO_IDX:
+					return 2.0f;
+
+				case CLASS_EXTERMINATOR_IDX:
+					return 1.5f;
 
 				case CLASS_MECH_IDX:
 					return 6.5f;

@@ -23,6 +23,7 @@ updatebin:
 $(DIST):
 	./update_dist.sh $(DIST)
 	rsync --exclude "*.lib" --exclude "*.pdb" $(GAMEDST)/bin/* $(DIST)/bin/
+	-rm $(DIST)/maps/title_screen.bsp
 
 darkness.zip:
 	rm -f $@

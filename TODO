@@ -3,15 +3,19 @@ ROADMAP
 
 Before 1.6:
 
+- more testing of breeder/engy guns and climbing
+- test all weapons again with bots
 - fix all crashes (video mode change, change server)
 
+- building 5...
 - spacewreck improvements (more eggs) (bottom hallways higher/wider)
 - geofusion (more eggs)
 - new museum map
 
 
-
 Future fixes:
+
+- auto-kick/voting system
 
 - guardian spike ball = more like trap on ground?
 

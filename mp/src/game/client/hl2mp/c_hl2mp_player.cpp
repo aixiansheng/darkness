@@ -124,6 +124,10 @@ bool C_HL2MP_Player::PlasmaReady(void) {
 	return plasma_ready;
 }
 
+bool C_HL2MP_Player::PlasmaArmorEnabled(void) {
+	return powerArmorEnabled;
+}
+
 bool C_HL2MP_Player::JetOn(void) {
 	return jetpack_on;
 }

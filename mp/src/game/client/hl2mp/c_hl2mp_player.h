@@ -95,6 +95,7 @@ public:
 	const Vector GetPlayerMaxs(void) const;
 
 	bool JetOn(void);
+	bool PlasmaArmorEnabled(void);
 
 	HL2MPViewVectors *classVectors;
 	

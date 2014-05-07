@@ -13,7 +13,7 @@
 #define	PLASMA_RIFLE_REFIRE			0.11f
 #define RAILGUN_REFIRE				20.0f
 
-#define PLASMA_RIFLE_DMG			12.0f
+#define PLASMA_RIFLE_DMG			8.0f
 #define RAILGUN_DMG					130.0f
 #define RAILGUN_BEAM_WIDTH			15.0f
 

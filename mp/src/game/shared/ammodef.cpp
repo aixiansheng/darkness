@@ -423,12 +423,12 @@ CAmmoDef::CAmmoDef(void)
 
 	// RPG
 	dmg_factors[WPN_RPG][CLASS_ENGINEER_IDX]		= 1.0f;
-	dmg_factors[WPN_RPG][CLASS_GRUNT_IDX]			= 1.0f;
-	dmg_factors[WPN_RPG][CLASS_SHOCK_IDX]			= 1.0f;
-	dmg_factors[WPN_RPG][CLASS_HEAVY_IDX]			= 1.0f;
-	dmg_factors[WPN_RPG][CLASS_COMMANDO_IDX]		= 1.0f;
-	dmg_factors[WPN_RPG][CLASS_EXTERMINATOR_IDX]	= 1.0f;
-	dmg_factors[WPN_RPG][CLASS_MECH_IDX]			= 1.0f;
+	dmg_factors[WPN_RPG][CLASS_GRUNT_IDX]			= 1.2f;
+	dmg_factors[WPN_RPG][CLASS_SHOCK_IDX]			= 1.2f;
+	dmg_factors[WPN_RPG][CLASS_HEAVY_IDX]			= 1.5f;
+	dmg_factors[WPN_RPG][CLASS_COMMANDO_IDX]		= 1.2f;
+	dmg_factors[WPN_RPG][CLASS_EXTERMINATOR_IDX]	= 1.2f;
+	dmg_factors[WPN_RPG][CLASS_MECH_IDX]			= 1.2f;
 	
 	dmg_factors[WPN_RPG][CLASS_BREEDER_IDX]			= 1.0f;
 	dmg_factors[WPN_RPG][CLASS_HATCHY_IDX]			= 1.0f;
