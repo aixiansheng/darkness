@@ -56,6 +56,8 @@ $Project
 
 		$File	"Bloom.cpp"
 		$File	"screenspace_general.cpp"
+
+		$File	"nightvision_shader.cpp"
 	}
 
 	$Folder	"Header Files"
