@@ -17,17 +17,17 @@ ipch
 *.sdf
 *.opensdf
 *.idb
-#*.vcxproj
-#*.vcxproj.filters
-#*.sln
+*.vcxproj
+*.vcxproj.filters
+*.sln
 [Dd]ebug*/
 [Rr]elease*/
 
 # OSX/Linux build products
 *.DS_Store
-#*.mak
-#*.mak.vpc_crc
-#*.xcodeproj/
+*.mak
+*.mak.vpc_crc
+*.xcodeproj/
 obj*/
 !devtools/*.mak
 !utils/smdlexp/smdlexp.mak
@@ -66,3 +66,5 @@ config.cfg
 *.tmp
 
 mp/game/mod_hl2mp/**
+
+*.a
