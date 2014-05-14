@@ -90,14 +90,12 @@ void CMGTurretEntity::DetectThink(void) {
 			);
 		
 			if (tr.DidHit() && tr.m_pEnt) {
-
-				if (tr.m_pEnt->IsPlayer() &&
-					tr.m_pEnt->GetTeamNumber() == TEAM_SPIDERS &&
-					tr.m_pEnt->IsAlive()) {
-
-					// do somethinf about the target
-					turretHead->PossibleTarget(tr.m_pEnt);
-					//Warning("Aiming At Target\n");
+				//
+				// tell the turret head about the possible target
+				//
+				if (turretHead->HasTarget() == false &&
+					turretHead->CanAcquireTarget(tr.m_pEnt)) {
+						turretHead->EngageTarget(tr.m_pEnt);
 				}
 			}
 		}
@@ -182,6 +180,12 @@ void CMGTurretHead::Spawn(void) {
 
 	SetThink(&CMGTurretHead::TrackTargetThink);
 	SetNextThink(gpGlobals->curtime + SMG_NO_TARGET_INTERVAL);
+}
+
+bool CMGTurretHead::HasTarget(void) {
+	if (target)
+		return true;
+	return false;
 }
 
 int CMGTurretHead::OnTakeDamage(const CTakeDamageInfo &info) {
@@ -317,12 +321,10 @@ void CMGTurretHead::ShootAt(CBaseEntity *ent) {
 	Vector dir;
 	Vector endpos;
 	Vector shootpos;
-
+	FireBulletsInfo_t info;
 	trace_t tr;
 
 	m_flNextFireTime = gpGlobals->curtime + SMG_TURRET_SHOT_DELAY;
-
-	EmitSound( "Weapon_functank.Single" );
 
 	shootpos = WorldBarrelPosition();
 	endpos = ent->BodyTarget(shootpos, false);
@@ -338,33 +340,61 @@ void CMGTurretHead::ShootAt(CBaseEntity *ent) {
 		&tr
 	);
 
-	CTakeDamageInfo info(this, GetParent(), SMG_TURRET_DAMAGE, DMG_BULLET);
-	info.SetAmmoType(m_iAmmoType);
+	if (tr.DidHitWorld() == false) {
+		info.m_iShots = 1;
+		info.m_vecSrc = shootpos;
+		info.m_vecDirShooting = dir;
+		info.m_vecSpread = VECTOR_CONE_10DEGREES;
+		info.m_flDistance = 1024.0f;
+		info.m_iAmmoType = m_iAmmoType;
+		info.m_iTracerFreq = 2;
+		info.m_pAdditionalIgnoreEnt = GetParent();
+		info.m_pAttacker = GetParent();
+		info.m_flDamage = SMG_TURRET_DAMAGE;
 
-	CalculateMeleeDamageForce(&info, dir, endpos);
-	ent->DispatchTraceAttack(info, dir, &tr);
-	ApplyMultiDamage();
+		FireBullets(info);
 
+		EmitSound("Weapon_functank.Single");
+	}
 }
 
 void CMGTurretHead::UpdateMatrix(void) {
 	m_parentMatrix.InitFromEntity( GetParent(), GetParentAttachment() );
 }
 
+bool CMGTurretHead::CanAcquireTarget(CBaseEntity *ent) {
+	Vector toTarget;
+	CHL2MP_Player *p;
+
+	if (ent == NULL)
+		return false;
+
+	if ((p = ToHL2MPPlayer(ent)) == NULL)
+		return false;
+
+	if (ent->IsAlive() == false)
+		return false;
+
+	if (p->GetTeamNumber() != TEAM_SPIDERS)
+		return false;
+
+	toTarget = GetAbsOrigin() - ent->BodyTarget(GetAbsOrigin(), false);
+	if (toTarget.Length() > SMG_TURRET_DETECT_RADIUS)
+		return false;
+
+	return true;
+}
+
 //
 // Only update the gun target if the gun needs a target
 //
-void CMGTurretHead::PossibleTarget(CBaseEntity *ent) {
-
-	if (target == NULL) {
-		target = ent;
-		SetNextThink(gpGlobals->curtime);
-		EmitSound(TURRET_ACQUIRE_TARGET_SND);
-	}
+void CMGTurretHead::EngageTarget(CBaseEntity *ent) {
+	target = ent;
+	SetNextThink(gpGlobals->curtime);
+	EmitSound(TURRET_ACQUIRE_TARGET_SND);
 }
 
 void CMGTurretHead::TrackTargetThink(void) {
-	Vector toTarget;
 	CMGTurretEntity *parent;
 
 	parent = dynamic_cast<CMGTurretEntity *>(GetParent());
@@ -380,13 +410,17 @@ void CMGTurretHead::TrackTargetThink(void) {
 		return;
 	}
 
-	toTarget = GetAbsOrigin() - target->BodyTarget(GetAbsOrigin(), false);
-	if (toTarget.Length() > SMG_TURRET_DETECT_RADIUS || !target->IsAlive()) {
-		target = NULL;
-		SetLocalAngularVelocity(vec3_angle);
-		SetNextThink(gpGlobals->curtime + SMG_NO_TARGET_INTERVAL);
-		EmitSound(TURRET_LOSE_TARGET_SND);
-		return;
+	//
+	// if the target has moved out of range/died/change team
+	// set target to NULL and return.
+	// play a sound to reflect the new state
+	//
+	if (target && CanAcquireTarget(target) == false) {
+			target = NULL;
+			SetLocalAngularVelocity(vec3_angle);
+			SetNextThink(gpGlobals->curtime + SMG_NO_TARGET_INTERVAL);
+			EmitSound(TURRET_LOSE_TARGET_SND);
+			return;
 	}
 
 	AimAtTarget(target);

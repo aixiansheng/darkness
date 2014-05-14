@@ -25,6 +25,7 @@
 #include "ScreenSpaceEffects.h"
 #include "model_types.h"
 #include "materialsystem/imaterialvar.h"
+#include "ammodef.h"
 
 // Don't alias here
 #if defined( CHL2MP_Player )
@@ -93,6 +94,8 @@ C_HL2MP_Player::C_HL2MP_Player() : m_PlayerAnimState( this ), m_iv_angEyeAngles(
 	classVectors = &g_HL2MPViewVectors;
 	m_iClassNumCache = m_iClassNumber;
 	m_iTeamNumCache = GetTeamNumber();
+
+	plasma_ammo_type = GetAmmoDef()->Index("plasma");
 }
 
 int C_HL2MP_Player::GrenadeType(void) {
@@ -126,6 +129,36 @@ bool C_HL2MP_Player::PlasmaReady(void) {
 
 bool C_HL2MP_Player::PlasmaArmorEnabled(void) {
 	return powerArmorEnabled;
+}
+
+void C_HL2MP_Player::PlasmaShot(void) {
+	int toRemove;
+
+	if (plasma_ready == false)
+		return;
+
+	if (PlasmaArmorEnabled())
+		toRemove = PLASMA_DRAIN_PER_SHOT_WITH_SHIELD;
+	else
+		toRemove = PLASMA_DRAIN_PER_SHOT;
+
+	RemoveAmmo(toRemove, plasma_ammo_type);
+}
+
+int C_HL2MP_Player::NumPlasmaShotsLeft(void) {
+	int ammo;
+	int perShot;
+
+	if (PlasmaArmorEnabled())
+		perShot = PLASMA_DRAIN_PER_SHOT_WITH_SHIELD;
+	else
+		perShot = PLASMA_DRAIN_PER_SHOT;
+
+	ammo = GetAmmoCount(plasma_ammo_type);
+	if (ammo > 0 && ammo < perShot)
+		return 1;
+
+	return ammo / perShot;
 }
 
 bool C_HL2MP_Player::JetOn(void) {
@@ -328,12 +361,14 @@ void C_HL2MP_Player::ClientThink( void )
 	local = GetLocalHL2MPPlayer();
 	if (bugGlow && local && local == this) {
 		dlight_t *dl = effects->CL_AllocDlight(index);
-		dl->origin = GetAbsOrigin();
-		dl->color.r = 10;
-		dl->color.g = 50;
-		dl->color.b = 255;
-		dl->radius = 384;
-		dl->die = gpGlobals->curtime + 0.01f;
+		if (dl) {
+			dl->origin = GetAbsOrigin();
+			dl->color.r = 10;
+			dl->color.g = 50;
+			dl->color.b = 255;
+			dl->radius = 384;
+			dl->die = gpGlobals->curtime + 0.01f;
+		}
 	}
 }
 
@@ -460,15 +495,23 @@ void C_HL2MP_Player::AddEntity( void )
 	{
 		if ( IsEffectActive( EF_DIMLIGHT ) )
 		{
-			int iAttachment = LookupAttachment( "anim_attachment_RH" );
-
-			if ( iAttachment < 0 )
+			int iAttachment;
+			
+			iAttachment = LookupAttachment( "anim_attachment_RH" );
+			if (iAttachment < 0)
 				return;
 
 			Vector vecOrigin;
 			QAngle eyeAngles = m_angEyeAngles;
 	
-			GetAttachment( iAttachment, vecOrigin, eyeAngles );
+			GetAttachment(iAttachment, vecOrigin, eyeAngles);
+
+			//
+			// engineer doesn't have hands for a flashlight...
+			//
+			if (m_iClassNumber == CLASS_ENGINEER_IDX) {
+				vecOrigin.z += 42.0f;
+			}
 
 			Vector vForward;
 			AngleVectors( eyeAngles, &vForward );

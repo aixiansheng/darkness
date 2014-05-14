@@ -43,6 +43,22 @@ extern CUtlMemoryPool g_EntityListPool;
 
 #define SF_DECAL_NOTINDEATHMATCH		2048
 
+const char *randomHumanGibs[MAX_HUMAN_GIBS] = {
+	"models/gibs/hgibs_rib.mdl",
+	"models/gibs/hgibs_scapula.mdl",
+	"models/gibs/hgibs_spine.mdl"
+};
+
+const char *randomSpiderGibs[MAX_SPIDER_GIBS] = {
+	"models/gibs/antlion_gib_small_1.mdl",
+	"models/gibs/antlion_gib_small_2.mdl",
+	"models/gibs/antlion_gib_small_3.mdl",
+	"models/gibs/antlion_gib_medium_1.mdl",
+	"models/gibs/antlion_gib_medium_2.mdl",
+	"models/gibs/antlion_gib_medium_3.mdl"
+};
+
+
 class CDecal : public CPointEntity
 {
 public:
@@ -576,6 +592,7 @@ const char *GetDefaultLightstyleString( int styleIndex )
 
 void CWorld::Precache( void )
 {
+	int i;
 	g_WorldEntity = this;
 	g_fGameOver = false;
 	g_pLastSpawn = NULL;
@@ -636,14 +653,15 @@ void CWorld::Precache( void )
 
 	g_Language.SetValue( LANGUAGE_ENGLISH );	// TODO use VGUI to get current language
 
-	if ( g_Language.GetInt() == LANGUAGE_GERMAN )
-	{
-		PrecacheModel( "models/germangibs.mdl" );
-	}
-	else
-	{
-		PrecacheModel( "models/gibs/hgibs.mdl" );
-	}
+
+	PrecacheModel( "models/gibs/hgibs.mdl" );
+		
+	for (i = 0; i < MAX_HUMAN_GIBS; i++)
+		PrecacheModel(randomHumanGibs[i]);
+
+	for (i = 0; i < MAX_SPIDER_GIBS; i++)
+		PrecacheModel(randomSpiderGibs[i]);
+
 
 	PrecacheScriptSound( "BaseEntity.EnterWater" );
 	PrecacheScriptSound( "BaseEntity.ExitWater" );

@@ -84,12 +84,11 @@ class CMSLTurretHead : public CBaseAnimating {
 		QAngle AimBarrelAt(const Vector &parentTarget);
 		Vector WorldBarrelPosition(void);
 		void UpdateMatrix(void);
-
-		void PossibleTarget(CBaseEntity *e);
-
+		void EngageTarget(CBaseEntity *e);
 		void TrackTargetThink(void);
-
 		void ShootAt(CBaseEntity *ent);
+		bool CanAcquireTarget(CBaseEntity *ent);
+		bool HasTarget(void);
 
 		virtual int OnTakeDamage(const CTakeDamageInfo &info);
 

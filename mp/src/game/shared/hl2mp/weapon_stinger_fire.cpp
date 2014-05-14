@@ -326,14 +326,14 @@ void CStingerFire::FlameTouch( CBaseEntity *pOther ) {
 	SetSolid(SOLID_NONE);
 
 	if (tr.fraction == 1.0 || !(tr.surface.flags & SURF_SKY)) {
-		CTakeDamageInfo info(m_hOwner, this, STINGER_FLAME_DMG, DMG_BURN);
+		CTakeDamageInfo info(m_hOwner, GetOwnerEntity(), STINGER_FLAME_DMG, DMG_BURN);
 		info.SetAmmoType(GetAmmoDef()->Index("stingerfire"));
 
 		pOther->DispatchTraceAttack(info, forward, &tr);
 		ApplyMultiDamage();
 	}
 
-	UTIL_Remove( this );
+	UTIL_Remove(this);
 }
 
 CStingerFire *CStingerFire::Create( const Vector &vecOrigin, const QAngle &vecAngles, edict_t *pentOwner = NULL ) {
@@ -369,12 +369,14 @@ void CStingerFire::Simulate(void) {
 
 	if (IsEffectActive(EF_BRIGHTLIGHT)) {
 		dlight_t *dl = effects->CL_AllocDlight(index);
-		dl->origin = GetAbsOrigin();
-		dl->color.r = 255;
-		dl->color.g = 194;
-		dl->color.b = 30;
-		dl->radius = 512;
-		dl->die = gpGlobals->curtime + 0.01f;
+		if (dl) {
+			dl->origin = GetAbsOrigin();
+			dl->color.r = 255;
+			dl->color.g = 194;
+			dl->color.b = 30;
+			dl->radius = 512;
+			dl->die = gpGlobals->curtime + 0.01f;
+		}
 	}
 }
 

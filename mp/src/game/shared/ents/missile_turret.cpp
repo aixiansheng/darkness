@@ -114,15 +114,12 @@ void CMSLTurretEntity::DetectThink(void) {
 			);
 		
 			if (tr.DidHit() && tr.m_pEnt) {
-
-				if (tr.m_pEnt->IsPlayer() && 
-					tr.m_pEnt->GetTeamNumber() == TEAM_SPIDERS && 
-					tr.m_pEnt->IsAlive()) {
-
-					// do somethinf about the target
-					turretHead->PossibleTarget(tr.m_pEnt);
-					//Warning("Aiming At Target\n");
-
+				//
+				// tell the turret head about the possible target
+				//
+				if (turretHead->HasTarget() == false &&
+					turretHead->CanAcquireTarget(tr.m_pEnt)) {
+						turretHead->EngageTarget(tr.m_pEnt);
 				}
 			}
 		}
@@ -216,6 +213,12 @@ void CMSLTurretHead::Spawn(void) {
 
 	SetThink(&CMSLTurretHead::TrackTargetThink);
 	SetNextThink(gpGlobals->curtime + MSL_NO_TARGET_INTERVAL);
+}
+
+bool CMSLTurretHead::HasTarget(void) {
+	if (target)
+		return true;
+	return false;
 }
 
 int CMSLTurretHead::OnTakeDamage(const CTakeDamageInfo &info) {
@@ -386,12 +389,33 @@ void CMSLTurretHead::UpdateMatrix(void) {
 	m_parentMatrix.InitFromEntity( GetParent(), GetParentAttachment() );
 }
 
-void CMSLTurretHead::PossibleTarget(CBaseEntity *ent) {
-	if (target == NULL) {
-		target = ent;
-		SetNextThink(gpGlobals->curtime);
-		EmitSound(TURRET_ACQUIRE_TARGET_SND);
-	}
+void CMSLTurretHead::EngageTarget(CBaseEntity *ent) {
+	target = ent;
+	SetNextThink(gpGlobals->curtime);
+	EmitSound(TURRET_ACQUIRE_TARGET_SND);
+}
+
+bool CMSLTurretHead::CanAcquireTarget(CBaseEntity *ent) {
+	Vector toTarget;
+	CHL2MP_Player *p;
+
+	if (ent == NULL)
+		return false;
+
+	if ((p = ToHL2MPPlayer(ent)) == NULL)
+		return false;
+
+	if (ent->IsAlive() == false)
+		return false;
+
+	if (p->GetTeamNumber() != TEAM_SPIDERS)
+		return false;
+
+	toTarget = GetAbsOrigin() - ent->BodyTarget(GetAbsOrigin(), false);
+	if (toTarget.Length() > SMG_TURRET_DETECT_RADIUS)
+		return false;
+
+	return true;
 }
 
 void CMSLTurretHead::TrackTargetThink(void) {
@@ -405,13 +429,17 @@ void CMSLTurretHead::TrackTargetThink(void) {
 		return;
 	}
 
-	toTarget = GetAbsOrigin() - target->BodyTarget(GetAbsOrigin(), false);
-	if (toTarget.Length() > MSL_TURRET_DETECT_RADIUS || !target->IsAlive()) {
-		target = NULL;
-		SetLocalAngularVelocity(vec3_angle);
-		SetNextThink(gpGlobals->curtime + MSL_NO_TARGET_INTERVAL);
-		EmitSound(TURRET_LOSE_TARGET_SND);
-		return;
+	//
+	// if the target has moved out of range/died/change team
+	// set target to NULL and return.
+	// play a sound to reflect the new state
+	//
+	if (target && CanAcquireTarget(target) == false) {
+			target = NULL;
+			SetLocalAngularVelocity(vec3_angle);
+			SetNextThink(gpGlobals->curtime + MSL_NO_TARGET_INTERVAL);
+			EmitSound(TURRET_LOSE_TARGET_SND);
+			return;
 	}
 
 	AimAtTarget(target);

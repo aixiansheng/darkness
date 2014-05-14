@@ -113,8 +113,8 @@ public:
 	int FlashlightIsOn( void );
 	void FlashlightTurnOn( void );
 	void FlashlightTurnOff( void );
-	void	PrecacheFootStepSounds( void );
-	bool	ValidatePlayerModel( const char *pModel );
+	void PrecacheFootStepSounds( void );
+	bool ValidatePlayerModel( const char *pModel );
 
 	QAngle GetAnimEyeAngles( void ) { return m_angEyeAngles.Get(); }
 
@@ -125,6 +125,7 @@ public:
 	void GiveAllItems( void );
 	void GiveDefaultItems( void );
 	void RefilAmmo(bool small);
+	bool EntRefil(float delay);
 
 	void NoteWeaponFired( void );
 
@@ -140,8 +141,9 @@ public:
 	const char *GetPlayerModelSoundPrefix( void );
 	int	  GetPlayerModelType( void ) { return m_iPlayerSoundType;	}
 	
-	void  DetonateTripmines( void );
+	void DetonateTripmines(void);
 	void RemoveSpikeGrenades(void);
+	void RemoveGrapplingHook(void);
 
 	void Reset();
 
@@ -197,10 +199,12 @@ public:
 	void DropC4Pack(void);
 	void ParalyzePlayer(void);
 
+	virtual bool HasHumanGibs(void);
+	virtual bool HasAlienGibs(void);
+
 	CNetworkVar (int, m_iClassNumber);
 	
 	float next_heal_sound;
-	float next_ammo_pickup;
 
 	void NoClipSpawn(CBaseEntity *spawn);
 	
@@ -218,6 +222,7 @@ public:
 	void DisablePlasma(bool dmg);
 	void RegularRecharge(void);
 	bool JetOn(void);
+	int NumPlasmaShotsLeft(void);
 
 	void StartJetPack(void);
 	void StopJetPack(void);
@@ -336,6 +341,8 @@ private:
 	CBaseCombatWeapon *spec_weapon;
 
 	float next_infestation;
+
+	float m_flNextEntRefil;
 
 	void InfestCorpse(void);
 

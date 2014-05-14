@@ -2601,7 +2601,7 @@ void CWeaponPhysCannon::DoEffectIdle( void )
 
 	StartEffects();
 
-	//if ( ShouldDrawUsingViewModel() )
+	if ( ShouldDrawUsingViewModel() )
 	{
 		// Turn on the glow sprites
 		for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ )

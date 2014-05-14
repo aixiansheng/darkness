@@ -871,18 +871,30 @@ bool CBaseCombatCharacter::CorpseGib( const CTakeDamageInfo &info )
 
 	EmitSound( "BaseCombatCharacter.CorpseGib" );
 
-	// only humans throw skulls !!!UNDONE - eventually NPCs will have their own sets of gibs
-	if ( HasHumanGibs() )
-	{
-		CGib::SpawnHeadGib( this );
-		CGib::SpawnRandomGibs( this, 4, GIB_HUMAN );	// throw some human gibs.
+	if (HasHumanGibs()) {
+		CGib::SpawnHeadGib(this);
+		CGib::SpawnRandomGibs(this, 7, GIB_HUMAN);
+		gibbed = true;
+	} else if (HasAlienGibs()) {
+		CGib::SpawnRandomGibs(this, 8, GIB_ALIEN);
 		gibbed = true;
 	}
-	else if ( HasAlienGibs() )
-	{
-		CGib::SpawnRandomGibs( this, 4, GIB_ALIEN );	// Throw alien gibs
-		gibbed = true;
+
+	for (int i = 0 ; i < 4 ; i++) {
+		Vector vecSpot = WorldSpaceCenter();
+		Vector vecDir = info.GetDamageForce();
+
+		vecSpot.z += random->RandomFloat( -4, 16 );
+ 
+		vecDir.x = random->RandomFloat(-3, 3);
+		vecDir.y = random->RandomFloat(-3, 3);
+		vecDir.z = 0;
+		VectorNormalize( vecDir );
+ 
+		UTIL_BloodImpact(vecSpot, vecDir, BLOOD_COLOR_RED, 10);
 	}
+
+	UTIL_BloodSpray(WorldSpaceCenter(), info.GetDamageForce(), BLOOD_COLOR_RED, 10, FX_BLOODSPRAY_ALL);
 
 	return gibbed;
 }
@@ -1319,39 +1331,12 @@ CBaseEntity *CBaseCombatCharacter::CheckTraceHullAttack( const Vector &vStart, c
 
 bool  CBaseCombatCharacter::Event_Gibbed( const CTakeDamageInfo &info )
 {
-	bool fade = false;
-
-	if ( HasHumanGibs() )
-	{
-		ConVarRef violence_hgibs( "violence_hgibs" );
-		if ( violence_hgibs.IsValid() && violence_hgibs.GetInt() == 0 )
-		{
-			fade = true;
-		}
-	}
-	else if ( HasAlienGibs() )
-	{
-		ConVarRef violence_agibs( "violence_agibs" );
-		if ( violence_agibs.IsValid() && violence_agibs.GetInt() == 0 )
-		{
-			fade = true;
-		}
-	}
-
-	m_takedamage	= DAMAGE_NO;
+	m_takedamage = DAMAGE_NO;
 	AddSolidFlags( FSOLID_NOT_SOLID );
-	m_lifeState		= LIFE_DEAD;
+	m_lifeState = LIFE_DEAD;
 
-	if ( fade )
-	{
-		CorpseFade();
-		return false;
-	}
-	else
-	{
-		AddEffects( EF_NODRAW ); // make the model invisible.
-		return CorpseGib( info );
-	}
+	AddEffects(EF_NODRAW);
+	return CorpseGib(info);
 }
 
 

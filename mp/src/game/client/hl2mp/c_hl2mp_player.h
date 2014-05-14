@@ -96,6 +96,8 @@ public:
 
 	bool JetOn(void);
 	bool PlasmaArmorEnabled(void);
+	int NumPlasmaShotsLeft(void);
+	void PlasmaShot(void);
 
 	HL2MPViewVectors *classVectors;
 	
@@ -117,6 +119,8 @@ public:
 	int grenade_type;
 	bool bugGlow;
 	int spawnNumber;
+
+	int plasma_ammo_type;
 
 	int GrenadeType(void);
 

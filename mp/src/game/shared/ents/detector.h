@@ -16,7 +16,7 @@
 	#include "explode.h"
 #endif
 
-#define DETECTOR_RADIUS 300
+#define DETECTOR_RADIUS 280
 #define DETECTOR_THINK_INTERVAL 1.5f
 #define DETECTOR_ARM_TIME 2.0f
 #define DETECTOR_SOUND "Detector.Ping"

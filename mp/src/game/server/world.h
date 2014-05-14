@@ -11,6 +11,11 @@
 #pragma once
 #endif
 
+#define MAX_HUMAN_GIBS 3
+#define MAX_SPIDER_GIBS 6
+
+extern const char *randomHumanGibs[];
+extern const char *randomSpiderGibs[];
 
 class CWorld : public CBaseEntity
 {

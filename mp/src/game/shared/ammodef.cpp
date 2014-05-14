@@ -515,10 +515,10 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_EXTERMINATOR_IDX]		= 0.0f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_MECH_IDX]				= 0.0f;
 	
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_BREEDER_IDX]			= 0.5f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_HATCHY_IDX]				= 0.3f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_DRONE_IDX]				= 0.5f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_KAMI_IDX]				= 0.4f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_BREEDER_IDX]			= 1.0f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_HATCHY_IDX]				= 1.0f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_DRONE_IDX]				= 0.8f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_KAMI_IDX]				= 0.5f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_STINGER_IDX]			= 0.4f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_GUARDIAN_IDX]			= 1.2f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_STALKER_IDX]			= 1.0f;
@@ -549,10 +549,10 @@ CAmmoDef::CAmmoDef(void)
 	dmg_factors[WPN_PLASMA_CANON][CLASS_EXTERMINATOR_IDX]		= 0.0f;
 	dmg_factors[WPN_PLASMA_CANON][CLASS_MECH_IDX]				= 0.0f;
 	
-	dmg_factors[WPN_PLASMA_CANON][CLASS_BREEDER_IDX]			= 0.6f;
-	dmg_factors[WPN_PLASMA_CANON][CLASS_HATCHY_IDX]				= 0.7f;
-	dmg_factors[WPN_PLASMA_CANON][CLASS_DRONE_IDX]				= 0.7f;
-	dmg_factors[WPN_PLASMA_CANON][CLASS_KAMI_IDX]				= 0.7f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_BREEDER_IDX]			= 1.1f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_HATCHY_IDX]				= 1.0f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_DRONE_IDX]				= 0.9f;
+	dmg_factors[WPN_PLASMA_CANON][CLASS_KAMI_IDX]				= 1.0f;
 	dmg_factors[WPN_PLASMA_CANON][CLASS_STINGER_IDX]			= 0.8f;
 	dmg_factors[WPN_PLASMA_CANON][CLASS_GUARDIAN_IDX]			= 1.0f;
 	dmg_factors[WPN_PLASMA_CANON][CLASS_STALKER_IDX]			= 0.8f;
@@ -1135,26 +1135,26 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_STINGER_SLASH][ITEM_SPIKER_IDX]		= 0.4f;
 	item_dmg_factors[WPN_STINGER_SLASH][ITEM_GASSER_IDX]		= 0.1f;
 
-	item_dmg_factors[WPN_STINGER_FIRE][ITEM_TELEPORTER_IDX]		= 1.0f;
-	item_dmg_factors[WPN_STINGER_FIRE][ITEM_AMMO_CRATE_IDX]		= 1.0f;
-	item_dmg_factors[WPN_STINGER_FIRE][ITEM_MEDIPAD_IDX]		= 1.0f;
+	item_dmg_factors[WPN_STINGER_FIRE][ITEM_TELEPORTER_IDX]		= 1.1f;
+	item_dmg_factors[WPN_STINGER_FIRE][ITEM_AMMO_CRATE_IDX]		= 1.1f;
+	item_dmg_factors[WPN_STINGER_FIRE][ITEM_MEDIPAD_IDX]		= 1.1f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_MINE_IDX]			= 1.0f;
-	item_dmg_factors[WPN_STINGER_FIRE][ITEM_SMG_TURRET_IDX]		= 0.8f;
+	item_dmg_factors[WPN_STINGER_FIRE][ITEM_SMG_TURRET_IDX]		= 0.6f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_DETECTOR_IDX]		= 1.0f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_MSL_TURRET_IDX]		= 0.9f;
-	item_dmg_factors[WPN_STINGER_FIRE][ITEM_EGG_IDX]			= 0.1f;
+	item_dmg_factors[WPN_STINGER_FIRE][ITEM_EGG_IDX]			= 0.0f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_HEALER_IDX]			= 0.2f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_OBSTACLE_IDX]		= 0.7f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_SPIKER_IDX]			= 0.3f;
 	item_dmg_factors[WPN_STINGER_FIRE][ITEM_GASSER_IDX]			= 0.1f;
 
-	item_dmg_factors[WPN_ACID_GREN][ITEM_TELEPORTER_IDX]		= 0.2f;
-	item_dmg_factors[WPN_ACID_GREN][ITEM_AMMO_CRATE_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ACID_GREN][ITEM_TELEPORTER_IDX]		= 1.0f;
+	item_dmg_factors[WPN_ACID_GREN][ITEM_AMMO_CRATE_IDX]		= 1.1f;
 	item_dmg_factors[WPN_ACID_GREN][ITEM_MEDIPAD_IDX]			= 1.0f;
 	item_dmg_factors[WPN_ACID_GREN][ITEM_MINE_IDX]				= 0.1f;
-	item_dmg_factors[WPN_ACID_GREN][ITEM_SMG_TURRET_IDX]		= 1.2f;
+	item_dmg_factors[WPN_ACID_GREN][ITEM_SMG_TURRET_IDX]		= 1.4f;
 	item_dmg_factors[WPN_ACID_GREN][ITEM_DETECTOR_IDX]			= 1.2f;
-	item_dmg_factors[WPN_ACID_GREN][ITEM_MSL_TURRET_IDX]		= 1.1f;
+	item_dmg_factors[WPN_ACID_GREN][ITEM_MSL_TURRET_IDX]		= 1.2f;
 	item_dmg_factors[WPN_ACID_GREN][ITEM_EGG_IDX]				= 0.0f;
 	item_dmg_factors[WPN_ACID_GREN][ITEM_HEALER_IDX]			= 0.0f;
 	item_dmg_factors[WPN_ACID_GREN][ITEM_OBSTACLE_IDX]			= 0.0f;

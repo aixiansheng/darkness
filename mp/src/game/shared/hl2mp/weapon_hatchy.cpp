@@ -248,6 +248,14 @@ void CGrapplingHook::HookedThink( void ) {
 	dist = cur_dist;
 }
 
+CHL2MP_Player *CGrapplingHook::GetPlayer(void) {
+	if (m_hPlayer.Get()) {
+		return ToHL2MPPlayer(m_hPlayer.Get());
+	}
+
+	return NULL;
+}
+
 void CGrapplingHook::FlyThink( void ) {
 	QAngle angNewAngles;
  

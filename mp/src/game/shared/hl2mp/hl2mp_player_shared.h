@@ -12,6 +12,8 @@
 #define HL2MP_PUSHAWAY_THINK_INTERVAL		(1.0f / 20.0f)
 #include "studio.h"
 
+#define PLASMA_DRAIN_PER_SHOT 3
+#define PLASMA_DRAIN_PER_SHOT_WITH_SHIELD 4
 
 enum
 {

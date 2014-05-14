@@ -10,7 +10,7 @@
 #define CWeaponPlasmaRifle C_WeaponPlasmaRifle
 #endif
 
-#define	PLASMA_RIFLE_REFIRE			0.11f
+#define	PLASMA_RIFLE_REFIRE			0.13f
 #define RAILGUN_REFIRE				20.0f
 
 #define PLASMA_RIFLE_DMG			8.0f

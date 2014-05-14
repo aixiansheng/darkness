@@ -15,6 +15,7 @@
 #include "vstdlib/random.h"
 #include "ai_utils.h"
 #include "EntityFlame.h"
+#include "world.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -119,16 +120,8 @@ void CGib::SpawnHeadGib( CBaseEntity *pVictim )
 {
 	CGib *pGib = CREATE_ENTITY( CGib, "gib" );
 
-	if ( g_Language.GetInt() == LANGUAGE_GERMAN )
-	{
-		pGib->Spawn( "models/germangibs.mdl" );// throw one head
-		pGib->m_nBody = 0;
-	}
-	else
-	{
-		pGib->Spawn( "models/gibs/hgibs.mdl" );// throw one head
-		pGib->m_nBody = 0;
-	}
+	pGib->Spawn("models/gibs/hgibs.mdl", random->RandomFloat(15.0f, 45.0f));// throw one head
+	pGib->m_nBody = 0;
 
 	if ( pVictim )
 	{
@@ -302,28 +295,28 @@ void CGib::SpawnRandomGibs( CBaseEntity *pVictim, int cGibs, GibType_e eGibType 
 	{
 		CGib *pGib = CREATE_ENTITY( CGib, "gib" );
 
-		if ( g_Language.GetInt() == LANGUAGE_GERMAN )
-		{
-			pGib->Spawn( "models/germangibs.mdl" );
-			pGib->m_nBody = random->RandomInt(0,GERMAN_GIB_COUNT-1);
+		switch (eGibType) {
+		case GIB_HUMAN:
+			// human pieces
+			pGib->Spawn
+			(
+				randomHumanGibs[random->RandomInt(0, MAX_HUMAN_GIBS - 1)],
+				random->RandomFloat(15.0f, 85.0f)
+			);
+			//pGib->m_nBody = random->RandomInt(1,HUMAN_GIB_COUNT-1);// start at one to avoid throwing random amounts of skulls (0th gib)
+			break;
+		case GIB_ALIEN:
+			// alien pieces
+			pGib->Spawn
+			(
+				randomSpiderGibs[random->RandomInt(0, MAX_SPIDER_GIBS - 1)],
+				random->RandomFloat(15.0f, 85.0f)
+			);
+			//pGib->m_nBody = random->RandomInt(0,ALIEN_GIB_COUNT-1);
+			break;
 		}
-		else
-		{
-			switch (eGibType)
-			{
-			case GIB_HUMAN:
-				// human pieces
-				pGib->Spawn( "models/gibs/hgibs.mdl" );
-				pGib->m_nBody = random->RandomInt(1,HUMAN_GIB_COUNT-1);// start at one to avoid throwing random amounts of skulls (0th gib)
-				break;
-			case GIB_ALIEN:
-				// alien pieces
-				pGib->Spawn( "models/gibs/agibs.mdl" );
-				pGib->m_nBody = random->RandomInt(0,ALIEN_GIB_COUNT-1);
-				break;
-			}
-		}
-		pGib->InitGib( pVictim, 300, 400);
+
+		pGib->InitGib(pVictim, 300, 400);
 	}
 }
 
@@ -395,18 +388,18 @@ void CGib::WaitTillLand ( void )
 
 bool CGib::SUB_AllowedToFade( void )
 {
-	if( VPhysicsGetObject() )
-	{
-		if( VPhysicsGetObject()->GetGameFlags() & FVPHYSICS_PLAYER_HELD || GetEFlags() & EFL_IS_BEING_LIFTED_BY_BARNACLE )
-			return false;
-	}
+	//if( VPhysicsGetObject() )
+	//{
+	//	if( VPhysicsGetObject()->GetGameFlags() & FVPHYSICS_PLAYER_HELD || GetEFlags() & EFL_IS_BEING_LIFTED_BY_BARNACLE )
+	//		return false;
+	//}
 
-	CBasePlayer *pPlayer = ( AI_IsSinglePlayer() ) ? UTIL_GetLocalPlayer() : NULL;
+	//CBasePlayer *pPlayer = ( AI_IsSinglePlayer() ) ? UTIL_GetLocalPlayer() : NULL;
 
-	if ( pPlayer && pPlayer->FInViewCone( this ) && m_bForceRemove == false )
-	{
-		return false;
-	}
+	//if ( pPlayer && pPlayer->FInViewCone( this ) && m_bForceRemove == false )
+	//{
+	//	return false;
+	//}
 
 	return true;
 }

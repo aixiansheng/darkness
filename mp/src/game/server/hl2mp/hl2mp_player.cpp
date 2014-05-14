@@ -34,6 +34,7 @@
 #include "particle_parse.h"
 #include "weapon_engy.h"
 #include "weapon_breeder.h"
+#include "weapon_hatchy.h"
 #include "grenade_guardian.h"
 #include "grenade_smk.h"
 #include "grenade_frag.h"
@@ -147,8 +148,8 @@ extern HL2MPViewVectors g_HL2MPViewVectors;
 #define PLASMA_THINK_CTX			"plasma_think"
 #define PLASMA_RECHARGE_INTERVAL			0.15f
 #define PLASMA_NO_SHIELD_RECHARGE_INTERVAL	0.12f
-#define PLASMA_RECHARGE_DELAY				1.5f
-#define PLASMA_NO_SHIELD_RECHARGE_DELAY		1.0f
+#define PLASMA_RECHARGE_DELAY				1.0f
+#define PLASMA_NO_SHIELD_RECHARGE_DELAY		0.4f
 #define PLASMA_RECHARGE_MAX_AMT				25
 
 #define ENGY_RECHARGE_INTERVAL				1.5f
@@ -203,7 +204,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	chose_class = false;
 	choosing_class = false;
 
-	next_ammo_pickup = 0.0f;
+	m_flNextEntRefil = 0.0f;
 
 	classVectors = &g_HL2MPViewVectors;
 	next_heal_sound = 0.0f;
@@ -710,13 +711,15 @@ bool CHL2MP_Player::PlasmaArmorEnabled(void) {
 }
 
 void CHL2MP_Player::PlasmaShot(void) {
-	int toRemove = 1;
+	int toRemove;
 
 	if (plasma_ready == false)
 		return;
 
 	if (PlasmaArmorEnabled())
-		toRemove = 2;
+		toRemove = PLASMA_DRAIN_PER_SHOT_WITH_SHIELD;
+	else
+		toRemove = PLASMA_DRAIN_PER_SHOT;
 
 	RemoveAmmo(toRemove, plasma_ammo_type);
 
@@ -728,6 +731,22 @@ void CHL2MP_Player::PlasmaShot(void) {
 
 }
 
+int CHL2MP_Player::NumPlasmaShotsLeft(void) {
+	int ammo;
+	int perShot;
+
+	if (PlasmaArmorEnabled())
+		perShot = PLASMA_DRAIN_PER_SHOT_WITH_SHIELD;
+	else
+		perShot = PLASMA_DRAIN_PER_SHOT;
+
+	ammo = GetAmmoCount(plasma_ammo_type);
+	if (ammo > 0 && ammo < perShot)
+		return 1;
+
+	return ammo / perShot;
+}
+
 //
 // railgun does damage to plasma shield
 //
@@ -737,7 +756,7 @@ void CHL2MP_Player::RailgunShot(void) {
 
 	DisablePlasma(true);
 
-	max_plasma -= 75;
+	max_plasma -= 45;
 	max_plasma = clamp(max_plasma, 0, 250);
 }
 
@@ -904,6 +923,20 @@ void CHL2MP_Player::Precache( void )
 
 void CHL2MP_Player::GiveAllItems(void) {
 	EquipSuit(false);
+}
+
+//
+// refill ammo with a timer/delay for the next
+// possible refil (healers/ammo crates)
+//
+bool CHL2MP_Player::EntRefil(float delay) {
+	if (m_flNextEntRefil < gpGlobals->curtime) {
+		m_flNextEntRefil = gpGlobals->curtime + delay;
+		RefilAmmo(false);
+		return true;
+	}
+
+	return false;
 }
 
 #define GRENADE_REFIL_TIMEOUT 20.0f
@@ -1122,8 +1155,7 @@ void CHL2MP_Player::Spawn(void)
 
 	forceNoRagdoll = false;
 
-	showSpawnHint = true;
-	next_ammo_pickup = 0.0f;
+	m_flNextEntRefil = true;
 	m_flNextModelChangeTime = 0.0f;
 	m_flNextTeamChangeTime = 0.0f;
 	chose_class = false;
@@ -3021,6 +3053,25 @@ void CHL2MP_Player::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector *pvecT
 	//BaseClass::Weapon_Drop( pWeapon, pvecTarget, pVelocity );
 }
 
+void CHL2MP_Player::RemoveGrapplingHook(void) {
+	CBaseEntity *ent;
+	CGrapplingHook *g;
+
+	ent = NULL;
+
+	if (m_iClassNumber == CLASS_HATCHY_IDX || m_iClassNumber == CLASS_KAMI_IDX) {
+		while ((ent = gEntList.FindEntityByClassname(ent, "grapple_hook")) != NULL) {
+			g = dynamic_cast<CGrapplingHook *>(ent);
+			if (g && g->GetPlayer() == this) {
+				UTIL_Remove(g);
+			}
+		}
+	}
+
+	SetMoveType(MOVETYPE_WALK);
+	grappling = false;
+}
+
 void CHL2MP_Player::RemoveSpikeGrenades(void) {
 	CBaseEntity *ent;
 	CGrenadeGuardian *g;
@@ -3052,6 +3103,18 @@ void CHL2MP_Player::DetonateTripmines( void )
 
 	// Play sound for pressing the detonator
 	EmitSound( "Weapon_SLAM.SatchelDetonate" );
+}
+
+bool CHL2MP_Player::HasHumanGibs(void) {
+	if (GetTeamNumber() == TEAM_HUMANS)
+		return true;
+	return false;
+}
+
+bool CHL2MP_Player::HasAlienGibs(void) {
+	if (GetTeamNumber() == TEAM_SPIDERS)
+		return true;
+	return false;
 }
 
 //void CHL2MP_Player::Event_Dying( const CTakeDamageInfo &info ) {

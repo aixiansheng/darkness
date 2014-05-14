@@ -330,12 +330,14 @@ void CPlasmaBolt::Simulate(void) {
 
 	if (IsEffectActive(EF_BRIGHTLIGHT)) {
 		dlight_t *dl = effects->CL_AllocDlight(index);
-		dl->origin = GetAbsOrigin();
-		dl->color.r = 255;
-		dl->color.g = 221;
-		dl->color.b = 103;
-		dl->radius = 384;
-		dl->die = gpGlobals->curtime + 0.01f;
+		if (dl) {
+			dl->origin = GetAbsOrigin();
+			dl->color.r = 255;
+			dl->color.g = 221;
+			dl->color.b = 103;
+			dl->radius = 384;
+			dl->die = gpGlobals->curtime + 0.01f;
+		}
 	}
 }
 

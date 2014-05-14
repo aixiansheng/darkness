@@ -38,20 +38,13 @@ public:
 	void	Spawn( void );
 	void	SetupCrate( void );
 	void	OnRestore( void );
-	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void	CrateThink( void );
+	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	int		ObjectCaps(void);
 	virtual void StartTouch(CBaseEntity *ent);
 
-	bool PlayerIsWaiting(CHL2MP_Player *p, float *wait_time);
-	void MakePlayerWait(CHL2MP_Player *p, float wait_time);
-
 protected:
 
-	CUtlVector<EHANDLE> waiting;
 	unsigned int refils_total;
-
-	
 
 #endif
 

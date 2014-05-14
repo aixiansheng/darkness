@@ -514,8 +514,9 @@ bool CWeaponEngyDestroy::Holster(CBaseCombatWeapon *pSwitchingTo) {
 	CloseElements();
 	StopEffects();
 	DestroyEffects();
+	StopLoopingSounds();
 
-	return BaseClass::Holster( pSwitchingTo );
+	return BaseClass::Holster(pSwitchingTo);
 }
 
 void CWeaponEngyDestroy::DryFire(void) {
@@ -1040,6 +1041,8 @@ void CWeaponEngyDestroy::StartEffects(void) {
 
 void CWeaponEngyDestroy::DoEffectClosed(void) {
 #ifdef CLIENT_DLL
+	if (!ShouldDrawUsingViewModel())
+		return;
 
 	// Turn off the end-caps
 	for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ )
@@ -1053,6 +1056,8 @@ void CWeaponEngyDestroy::DoEffectClosed(void) {
 
 void CWeaponEngyDestroy::DoEffectReady(void) {
 #ifdef CLIENT_DLL
+	if (!ShouldDrawUsingViewModel())
+		return;
 
 	// Special POV case
 	if ( ShouldDrawUsingViewModel() )
@@ -1128,40 +1133,40 @@ void CWeaponEngyDestroy::DoEffectHolding(void) {
 		m_Beams[0].SetVisible();
 		m_Beams[1].SetVisible();
 	}
-	else
-	{
-		// Scale up the center sprite
-		m_Parameters[PHYSCANNON_CORE].GetScale().InitFromCurrent( 14.0f, 0.2f );
-		m_Parameters[PHYSCANNON_CORE].GetAlpha().InitFromCurrent( 255.0f, 0.1f );
-		m_Parameters[PHYSCANNON_CORE].SetVisible();
+	//else
+	//{
+	//	// Scale up the center sprite
+	//	m_Parameters[PHYSCANNON_CORE].GetScale().InitFromCurrent( 14.0f, 0.2f );
+	//	m_Parameters[PHYSCANNON_CORE].GetAlpha().InitFromCurrent( 255.0f, 0.1f );
+	//	m_Parameters[PHYSCANNON_CORE].SetVisible();
 
-		// Prepare for scale up
-		m_Parameters[PHYSCANNON_BLAST].SetVisible( false );
+	//	// Prepare for scale up
+	//	m_Parameters[PHYSCANNON_BLAST].SetVisible( false );
 
-		// Turn on the glow sprites
-		for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ )
-		{
-			m_Parameters[i].GetScale().InitFromCurrent( 0.5f * SPRITE_SCALE, 0.2f );
-			m_Parameters[i].GetAlpha().InitFromCurrent( 64.0f, 0.2f );
-			m_Parameters[i].SetVisible();
-		}
+	//	// Turn on the glow sprites
+	//	for ( int i = PHYSCANNON_GLOW1; i < (PHYSCANNON_GLOW1+NUM_GLOW_SPRITES); i++ )
+	//	{
+	//		m_Parameters[i].GetScale().InitFromCurrent( 0.5f * SPRITE_SCALE, 0.2f );
+	//		m_Parameters[i].GetAlpha().InitFromCurrent( 64.0f, 0.2f );
+	//		m_Parameters[i].SetVisible();
+	//	}
 
-		// Turn on the glow sprites
-		for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ )
-		{
-			m_Parameters[i].SetVisible();
-		}
+	//	// Turn on the glow sprites
+	//	for ( int i = PHYSCANNON_ENDCAP1; i < (PHYSCANNON_ENDCAP1+NUM_ENDCAP_SPRITES); i++ )
+	//	{
+	//		m_Parameters[i].SetVisible();
+	//	}
 
-		// Setup the beams
-		m_Beams[0].Init( LookupAttachment( "fork1t" ), 1, this, false );
-		m_Beams[1].Init( LookupAttachment( "fork2t" ), 1, this, false );
-		m_Beams[2].Init( LookupAttachment( "fork3t" ), 1, this, false );
+	//	// Setup the beams
+	//	m_Beams[0].Init( LookupAttachment( "fork1t" ), 1, this, false );
+	//	m_Beams[1].Init( LookupAttachment( "fork2t" ), 1, this, false );
+	//	m_Beams[2].Init( LookupAttachment( "fork3t" ), 1, this, false );
 
-		// Set them visible
-		m_Beams[0].SetVisible();
-		m_Beams[1].SetVisible();
-		m_Beams[2].SetVisible();
-	}
+	//	// Set them visible
+	//	m_Beams[0].SetVisible();
+	//	m_Beams[1].SetVisible();
+	//	m_Beams[2].SetVisible();
+	//}
 
 #endif
 }
@@ -1235,10 +1240,12 @@ void CWeaponEngyDestroy::DoEffectLaunch(Vector *pos) {
 
 #ifdef CLIENT_DLL
 
-	//Turn on the blast sprite and scale
-	m_Parameters[PHYSCANNON_BLAST].GetScale().Init( 8.0f, 64.0f, 0.1f );
-	m_Parameters[PHYSCANNON_BLAST].GetAlpha().Init( 255.0f, 0.0f, 0.2f );
-	m_Parameters[PHYSCANNON_BLAST].SetVisible();
+	if (!ShouldDrawUsingViewModel()) {
+		//Turn on the blast sprite and scale
+		m_Parameters[PHYSCANNON_BLAST].GetScale().Init( 8.0f, 64.0f, 0.1f );
+		m_Parameters[PHYSCANNON_BLAST].GetAlpha().Init( 255.0f, 0.0f, 0.2f );
+		m_Parameters[PHYSCANNON_BLAST].SetVisible();
+	}
 
 #endif
 
@@ -1246,6 +1253,9 @@ void CWeaponEngyDestroy::DoEffectLaunch(Vector *pos) {
 
 void CWeaponEngyDestroy::DoEffectNone(void) {
 #ifdef CLIENT_DLL
+
+	//if (!ShouldDrawUsingViewModel())
+	//	return;
 
 	//Turn off main glows
 	m_Parameters[PHYSCANNON_CORE].SetVisible( false );
@@ -1280,11 +1290,11 @@ void CWeaponEngyDestroy::DoEffect(int effectType, Vector *pos) {
 	switch( effectType )
 	{
 	case EFFECT_CLOSED:
-		DoEffectClosed( );
+		DoEffectClosed();
 		break;
 
 	case EFFECT_READY:
-		DoEffectReady( );
+		DoEffectReady();
 		break;
 
 	case EFFECT_HOLDING:

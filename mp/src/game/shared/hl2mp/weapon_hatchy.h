@@ -40,6 +40,7 @@ public:
 	unsigned int PhysicsSolidMaskForEntity() const;
 	static CGrapplingHook *HookCreate( const Vector &vecOrigin, const QAngle &angAngles, CBaseEntity *pentOwner = NULL );
 	virtual bool ShouldDraw(void) { return false; }
+	CHL2MP_Player *GetPlayer(void);
 
 protected:
  

@@ -80,7 +80,7 @@ void CHealerEntity::HealThink(void) {
 				before = p->GetHealth();
 				p->TakeHealth(HEALER_HEAL_VALUE, DMG_GENERIC);
 				after = p->GetHealth();
-				p->RefilAmmo(false);
+				(void)p->EntRefil(HEALER_REFIL_INTERVAL);
 
 				if (after - before > 0) {
 					last_inc = healed_total / 300;

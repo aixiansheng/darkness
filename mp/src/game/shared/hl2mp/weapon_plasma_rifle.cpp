@@ -107,7 +107,7 @@ void CWeaponPlasmaRifle::FireRifle(void) {
 	// do necessary callbacks to player for plasma use
 	// then fire some plasma in a way similar to SMG/AR2
 	int iBulletsToFire;
-	int maxBurstAmmo;
+	int maxShots;
 	CBasePlayer *pPlayer;
 	CHL2MP_Player *pHL2MPPlayer;
 	
@@ -120,14 +120,7 @@ void CWeaponPlasmaRifle::FireRifle(void) {
 		return;
 	
 	m_nShotsFired++;
-	maxBurstAmmo = pPlayer->GetAmmoCount(m_iPrimaryAmmoType);
-	if (pHL2MPPlayer->PlasmaArmorEnabled()) {
-		// allow player to fire the last bullet, even though
-		// the suit will want to drain 2 shots...
-		if (maxBurstAmmo > 1) {
-			maxBurstAmmo = maxBurstAmmo / 2;
-		}
-	}
+	maxShots = pHL2MPPlayer->NumPlasmaShotsLeft();
 
 	pPlayer->DoMuzzleFlash();
 
@@ -135,16 +128,13 @@ void CWeaponPlasmaRifle::FireRifle(void) {
 	// especially if the weapon we're firing has a really fast rate of fire.
 	iBulletsToFire = 0;
 
-	while (m_flNextPrimaryAttack <= gpGlobals->curtime && iBulletsToFire < GetMaxBurst() && maxBurstAmmo > 0) {
+	while (m_flNextPrimaryAttack <= gpGlobals->curtime && iBulletsToFire < GetMaxBurst() && maxShots > 0) {
 		WeaponSound(SINGLE, m_flNextPrimaryAttack);
 		m_flNextPrimaryAttack += PLASMA_RIFLE_REFIRE;
 		iBulletsToFire++;
-		maxBurstAmmo--;
+		maxShots -= 2;
 
-		#ifndef CLIENT_DLL
 		pHL2MPPlayer->PlasmaShot();
-		pHL2MPPlayer->PlasmaShot();
-		#endif
 	}
 
 	if (m_flNextPrimaryAttack < gpGlobals->curtime)
