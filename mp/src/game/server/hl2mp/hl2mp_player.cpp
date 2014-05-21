@@ -113,7 +113,7 @@ IMPLEMENT_SERVERCLASS_ST(CHL2MP_Player, DT_HL2MP_Player)
 	SendPropInt( SENDINFO( grenade_type ), 6 ),
 	SendPropInt( SENDINFO( m_iPlayerPoints ), 4, SPROP_UNSIGNED),
 	
-	SendPropInt( SENDINFO( m_iClassNumber), 5),
+	SendPropInt( SENDINFO( m_iClassNumber), 6),
 	SendPropBool( SENDINFO( stopped) ),
 	SendPropBool( SENDINFO( plasma_ready ) ),
 	SendPropBool( SENDINFO( jetpack_on ) ),

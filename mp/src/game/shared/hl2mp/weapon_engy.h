@@ -44,7 +44,7 @@ public:
 	bool WallStickParams(CHL2MP_Player *player, Vector &position, QAngle &angles, trace_t &tr);
 	CHumanMateriel *SpawnItem(const char *name, Vector &origin, QAngle &angles, CHL2MP_Player *creator, bool start_disabled, bool ignore_collision, trace_t &tr);
 	virtual void Precache(void);
-	void ItemStatusUpdate(CBasePlayer *player, int health, int armor);
+	void ItemStatusUpdate(CBasePlayer *player, int health, int armor, int maxhealth);
 
 	unsigned int repaired_total;
 

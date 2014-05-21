@@ -55,7 +55,7 @@ public:
 #ifndef CLIENT_DLL
 
 	virtual void Precache(void);
-	void ItemStatusUpdate(CBasePlayer *player, int health, int armor);
+	void ItemStatusUpdate(CBasePlayer *player, int health, int armor, int maxhealth);
 	
 #endif
 

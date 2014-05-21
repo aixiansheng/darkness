@@ -57,14 +57,25 @@ using namespace vgui;
 CTargetID::CTargetID( const char *pElementName ) :
 	CHudElement( pElementName ), BaseClass( NULL, "TargetID" )
 {
-	vgui::Panel *pParent = g_pClientMode->GetViewport();
-	SetParent( pParent );
+	IScheme* pScheme;
+	HFont hFont;
 
-	m_hFont = g_hFontTrebuchet24;
+	vgui::Panel *pParent = g_pClientMode->GetViewport();
+	SetParent(pParent);
+
+	//m_hFont = g_hFontTrebuchet24;
 	m_flLastChangeTime = 0;
 	m_iLastEntIndex = 0;
 
-	SetHiddenBits( HIDEHUD_MISCSTATUS );
+	SetHiddenBits(HIDEHUD_MISCSTATUS);
+
+	SetScheme(scheme()->LoadSchemeFromFile("resource/DarknessScheme.res", "DarknessScheme"));
+
+	pScheme = vgui::scheme()->GetIScheme(GetScheme());
+	
+	if (pScheme) {
+		m_hFont = pScheme->GetFont("HudHintTextVeryLarge");
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -74,13 +85,10 @@ void CTargetID::Init( void )
 {
 };
 
-void CTargetID::ApplySchemeSettings( vgui::IScheme *scheme )
+void CTargetID::ApplySchemeSettings(vgui::IScheme *scheme)
 {
-	BaseClass::ApplySchemeSettings( scheme );
-
-	m_hFont = scheme->GetFont( "TargetID", IsProportional() );
-
-	SetPaintBackgroundEnabled( false );
+	BaseClass::ApplySchemeSettings(scheme);
+	SetPaintBackgroundEnabled(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -105,31 +113,23 @@ Color CTargetID::GetColorForTargetTeam( int iTeamNumber )
 void CTargetID::Paint()
 {
 #define MAX_ID_STRING 256
-	wchar_t sIDString[ MAX_ID_STRING ];
-	sIDString[0] = 0;
-
+	Color c;
+	IScheme *s;
 	C_HL2MP_Player *pPlayer = C_HL2MP_Player::GetLocalHL2MPPlayer();
 
-	if ( !pPlayer )
+	if (!pPlayer)
 		return;
 
-	Color c;
+	s = scheme()->GetIScheme(GetScheme());
+	c = GetSchemeColor("CHudItemStatus.FgColor", s);
 
-	// Get our target's ent index
 	int iEntIndex = pPlayer->GetIDTarget();
-	// Didn't find one?
-	if ( !iEntIndex )
-	{
-		// Check to see if we should clear our ID
-		if ( m_flLastChangeTime && (gpGlobals->curtime > (m_flLastChangeTime + 0.5)) )
-		{
+
+	if (!iEntIndex) {
+		if (m_flLastChangeTime && (gpGlobals->curtime > (m_flLastChangeTime + 0.5)) ) {
 			m_flLastChangeTime = 0;
-			sIDString[0] = 0;
 			m_iLastEntIndex = 0;
-		}
-		else
-		{
-			// Keep re-using the old one
+		} else {
 			iEntIndex = m_iLastEntIndex;
 		}
 	}
@@ -145,94 +145,28 @@ void CTargetID::Paint()
 		C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
 		C_HL2MP_Player *p = ToHL2MPPlayer(pPlayer);
 
-		const char *printFormatString = NULL;
-		wchar_t wszPlayerName[ MAX_PLAYER_NAME_LENGTH ];
-		wchar_t wszHealthText[ 10 ];
-		bool bShowHealth = false;
-		bool bShowPlayerName = false;
+		if (!p || !pPlayer || !pLocalPlayer)
+			return;
 
-		// Some entities we always want to check, cause the text may change
-		// even while we're looking at it
-		// Is it a player?
+		wchar_t wszPlayerName[MAX_PLAYER_NAME_LENGTH];
+		if (IsPlayerIndex(iEntIndex)) {
 
-		if ( IsPlayerIndex( iEntIndex ))
-		{
 			if (p->GetTeamNumber() != pLocalPlayer->GetTeamNumber()) {
 				return;
 			}
 
-			if (p->GetTeamNumber() == TEAM_SPIDERS &&
-				p->m_iClassNumber == CLASS_GUARDIAN_IDX &&
+			if (p->m_iClassNumber == CLASS_GUARDIAN_IDX &&
 				p->IsStopped() == true) {
-
 					return;
-
 			}
 
-			c = GetColorForTargetTeam( pPlayer->GetTeamNumber() );
+			g_pVGuiLocalize->ConvertANSIToUnicode(pPlayer->GetPlayerName(), wszPlayerName, sizeof(wszPlayerName));
 
-			bShowPlayerName = true;
-			g_pVGuiLocalize->ConvertANSIToUnicode( pPlayer->GetPlayerName(),  wszPlayerName, sizeof(wszPlayerName) );
-			
-			if ( HL2MPRules()->IsTeamplay() == true && pPlayer->InSameTeam(pLocalPlayer) )
-			{
-				printFormatString = "#Playerid_sameteam";
-				bShowHealth = true;
-			}
-			else
-			{
-				printFormatString = "#Playerid_diffteam";
-			}
-		
+			vgui::surface()->DrawSetTextFont(m_hFont);
+			vgui::surface()->DrawSetTextColor(c);
+			vgui::surface()->DrawPrintText(wszPlayerName, wcslen(wszPlayerName));
 
-			if ( bShowHealth )
-			{
-				_snwprintf( wszHealthText, ARRAYSIZE(wszHealthText) - 1, L"%.0f%%",  ((float)pPlayer->GetHealth() / (float)pPlayer->GetMaxHealth() ) );
-				wszHealthText[ ARRAYSIZE(wszHealthText)-1 ] = '\0';
-			}
 		}
 
-		if ( printFormatString )
-		{
-			if ( bShowPlayerName && bShowHealth )
-			{
-				g_pVGuiLocalize->ConstructString( sIDString, sizeof(sIDString), g_pVGuiLocalize->Find(printFormatString), 2, wszPlayerName, wszHealthText );
-			}
-			else if ( bShowPlayerName )
-			{
-				g_pVGuiLocalize->ConstructString( sIDString, sizeof(sIDString), g_pVGuiLocalize->Find(printFormatString), 1, wszPlayerName );
-			}
-			else if ( bShowHealth )
-			{
-				g_pVGuiLocalize->ConstructString( sIDString, sizeof(sIDString), g_pVGuiLocalize->Find(printFormatString), 1, wszHealthText );
-			}
-			else
-			{
-				g_pVGuiLocalize->ConstructString( sIDString, sizeof(sIDString), g_pVGuiLocalize->Find(printFormatString), 0 );
-			}
-		}
-
-		if ( sIDString[0] )
-		{
-			int wide, tall;
-			int ypos = YRES(260);
-			int xpos = XRES(10);
-
-			vgui::surface()->GetTextSize( m_hFont, sIDString, wide, tall );
-
-			if( hud_centerid.GetInt() == 0 )
-			{
-				ypos = YRES(420);
-			}
-			else
-			{
-				xpos = (ScreenWidth() - wide) / 2;
-			}
-			
-			vgui::surface()->DrawSetTextFont( m_hFont );
-			vgui::surface()->DrawSetTextPos( xpos, ypos );
-			vgui::surface()->DrawSetTextColor( c );
-			vgui::surface()->DrawPrintText( sIDString, wcslen(sIDString) );
-		}
 	}
 }

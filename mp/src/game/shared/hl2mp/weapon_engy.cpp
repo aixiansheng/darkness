@@ -117,11 +117,12 @@ float CWeaponEngy::GetFireRate(void) {
 }
 
 #ifndef CLIENT_DLL
-void CWeaponEngy::ItemStatusUpdate(CBasePlayer *player, int health, int armor) {
+void CWeaponEngy::ItemStatusUpdate(CBasePlayer *player, int health, int armor, int maxhealth) {
 	CSingleUserRecipientFilter user(player);
 	UserMessageBegin(user, "ItemInfo");
 		WRITE_SHORT(armor);
 		WRITE_SHORT(health);
+		WRITE_SHORT(maxhealth);
 	MessageEnd();
 }
 #endif
@@ -134,6 +135,7 @@ void CWeaponEngy::ItemPostFrame( void ) {
 	trace_t tr;
 	int health;
 	int armor;
+	int maxHealth;
 	CBasePlayer *p;
 	CBaseEntity *ent;
 	CHL2MP_Player *other;
@@ -153,17 +155,20 @@ void CWeaponEngy::ItemPostFrame( void ) {
 
 			armor = -1;
 			health = -1;
+			maxHealth = -1;
 
 			if (ent && ent->GetTeamNumber() == TEAM_HUMANS) {
 				if ((other = dynamic_cast<CHL2MP_Player *>(ent)) != NULL) {
+					maxHealth = other->GetMaxHealth();
 					health = other->GetHealth();
 					armor = other->ArmorValue();
 				} else if ((mat = dynamic_cast<CHumanMateriel *>(ent)) != NULL) {
 					health = mat->GetHealth();
+					maxHealth = mat->GetMaxHealth();
 				}
 			}
 
-			ItemStatusUpdate(p, health, armor);
+			ItemStatusUpdate(p, health, armor, maxHealth);
 		}
 
 	} // m_flNextItemStatus < curtime

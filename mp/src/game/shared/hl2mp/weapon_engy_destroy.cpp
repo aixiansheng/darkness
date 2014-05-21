@@ -208,11 +208,12 @@ float CWeaponEngyDestroy::GetFireRate(void) {
 }
 
 #ifndef CLIENT_DLL
-void CWeaponEngyDestroy::ItemStatusUpdate(CBasePlayer *player, int health, int armor) {
+void CWeaponEngyDestroy::ItemStatusUpdate(CBasePlayer *player, int health, int armor, int maxhealth) {
 	CSingleUserRecipientFilter user(player);
 	UserMessageBegin(user, "ItemInfo");
 		WRITE_SHORT(armor);
 		WRITE_SHORT(health);
+		WRITE_SHORT(maxhealth);
 	MessageEnd();
 }
 
@@ -238,6 +239,7 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 	trace_t tr;
 	int health;
 	int armor;
+	int maxHealth;
 	CBasePlayer *p;
 	CBaseEntity *ent;
 	CHL2MP_Player *other;
@@ -262,27 +264,35 @@ void CWeaponEngyDestroy::ItemPostFrame( void ) {
 
 			armor = -1;
 			health = -1;
+			maxHealth = -1;
 
 			if (ent && ent->GetTeamNumber() == TEAM_HUMANS) {
 				if ((other = dynamic_cast<CHL2MP_Player *>(ent)) != NULL) {
 					health = other->GetHealth();
+					maxHealth = other->GetMaxHealth();
 					armor = other->ArmorValue();
 				} else if ((tele = dynamic_cast<CTeleporterEntity*>(ent)) != NULL) {
 					health = tele->GetHealth();
+					maxHealth = tele->GetMaxHealth();
 				} else if ((ammo = dynamic_cast<CAmmoCrate *>(ent)) != NULL) {
 					health = ammo->GetHealth();
+					maxHealth = ammo->GetMaxHealth();
 				} else if ((medipad = dynamic_cast<CMedipadEntity *>(ent)) != NULL) {
 					health = medipad->GetHealth();
+					maxHealth = medipad->GetMaxHealth();
 				} else if ((mgturret = dynamic_cast<CMGTurretEntity *>(ent)) != NULL) {
 					health = mgturret->GetHealth();
+					maxHealth = mgturret->GetMaxHealth();
 				} else if ((det = dynamic_cast<CDetectorEntity *>(ent)) != NULL) {
 					health = det->GetHealth();
+					maxHealth = det->GetMaxHealth();
 				} else if ((missile_turret = dynamic_cast<CMSLTurretEntity *>(ent)) != NULL) {
 					health = missile_turret->GetHealth();
+					maxHealth = missile_turret->GetMaxHealth();
 				}
 			}
 
-			ItemStatusUpdate(p, health, armor);
+			ItemStatusUpdate(p, health, armor, maxHealth);
 		}
 
 	} // m_flNextItemStatus < curtime

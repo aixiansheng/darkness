@@ -37,6 +37,7 @@ public:
 	void	SetSticky(void);
 	void	StickTouch(CBaseEntity *other);
 	void	ShootSpike(Vector origin, Vector v);
+	void	Disappear(void);
 
 	// this function only used in episodic.
 #ifdef HL2_EPISODIC

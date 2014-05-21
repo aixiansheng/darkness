@@ -274,7 +274,7 @@ public:
 #ifndef CLIENT_DLL
 
 	virtual void Spawn(void);
-	void ItemStatusUpdate(CBasePlayer *player, int health, int armor);
+	void ItemStatusUpdate(CBasePlayer *player, int health, int armor, int maxhealth);
 
 	DECLARE_DATADESC();
 

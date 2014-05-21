@@ -34,7 +34,7 @@
 #define BREEDER_WELDER_RANGE 85.0f
 
 #define BREEDER_DESTROY_BEEP 1.8f
-#define BREEDER_DESTROY_WAIT (BREEDER_DESTROY_BEEP * 2.95f)
+#define BREEDER_DESTROY_WAIT (BREEDER_DESTROY_BEEP * 1.3f)
 
 #define BREEDER_DIGEST_SND_TIME 1.3f
 
@@ -45,9 +45,9 @@
 
 #define BREEDER_BITE_DMG 350.0f
 
-#define DIGESTION_TIME 10.0f
-#define EGG_DIGESTION_TIME 15.0f
-#define HUMAN_DIGESTION_TIME 20.0f
+#define DIGESTION_TIME 4.0f
+#define EGG_DIGESTION_TIME 12.0f
+#define HUMAN_DIGESTION_TIME 17.0f
 
 #define ITEM_UPDATE_INTERVAL	0.8f
 
@@ -129,11 +129,12 @@ float CWeaponBreeder::GetFireRate(void) {
 
 #ifndef CLIENT_DLL
 
-void CWeaponBreeder::ItemStatusUpdate(CBasePlayer *player, int health, int armor) {
+void CWeaponBreeder::ItemStatusUpdate(CBasePlayer *player, int health, int armor, int maxhealth) {
 	CSingleUserRecipientFilter user(player);
 	UserMessageBegin(user, "ItemInfo");
 		WRITE_SHORT(armor);
 		WRITE_SHORT(health);
+		WRITE_SHORT(maxhealth);
 	MessageEnd();
 }
 
@@ -151,6 +152,7 @@ void CWeaponBreeder::HandleItemUpdate(void) {
 #ifndef CLIENT_DLL
 	int health;
 	int armor;
+	int maxHealth;
 	CBaseEntity *ent;
 	CHL2MP_Player *other;
 	CSpiderMateriel *mat;
@@ -176,11 +178,13 @@ void CWeaponBreeder::HandleItemUpdate(void) {
 		ent = tr.m_pEnt;
 		armor = -1;
 		health = -1;
+		maxHealth = -1;
 
 		if (ent && ent->GetTeamNumber() == TEAM_SPIDERS) {
 			if ((other = dynamic_cast<CHL2MP_Player *>(ent)) != NULL) {
 				health = other->GetHealth();
 				armor = other->ArmorValue();
+				maxHealth = other->GetMaxHealth();
 			} else if ((mat = dynamic_cast<CSpiderMateriel *>(ent)) != NULL) {
 				health = mat->GetHealth();
 				
@@ -190,13 +194,14 @@ void CWeaponBreeder::HandleItemUpdate(void) {
 				//
 
 				other = mat->GetCreator();
+				maxHealth = mat->GetMaxHealth();
 				if (other == NULL || other->GetTeamNumber() != GetTeamNumber()) {
 					mat->SetCreator(ToHL2MPPlayer(GetOwner()));
 				}
 			}
 		}
 
-		ItemStatusUpdate(p, health, armor);
+		ItemStatusUpdate(p, health, armor, maxHealth);
 
 	} // m_flNextItemStatus < curtime
 #endif

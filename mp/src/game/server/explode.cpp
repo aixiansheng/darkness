@@ -14,6 +14,7 @@
 #include "tier1/strtools.h"
 #include "shareddefs.h"
 #include "grenade_c4.h"
+#include "grenade_guardian.h"
 #include "ammodef.h"
 #include "weapon_shotgun.h"
 #include "weapon_rpg.h"
@@ -342,12 +343,14 @@ void CEnvExplosion::InputExplode( inputdata_t &inputdata )
 			CGrenadeC4 *c4;
 			CWeaponShotgun *sg;
 			CMissile *ms;
-			CWeaponGrapple *gr; 
+			CWeaponGrapple *gr;
+			CGrenadeGuardian *gg;
 
 			c4 = dynamic_cast<CGrenadeC4 *>(m_hInflictor.Get());
 			sg = dynamic_cast<CWeaponShotgun *>(m_hInflictor.Get());
 			ms = dynamic_cast<CMissile *>(m_hInflictor.Get());
 			gr = dynamic_cast<CWeaponGrapple *>(m_hInflictor.Get());
+			gg = dynamic_cast<CGrenadeGuardian *>(m_hInflictor.Get());
 
 			if (c4) {
 				info.SetAmmoType(GetAmmoDef()->Index("grenade_c4"));
@@ -357,7 +360,9 @@ void CEnvExplosion::InputExplode( inputdata_t &inputdata )
 				info.SetAmmoType(GetAmmoDef()->Index("RPG_Round"));
 			} else if (gr) {
 				info.SetAmmoType(GetAmmoDef()->Index("kami_xp"));
-			};
+			} else if (gg) {
+				info.SetAmmoType(GetAmmoDef()->Index("grenade_guardian"));
+			}
 		}
 
 		if( HasSpawnFlags( SF_ENVEXPLOSION_SURFACEONLY ) )

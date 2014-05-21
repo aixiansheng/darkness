@@ -16,6 +16,12 @@
 #include "ammodef.h"
 #include "grenade_guardian.h"
 
+#ifndef CLIENT_DLL
+	#include "explode.h"
+	#include "te_effect_dispatch.h"
+#endif
+
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -37,6 +43,9 @@
 const float GRENADE_COEFFICIENT_OF_RESTITUTION = 0.2f;
 
 #define GUARDIAN_GRENADE_MODEL "models/spike_ball.mdl"
+
+#define SPIKE_GREN_DMG 60
+#define SPIKE_GREN_RAD 60
 
 LINK_ENTITY_TO_CLASS( grenade_guardian, CGrenadeGuardian );
 
@@ -197,18 +206,27 @@ void CGrenadeGuardian::Detonate( void ) {
 #define GREN_VEC3_DN_W_22	Vector(-7,0,-3)
 #define GREN_VEC3_DN_NW_22	Vector(-5,5,-2)
 
-void CGrenadeGuardian::Explode( trace_t *pTrace, int bitsDamageType ) {
+void CGrenadeGuardian::Disappear(void) {
+	UTIL_Remove(this);
+}
 
+void CGrenadeGuardian::Explode( trace_t *pTrace, int bitsDamageType ) {
 	Vector origin;
 	trace_t tr;
+	
+	SetTouch(NULL);
+	SetNextThink(gpGlobals->curtime + 1.0f);
+	SetThink(&CGrenadeGuardian::Disappear);
+	SetSolid(SOLID_NONE);
+	SetAbsVelocity(vec3_origin);
 
-	SetModelName( NULL_STRING );
-	AddSolidFlags( FSOLID_NOT_SOLID );
+	SetModelName(NULL_STRING);
+	AddSolidFlags(FSOLID_NOT_SOLID);
 	m_takedamage = DAMAGE_NO;
 
 	// Pull out of the wall a bit
-	if ( pTrace->fraction != 1.0 ) {
-		SetAbsOrigin( pTrace->endpos + (pTrace->plane.normal * 0.6) );
+	if (pTrace->fraction != 1.0) {
+		SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 0.6));
 	}
 
 	origin = GetAbsOrigin();
@@ -263,27 +281,46 @@ void CGrenadeGuardian::Explode( trace_t *pTrace, int bitsDamageType ) {
 	ShootSpike(origin, GREN_VEC3_DN_W_22);
 	ShootSpike(origin, GREN_VEC3_DN_NW_22);
 
+	int exflags = \
+		SF_ENVEXPLOSION_NOFIREBALL |
+		SF_ENVEXPLOSION_NOSMOKE |
+		SF_ENVEXPLOSION_NOSPARKS |
+		SF_ENVEXPLOSION_NOSOUND |
+		SF_ENVEXPLOSION_NOFIREBALLSMOKE |
+		SF_ENVEXPLOSION_NOPARTICLES |
+		SF_ENVEXPLOSION_NODLIGHTS |
+		SF_ENVEXPLOSION_SURFACEONLY |
+		SF_ENVEXPLOSION_GENERIC_DAMAGE;
+			
+	ExplosionCreate
+	(
+		origin,
+		GetAbsAngles(),
+		GetThrower(),
+		SPIKE_GREN_DMG,
+		SPIKE_GREN_RAD,
+		exflags,
+		0.0f,
+		this
+	);
+
 
 	// CSoundEnt::InsertSound ( SOUND_COMBAT, GetAbsOrigin(), BASEGRENADE_EXPLOSION_VOLUME, 3.0 );
 	// Use the thrower's position as the reported position
-
-	SetTouch(NULL);
-	SetThink(NULL);
-	SetSolid( SOLID_NONE );
-	SetAbsVelocity( vec3_origin );
 }
 
 void CGrenadeGuardian::ShootSpike(Vector origin, Vector v) {
-	int ammotype = GetAmmoDef()->Index( SPIKE_GREN_AMMO_TYPE ); 
+	int ammotype;
 	trace_t tr;
-	
 	FireBulletsInfo_t info;
-
 	CSoundParameters params;
 	CRecipientFilter filter;
+	CDisablePredictionFiltering pfilter;
 	EmitSound_t ep;
 	
-	if (GetParametersForSound( SPIKE_GREN_SHOT_SOUND, params, NULL )) {
+	ammotype = GetAmmoDef()->Index("grenade_guardian");
+
+	if (GetParametersForSound(SPIKE_GREN_SHOT_SOUND, params, NULL)) {
 		filter.AddRecipientsByPAS( origin );
 
 		ep.m_nChannel = params.channel;
@@ -297,18 +334,16 @@ void CGrenadeGuardian::ShootSpike(Vector origin, Vector v) {
 		EmitSound( filter, entindex(), ep );
 	}
 
-	UTIL_TraceLine(origin, origin + v, MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, &tr);
-	if (!tr.DidHitWorld()) {
-		info.m_iShots = 1;
-		info.m_vecSrc = origin;
-		info.m_vecDirShooting = v;
-		info.m_flDistance = 768.0;
-		info.m_iAmmoType = ammotype;
-		info.m_iTracerFreq = 4;
-		info.m_pAttacker = GetThrower();
-		info.m_flDamage = SPIKE_GREN_SHOT_DMG;
-		FireBullets( info );
-	}
+	info.m_iShots = 1;
+	info.m_vecSrc = origin;
+	info.m_vecDirShooting = v;
+	info.m_flDistance = 512.0;
+	info.m_iAmmoType = ammotype;
+	info.m_iTracerFreq = 4;
+	info.m_pAttacker = GetThrower();
+	info.m_flDamage = SPIKE_GREN_SHOT_DMG;
+	FireBullets(info);
+
 }
 
 void CGrenadeGuardian::Spawn( void )

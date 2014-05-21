@@ -9,8 +9,9 @@
 #include <KeyValues.h>
 #include <vgui/ISurface.h>
 #include <vgui/ISystem.h>
+#include <vgui_controls/Label.h>
 #include <vgui_controls/AnimationController.h>
-
+#include <vgui_controls/EditablePanel.h>
 #include <vgui/ILocalize.h>
 
 using namespace vgui;
@@ -31,118 +32,161 @@ using namespace vgui;
 
 class C_Team;
 
-#define STATUS_FORMAT L"Health: %d    Armor:%d"
+#define STATUS_FORMAT L"Health:%d/%d Armor:%d"
 
 //-----------------------------------------------------------------------------
 // Purpose: Item panel
 //-----------------------------------------------------------------------------
-class CHudItemStatus : public CHudElement, public CHudNumericDisplay
+class CHudItemStatus : public CHudElement, public EditablePanel
 {
-	DECLARE_CLASS_SIMPLE( CHudItemStatus, CHudNumericDisplay );
+	DECLARE_CLASS_SIMPLE( CHudItemStatus, EditablePanel );
 
 public:
 	CHudItemStatus( const char *pElementName );
+	~CHudItemStatus(void);
 	virtual void Init( void );
 	virtual void VidInit( void );
 	virtual void Reset( void );
-	virtual void OnThink();
-	virtual void OnTick();
-	void UpdateLabel();
+	virtual void ApplySchemeSettings(IScheme *scheme);
 	void MsgFunc_ItemInfo( bf_read &msg );
 
+	void ShowItemInfo(int health, int maxhealth, int armor);
+
 private:
-	// old variables
-	int		armor;
-	int		health;
+	Label *healthLabel;
+	Label *armorLabel;
+
+	Color normal;
+	Color red;
 };	
 
 DECLARE_HUDELEMENT( CHudItemStatus );
 DECLARE_HUD_MESSAGE( CHudItemStatus, ItemInfo );
 
-CHudItemStatus::CHudItemStatus( const char *pElementName ) : CHudElement( pElementName ), CHudNumericDisplay(NULL, "HudItemStatus") {
+CHudItemStatus::CHudItemStatus( const char *pElementName ) : 
+	CHudElement( pElementName ), BaseClass(NULL, "HudItemStatus")
+{
+	Panel *pParent;
+	IScheme* pScheme;
+	HFont hFont;
+
 	SetHiddenBits( HIDEHUD_HEALTH | HIDEHUD_PLAYERDEAD | HIDEHUD_NEEDSUIT );
+	
+	pParent = g_pClientMode->GetViewport();
+	
+	SetParent(pParent);
+	//SetVisible(false);
+
+	SetKeyBoardInputEnabled(false);
+	SetMouseInputEnabled(false);
+
+	SetScheme(scheme()->LoadSchemeFromFile("resource/DarknessScheme.res", "DarknessScheme"));
+
+	healthLabel = new Label(pParent, "HealthLabel", "health");
+	armorLabel = new Label(pParent, "ArmorLabel", "armor");
+
+	pScheme = vgui::scheme()->GetIScheme(GetScheme());
+	
+	if (pScheme) {
+		hFont = pScheme->GetFont( "HudHintTextVeryLarge" );
+		if (hFont) {
+			if (healthLabel) {
+				healthLabel->SetFont(hFont);
+				healthLabel->SetVisible(false);
+			}
+
+			if (armorLabel) {
+				armorLabel->SetFont(hFont);
+				armorLabel->SetVisible(false);
+			}
+		}
+
+		normal = GetSchemeColor("CHudItemStatus.FgColor", pScheme);
+		red = Color(255, 0, 0, 255);
+	}
+}
+
+CHudItemStatus::~CHudItemStatus(void) {
+	if (healthLabel)
+		delete healthLabel;
+	
+	if (armorLabel)
+		delete armorLabel;
+}
+
+void CHudItemStatus::ApplySchemeSettings(IScheme *scheme) {
+	BaseClass::ApplySchemeSettings(scheme);
+	SetFgColor(normal);
 }
 
 void CHudItemStatus::Init() {
-	HOOK_HUD_MESSAGE( CHudItemStatus, ItemInfo );
-
-	vgui::ivgui()->AddTickSignal(GetVPanel(), 1000);
+	HOOK_HUD_MESSAGE(CHudItemStatus, ItemInfo);
 
 	Reset();
 }
 
-void CHudItemStatus::Reset() {
-	armor = -1;
-	health = -1;
-
-	SetShouldDisplayValue(false);
-	SetVisible(false);
-}
-
-#define BUFSIZE 64
-void CHudItemStatus::UpdateLabel(void) {
-	int teamNum;
-	int classNum;
-	int health_disp;
-	int armor_disp;
-	wchar_t buf[BUFSIZE] = { (wchar_t)0 };
+void CHudItemStatus::ShowItemInfo(int health, int maxhealth, int armor) {
 	C_HL2MP_Player *local;
-
-	if (armor == -1 && health == -1) {
-		SetVisible(false);
-		return;
-	}
+	char buf[64];
+	float healthPercent;
 
 	local = ToHL2MPPlayer(C_BasePlayer::GetLocalPlayer());
 	if (!local)
 		return;
 
-	teamNum = local->GetTeamNumber();
-	classNum = local->m_iClassNumber;
+	if (local->m_iClassNumber != CLASS_ENGINEER_IDX &&
+		local->m_iClassNumber != CLASS_BREEDER_IDX)
+		return;
 
-	if (armor >= 0 || health >= 0) {
-		if (armor < 0)
-			armor_disp = 0;
-		else
-			armor_disp = armor;
+	healthPercent = ((float)health / (float)maxhealth) * 100.0f;
 
-		if (health < 0)
-			health_disp = 0;
-		else
-			health_disp = health;
+	Q_snprintf(buf, sizeof(buf), "HEALTH: %d%% [%d/%d]", (int)healthPercent, health, maxhealth);
+	if (healthLabel) {
+		if (healthPercent < 50) {
+			healthLabel->SetFgColor(red);
+		} else {
+			healthLabel->SetFgColor(normal);
+		}
 
-		if (teamNum == TEAM_SPIDERS && classNum == CLASS_BREEDER_IDX) {
-			_snwprintf(buf, BUFSIZE, STATUS_FORMAT, health_disp, armor_disp);
-			SetLabelText(buf);
-			SetVisible(true);
-			return;
+		healthLabel->SetText(buf);
+		healthLabel->SetVisible(true);
+	}
 
-		} else if (teamNum == TEAM_HUMANS && classNum == CLASS_ENGINEER_IDX) {
-			_snwprintf(buf, BUFSIZE, STATUS_FORMAT, health_disp, armor_disp);
-			SetLabelText(buf);
-			SetVisible(true);
-			return;
+	if (armor > -1) {
+		Q_snprintf(buf, sizeof(buf), "ARMOR: %d", armor);
+		if (armorLabel) {
+			armorLabel->SetVisible(true);
+			armorLabel->SetText(buf);
+		}
+	} else {
+		if (armorLabel) {
+			armorLabel->SetVisible(false);
 		}
 	}
 
-	SetVisible(false);
+}
 
+void CHudItemStatus::Reset() {
+	SetVisible(false);
 }
 
 void CHudItemStatus::VidInit() {
 	Reset();
 }
 
-void CHudItemStatus::OnThink() {
-	UpdateLabel();
-}
+void CHudItemStatus::MsgFunc_ItemInfo(bf_read &msg) {
+	int armor, health, maxHealth;
 
-void CHudItemStatus::OnTick(void) {
-	UpdateLabel();
-}
-
-void CHudItemStatus::MsgFunc_ItemInfo( bf_read &msg ) {
 	armor = msg.ReadShort();
 	health = msg.ReadShort();
-	UpdateLabel();
+	maxHealth = msg.ReadShort();
+
+	if (health > -1 || armor > -1) {
+		ShowItemInfo(health, maxHealth, armor);
+	} else {
+		if (healthLabel)
+			healthLabel->SetVisible(false);
+		if (armorLabel)
+			armorLabel->SetVisible(false);
+	}
 }
