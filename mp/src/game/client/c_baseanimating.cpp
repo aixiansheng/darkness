@@ -3753,6 +3753,8 @@ void C_BaseAnimating::FireEvent( const Vector& origin, const QAngle& angles, int
 			if ( token ) 
 			{
 				const char* mtoken = ModifyEventParticles( token );
+				if ( !mtoken || mtoken[0] == '\0' )
+					return;
 				Q_strncpy( szParticleEffect, mtoken, sizeof(szParticleEffect) );
 			}
 
@@ -5364,8 +5366,8 @@ void C_BaseAnimating::ResetSequenceInfo( void )
 	m_bSequenceFinished = false;
 	m_flLastEventCheck = 0;
 
-	m_nNewSequenceParity = ( ++m_nNewSequenceParity ) & EF_PARITY_MASK;
-	m_nResetEventsParity = ( ++m_nResetEventsParity ) & EF_PARITY_MASK;
+	m_nNewSequenceParity = ( m_nNewSequenceParity + 1 ) & EF_PARITY_MASK;
+	m_nResetEventsParity = ( m_nResetEventsParity + 1 ) & EF_PARITY_MASK;
 	
 	// FIXME: why is this called here?  Nothing should have changed to make this nessesary
 	SetEventIndexForSequence( pStudioHdr->pSeqdesc( GetSequence() ) );
