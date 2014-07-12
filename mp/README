@@ -10,3 +10,9 @@ a tarball that must be extracted before this mod can be built.
 - ./setup_bin.sh
 - make darkness
 - make darkness.zip
+
+VPK INSTRUCTIONS:
+
+1) find -t f particles > particles_dir.txt
+2) vpk -M -K dkns.privatekey.vdf -k dkns.publickey.vdf a particles.vpk @particles_dir.txt (etc)
+3) repeat for models, materials
