@@ -678,7 +678,7 @@ CAmmoDef::CAmmoDef(void)
 
 	// ACID	GREN
 	dmg_factors[WPN_ACID_GREN][CLASS_ENGINEER_IDX]				= 1.1f;
-	dmg_factors[WPN_ACID_GREN][CLASS_GRUNT_IDX]					= 0.8f;
+	dmg_factors[WPN_ACID_GREN][CLASS_GRUNT_IDX]					= 1.0f;
 	dmg_factors[WPN_ACID_GREN][CLASS_SHOCK_IDX]					= 0.8f;
 	dmg_factors[WPN_ACID_GREN][CLASS_HEAVY_IDX]					= 1.7f;
 	dmg_factors[WPN_ACID_GREN][CLASS_COMMANDO_IDX]				= 1.0f;
@@ -950,7 +950,7 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_SMG][ITEM_EGG_IDX]				= 0.5f;
 	item_dmg_factors[WPN_SMG][ITEM_HEALER_IDX]			= 1.0f;
 	item_dmg_factors[WPN_SMG][ITEM_OBSTACLE_IDX]		= 0.8f;
-	item_dmg_factors[WPN_SMG][ITEM_SPIKER_IDX]			= 0.7f;
+	item_dmg_factors[WPN_SMG][ITEM_SPIKER_IDX]			= 0.87f;
 	item_dmg_factors[WPN_SMG][ITEM_GASSER_IDX]			= 0.8f;
 
 	item_dmg_factors[WPN_SHOTGUN_BUCK][ITEM_TELEPORTER_IDX]	= 0.1f;
@@ -1080,8 +1080,8 @@ CAmmoDef::CAmmoDef(void)
 	item_dmg_factors[WPN_PLASMA_CANON][ITEM_EGG_IDX]			= 1.1f;
 	item_dmg_factors[WPN_PLASMA_CANON][ITEM_HEALER_IDX]			= 1.0f;
 	item_dmg_factors[WPN_PLASMA_CANON][ITEM_OBSTACLE_IDX]		= 0.8f;
-	item_dmg_factors[WPN_PLASMA_CANON][ITEM_SPIKER_IDX]			= 1.0f;
-	item_dmg_factors[WPN_PLASMA_CANON][ITEM_GASSER_IDX]			= 1.0f;
+	item_dmg_factors[WPN_PLASMA_CANON][ITEM_SPIKER_IDX]			= 0.75f;
+	item_dmg_factors[WPN_PLASMA_CANON][ITEM_GASSER_IDX]			= 0.75f;
 
 	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_TELEPORTER_IDX]		= 0.0f;
 	item_dmg_factors[WPN_HATCHY_SLASH][ITEM_AMMO_CRATE_IDX]		= 0.2f;

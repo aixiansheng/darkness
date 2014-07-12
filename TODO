@@ -1,19 +1,15 @@
 ROADMAP
 =================
 
-Before 1.6:
-
-- gore ++++
-
-- test all weapons again with bots
-- fix all crashes (video mode change, change server)
-
-- spacewreck improvements (more eggs) (bottom hallways higher/wider)
-- geofusion (more eggs)
-- new museum map
 
 After 1.6
 
+- geofusion (more eggs, mods by Garuga)
+- work on museum hybrid/building 5?
+- end game music/screen
+- wider structural health differences on human items
+- improve framerate for smoke gren and acid grens
+- gore ++++
 - more custom gibs
 - death sounds ++
 - stalker gibs small units he runs into (based on velocity)

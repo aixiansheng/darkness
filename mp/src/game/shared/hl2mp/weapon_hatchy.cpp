@@ -132,7 +132,6 @@ void CGrapplingHook::HookTouch( CBaseEntity *pOther ) {
 		m_hOwner->NotifyHookDied();
 		SetTouch(NULL);
 		SetThink(NULL);
-		UTIL_Remove( this );
 
 	} else {
 		tr = BaseClass::GetTouchTrace();
@@ -170,7 +169,7 @@ void CGrapplingHook::HookTouch( CBaseEntity *pOther ) {
 			m_hOwner->NotifyHookDied();
 			SetTouch(NULL);
 			SetThink(NULL);
-			UTIL_Remove( this );
+
 		}
 	}
 }
@@ -338,6 +337,35 @@ void CWeaponGrapple::Precache( void ) {
 	BaseClass::Precache();
 }
 
+//
+// Event_Killed should result in a call to Holster for the
+// currently active weapon.  In this case, nuke the hook
+// and make the player stop flying
+//
+bool CWeaponGrapple::Holster(CBaseCombatWeapon *pSwitchingTo) {
+	CBasePlayer *pOwner;
+
+#ifndef CLIENT_DLL
+	if (m_hHook) {
+		// player unhooked...
+		m_hHook->SetTouch(NULL);
+		m_hHook->SetThink(NULL);
+
+		UTIL_Remove(m_hHook);
+		m_hHook = NULL;
+	}
+#endif
+
+	pOwner = ToBasePlayer(GetOwner());
+	if (pOwner) {
+		pOwner->SetMoveType(MOVETYPE_WALK);
+		pOwner->grappling = false;
+	}
+
+	return BaseClass::Holster(pSwitchingTo);
+}
+
+
 void CWeaponGrapple::PrimaryAttack( void ) {
 	if (m_hHook)
 		return;
@@ -427,7 +455,7 @@ void CWeaponGrapple::ItemPostFrame( void ) {
 			m_hHook->SetTouch( NULL );
 			m_hHook->SetThink( NULL );
  
-			UTIL_Remove( m_hHook );
+			UTIL_Remove(m_hHook);
 			m_hHook = NULL;
  
 			NotifyHookDied();

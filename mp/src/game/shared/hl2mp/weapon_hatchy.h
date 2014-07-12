@@ -81,6 +81,7 @@ public:
 	void			NotifyHookDied( void );
 	bool			HasAnyAmmo( void );
 	virtual void Drop(const Vector &vecVelocity);
+	virtual bool Holster(CBaseCombatWeapon *pSwitchingTo = NULL);
 
 	CBaseEntity		*GetHook( void ) { return m_hHook; }
  

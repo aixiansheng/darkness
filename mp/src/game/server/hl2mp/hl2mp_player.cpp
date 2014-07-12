@@ -1521,7 +1521,7 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 
 			return;
 		}
-			
+		
 		//
 		// mechs crush hatchies and kamis they "step on"
 		// this means:
@@ -1530,6 +1530,9 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 		// - the spider is on the ground
 		// - the mech is on the ground
 		//
+
+		if (m_iClassNumber != CLASS_MECH_IDX)
+			return;
 
 		if ((p = ToHL2MPPlayer(other)) == NULL)
 			return;
@@ -1557,6 +1560,10 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 		}
 
 	}
+
+	//
+	// only vphysics object collisions may proceed...
+	//
 
 	if (other->GetMoveType() != MOVETYPE_VPHYSICS ||
 		other->GetSolid() != SOLID_VPHYSICS ||
@@ -3051,25 +3058,6 @@ void CHL2MP_Player::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector *pvecT
 	//}
 
 	//BaseClass::Weapon_Drop( pWeapon, pvecTarget, pVelocity );
-}
-
-void CHL2MP_Player::RemoveGrapplingHook(void) {
-	CBaseEntity *ent;
-	CGrapplingHook *g;
-
-	ent = NULL;
-
-	if (m_iClassNumber == CLASS_HATCHY_IDX || m_iClassNumber == CLASS_KAMI_IDX) {
-		while ((ent = gEntList.FindEntityByClassname(ent, "grapple_hook")) != NULL) {
-			g = dynamic_cast<CGrapplingHook *>(ent);
-			if (g && g->GetPlayer() == this) {
-				UTIL_Remove(g);
-			}
-		}
-	}
-
-	SetMoveType(MOVETYPE_WALK);
-	grappling = false;
 }
 
 void CHL2MP_Player::RemoveSpikeGrenades(void) {

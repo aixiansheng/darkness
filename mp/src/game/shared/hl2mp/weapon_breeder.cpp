@@ -386,7 +386,7 @@ void CWeaponBreeder::MakeItem(int idx) {
 
 				cost = dk_items[ITEM_EGG_IDX].value;
 
-				if (cost < p->GetTeam()->asset_points) {
+				if (cost <= p->GetTeam()->asset_points) {
 					#ifndef CLIENT_DLL
 					ent = CreateEntityByName(dk_items[ITEM_EGG_IDX].ent_name);
 					if (ent) {

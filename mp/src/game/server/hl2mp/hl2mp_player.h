@@ -143,7 +143,6 @@ public:
 	
 	void DetonateTripmines(void);
 	void RemoveSpikeGrenades(void);
-	void RemoveGrapplingHook(void);
 
 	void Reset();
 
