@@ -17,6 +17,7 @@
 
 void RegisterUserMessages( void )
 {
+	usermessages->Register("HealthPackStatus", 1);
 	usermessages->Register( "GuardianHide", 1);
 	usermessages->Register( "ShowBuildMenu", 1);
 	usermessages->Register( "Points", 1);

@@ -236,10 +236,6 @@ public:
 
 	virtual void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper);
 
-	void GivePackItem(int item);
-	void TogglePackIdx(void);
-	void UsePackItem(void);
-	void UseItem(int idx);
 	void UseHealthPack(void);
 
 	int GetMaxArmor(void);
@@ -302,6 +298,8 @@ private:
 	float m_flNextHitTime;
 	float last_spit_hit;
 
+	float m_flNextAmmoDenySound;
+	float m_flNextHealthPack;
 	float m_flNextRefilTime;
 	float m_flNextShieldToggle;
 	float m_flNextShieldToggleTry;
@@ -324,11 +322,7 @@ private:
 	float recharge_start;
 	float jet_start;
 
-	CNetworkVar(int, pack_item_idx);
-	CNetworkVar(int, pack_item_0);
-	CNetworkVar(int, pack_item_1);
-	CNetworkVar(int, pack_item_2);
-
+	CNetworkVar(bool, has_health_pack);
 	CNetworkVar(bool, jetpack_on);
 	CNetworkVar(bool, plasma_ready);
 	CNetworkVar(bool, powerArmorEnabled);

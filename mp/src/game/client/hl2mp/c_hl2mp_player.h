@@ -110,11 +110,7 @@ public:
 	bool jetpack_on;
 	bool attackMotion;
 	bool powerArmorEnabled;
-
-	int pack_item_0;
-	int pack_item_1;
-	int pack_item_2;
-	int pack_item_idx;
+	bool has_health_pack;
 
 	int grenade_type;
 	bool bugGlow;

@@ -28,7 +28,6 @@
 #include "weapon_c4.h"
 #include "grenade_c4.h"
 #include "ammodef.h"
-#include "ents/pack_item.h"
 #include "ents/ent_infested_corpse.h"
 #include "weapon_drone_slash.h"
 #include "particle_parse.h"
@@ -92,6 +91,9 @@ void DropPrimedSmkGrenGrenade( CHL2MP_Player *pPlayer, CBaseCombatWeapon *pGrena
 #define JETPACK_PARTICLES "jetpack_puff"
 #define JETPACK_SPARK "sparking_gear"
 
+#define GOT_HEALTH_PACK_SOUND "PlayerPickup.HealthPack"
+#define AMMO_CRATE_DENY_SOUND "AmmoCrate.Deny"
+
 LINK_ENTITY_TO_CLASS( player, CHL2MP_Player );
 
 //LINK_ENTITY_TO_CLASS( info_player_combine, CPointEntity );
@@ -112,15 +114,11 @@ IMPLEMENT_SERVERCLASS_ST(CHL2MP_Player, DT_HL2MP_Player)
 
 	SendPropInt( SENDINFO( grenade_type ), 6 ),
 	SendPropInt( SENDINFO( m_iPlayerPoints ), 4, SPROP_UNSIGNED),
-	
+	SendPropBool(SENDINFO( has_health_pack ) ),
 	SendPropInt( SENDINFO( m_iClassNumber), 6),
 	SendPropBool( SENDINFO( stopped) ),
 	SendPropBool( SENDINFO( plasma_ready ) ),
 	SendPropBool( SENDINFO( jetpack_on ) ),
-	SendPropInt( SENDINFO( pack_item_0 ), 4 ),
-	SendPropInt( SENDINFO( pack_item_1 ), 4 ),
-	SendPropInt( SENDINFO( pack_item_2 ), 4 ),
-	SendPropInt( SENDINFO( pack_item_idx ), 4 ),
 	SendPropBool( SENDINFO( powerArmorEnabled ) ),
 	SendPropBool( SENDINFO( attackMotion ) ),
 	SendPropBool( SENDINFO( bugGlow ) ),
@@ -180,12 +178,15 @@ extern HL2MPViewVectors g_HL2MPViewVectors;
 #define PLASMA_SHIELD_CTX			"plasma_shield_ctx"
 #define MAX_SPEED_CTX				"max_speed_ctx"
 
-ConVar dk_team_balance( "dk_team_balance", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "if enabled, players won't be allowed to join a team with too many players" );
+ConVar dk_team_balance( "dk_team_balance", "1",
+	FCVAR_REPLICATED | FCVAR_NOTIFY,
+	"if enabled, players won't be allowed to join a team with too many players" );
 
 CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 {
 	m_angEyeAngles.Init();
 
+	m_flNextHealthPack = 0.0f;
 	m_iLastWeaponFireUsercmd = 0;
 
 	m_flNextModelChangeTime = 0.0f;
@@ -201,6 +202,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 #endif
 	m_iClassNumber = -1;
 
+	has_health_pack = false;
 	chose_class = false;
 	choosing_class = false;
 
@@ -888,6 +890,9 @@ void CHL2MP_Player::Precache( void )
 		PrecacheModel(dk_classes[i].model);
 
 	PrecacheFootStepSounds();
+	
+	PrecacheScriptSound(GOT_HEALTH_PACK_SOUND);
+	PrecacheScriptSound(AMMO_CRATE_DENY_SOUND);
 
 	PrecacheScriptSound( "NPC_MetroPolice.Die" );
 	PrecacheScriptSound( "NPC_CombineS.Die" );
@@ -925,6 +930,9 @@ void CHL2MP_Player::GiveAllItems(void) {
 	EquipSuit(false);
 }
 
+#define NEXT_AMMO_DENY_SOUND 5.0f
+#define AMMO_CRATE_DENY_SOUND "AmmoCrate.Deny"
+
 //
 // refill ammo with a timer/delay for the next
 // possible refil (healers/ammo crates)
@@ -936,11 +944,16 @@ bool CHL2MP_Player::EntRefil(float delay) {
 		return true;
 	}
 
+	if (m_flNextAmmoDenySound < gpGlobals->curtime) {
+		m_flNextAmmoDenySound = gpGlobals->curtime + NEXT_AMMO_DENY_SOUND;
+		EmitSound(AMMO_CRATE_DENY_SOUND);
+	}
+
 	return false;
 }
 
-#define GRENADE_REFIL_TIMEOUT 20.0f
-
+#define GRENADE_REFIL_TIMEOUT		30.0f
+#define HEALTH_PACK_REFIL_TIMEOUT	90.0f
 //
 // small = engy fix hit
 // not small = ammo crate/etc
@@ -981,7 +994,7 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 			//
 			// This is an ammo crate use
 			//
-
+			
 			if (m_iClassNumber != CLASS_EXTERMINATOR_IDX) { // plasma isn't given
 
 				if (m_iClassNumber == CLASS_MECH_IDX) {
@@ -1014,8 +1027,20 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 					if (Q_strcmp(dk_classes[m_iClassNumber].pri_ammo, AMMO_NULL))
 						CBasePlayer::GiveAmmo(3, "xp_shells");
 				}
+			}
 
-				GivePackItem(PACK_ITEM_TYPE_HEALTH);
+			if (m_flNextHealthPack < gpGlobals->curtime && has_health_pack == false) {
+				m_flNextHealthPack = gpGlobals->curtime + HEALTH_PACK_REFIL_TIMEOUT;
+				
+				CSingleUserRecipientFilter user(this);
+
+				has_health_pack = true;
+
+				EmitSound(GOT_HEALTH_PACK_SOUND);
+
+				UserMessageBegin(user, "HealthPackStatus");
+				WRITE_BYTE((unsigned char)true);
+				MessageEnd();
 			}
 
 		} else {
@@ -1076,11 +1101,6 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 void CHL2MP_Player::GiveDefaultItems( void ) {
 	EquipSuit(false);
 
-	pack_item_0 = -1;
-	pack_item_1 = -1;
-	pack_item_2 = -1;
-	pack_item_idx = -1;
-
 	pri_weapon = NULL;
 	sec_weapon = NULL;
 	gren_weapon = NULL;
@@ -1114,6 +1134,14 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 
 	if (GetTeamNumber() == TEAM_HUMANS) {
 
+		CSingleUserRecipientFilter user(this);
+
+		has_health_pack = true;
+
+		UserMessageBegin(user, "HealthPackStatus");
+		WRITE_BYTE((unsigned char)true);
+		MessageEnd();
+
 		// give commando C4
 		if (m_iClassNumber == CLASS_COMMANDO_IDX) {
 			GiveNamedItem("weapon_c4");
@@ -1123,8 +1151,6 @@ void CHL2MP_Player::GiveDefaultItems( void ) {
 		if (m_iClassNumber == CLASS_SHOCK_IDX) {
 			CBasePlayer::GiveAmmo(3, "xp_shells");
 		}
-
-		GivePackItem(PACK_ITEM_TYPE_HEALTH);
 	}
 }
 
@@ -1148,20 +1174,24 @@ bool CHL2MP_Player::ShowSpawnHint(void) {
 //-----------------------------------------------------------------------------
 void CHL2MP_Player::Spawn(void)
 {
-	pack_item_0 = -1;
-	pack_item_1 = -1;
-	pack_item_2 = -1;
-	pack_item_idx = -1;
+	CSingleUserRecipientFilter user(this);
 
 	forceNoRagdoll = false;
 
-	m_flNextEntRefil = true;
+	has_health_pack = false;
+
+	m_flNextAmmoDenySound = 0.0f;
+	m_flNextEntRefil = 0.0f;
 	m_flNextModelChangeTime = 0.0f;
 	m_flNextTeamChangeTime = 0.0f;
 	chose_class = false;
 	classVectors = &g_HL2MPViewVectors;
 	m_flNextShieldToggle = 0.0f;
 	m_flNextShieldToggleTry = 0.0f;
+
+	UserMessageBegin(user, "HealthPackStatus");
+	WRITE_BYTE((unsigned char)false);
+	MessageEnd();
 
 	PickDefaultSpawnTeam();
 
@@ -1240,14 +1270,14 @@ void CHL2MP_Player::Spawn(void)
 
 	m_flNextRefilTime = 0.0f;
 
-	CSingleUserRecipientFilter user(this);
+	
 	UserMessageBegin(user, "Points");
 		WRITE_BYTE((unsigned char)m_iPlayerPoints);
 	MessageEnd();
+
 	UserMessageBegin(user, "GuardianHide");
 		WRITE_BYTE((unsigned char)false);
 	MessageEnd();
-
 
 	if (!IsObserver() && IsAlive()) {
 		if (num_hints < 3) {
@@ -2460,34 +2490,30 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 		return true;
 
-	} else if (FStrEq(args[0], "toggle_pack_item")) {
-		if (GetTeamNumber() != TEAM_HUMANS) {
-			pack_item_idx = -1;
+	} else if (FStrEq(args[0], "use_health_pack")) {
+		if (has_health_pack) {
+			UseHealthPack();
 			return true;
 		}
 
-		TogglePackIdx();
 		return true;
-	} else if (FStrEq(args[0], "use_pack_item")) {
-		//
-		// try to use the current item, then toggle
-		//
-		if (GetTeamNumber() != TEAM_HUMANS) {
-			return true;
-		}
 
-		UsePackItem();
-		return true;
 	} else if (FStrEq(args[0], "use_primary")) {
 		if (pri_weapon) {
 			Weapon_Switch(pri_weapon);
 			return true;
 		}
+
+		return true;
+
 	} else if (FStrEq(args[0], "use_secondary")) {
 		if (sec_weapon) {
 			Weapon_Switch(sec_weapon);
 			return true;
 		}
+
+		return true;
+
 	} else if (FStrEq(args[0], "use_grenade")) {
 		if (gren_weapon) {
 			//
@@ -2502,6 +2528,9 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 			return true;
 		}
+
+		return true;
+
 	} else if (FStrEq(args[0], "use_special")) {
 		if (spec_weapon) {
 			Weapon_Switch(spec_weapon);
@@ -2514,6 +2543,9 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 				return true;
 		}
+
+		return true;
+
 	} else if (FStrEq(args[0], "cancel")) {
 		if (choosing_class == true) {
 			choosing_class = false;
@@ -2608,110 +2640,15 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 #define HEALTH_PACK_AMT 50.0f
 
 void CHL2MP_Player::UseHealthPack(void) {
+	CSingleUserRecipientFilter user(this);
+
 	EmitSound("SuitRecharge.Start");
 	TakeHealth(HEALTH_PACK_AMT, DMG_GENERIC);
-}
+	has_health_pack = false;
 
-void CHL2MP_Player::UseItem(int item) {
-	if (item < 0)
-		return;
-
-	switch (item) {
-	case PACK_ITEM_TYPE_HEALTH:
-		UseHealthPack();
-		break;
-	}
-}
-
-void CHL2MP_Player::UsePackItem(void) {
-	switch (pack_item_idx) {
-	case 0:
-		UseItem(pack_item_0);
-		pack_item_0 = -1;
-		break;
-	case 1:
-		UseItem(pack_item_1);
-		pack_item_1 = -1;
-		break;
-	case 2:
-		UseItem(pack_item_2);
-		pack_item_2 = -1;
-		break;
-	}
-
-	TogglePackIdx();
-}
-
-void CHL2MP_Player::GivePackItem(int item) {
-	if (pack_item_0 == -1) {
-		pack_item_0 = item;
-	} else if (pack_item_1 == -1) {
-		pack_item_1 = item;
-	} else if (pack_item_2 == -1) {
-		pack_item_2 = item;
-	}
-
-	if (pack_item_idx == -1) {
-		TogglePackIdx();
-	}
-}
-
-void CHL2MP_Player::TogglePackIdx(void) {
-	switch (pack_item_idx) {
-	case -1:
-		if (pack_item_0 > 0) {
-			pack_item_idx = 0;
-		} else if (pack_item_1 > 0) {
-			pack_item_idx = 1;
-		} else if (pack_item_2 > 0) {
-			pack_item_idx = 2;
-		} else {
-			pack_item_idx = -1;
-		}
-		
-		break;
-	case 0:
-		if (pack_item_1 > 0) {
-			pack_item_idx = 1;
-		} else if (pack_item_2 > 0) {
-			pack_item_idx = 2;
-		} else if (pack_item_0 > 0) {
-			pack_item_idx = 0;
-		} else {
-			pack_item_idx = -1;
-		}
-
-		break;
-
-	case 1:
-		if (pack_item_2 > 0) {
-			pack_item_idx = 2;
-		} else if (pack_item_0 > 0) {
-			pack_item_idx = 0;
-		} else if (pack_item_1 > 0) {
-			pack_item_idx = 1;
-		} else {
-			pack_item_idx = -1;
-		}
-
-		break;
-
-	case 2:
-		if (pack_item_0 > 0) {
-			pack_item_idx = 0;
-		} else if (pack_item_1 > 0) {
-			pack_item_idx = 1;
-		} else if (pack_item_2 > 0) {
-			pack_item_idx = 2;
-		} else {
-			pack_item_idx = -1;
-		}
-
-		break;
-
-	default:
-		pack_item_idx = -1;
-	}
+	UserMessageBegin(user, "HealthPackStatus");
+	WRITE_BYTE((unsigned char)false);
+	MessageEnd();
 
 }
 

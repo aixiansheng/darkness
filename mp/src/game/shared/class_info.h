@@ -178,6 +178,7 @@ typedef struct class_info_t class_info_t;
 #define WEAPON_357			"weapon_357"
 #define WEAPON_PLASMA		"weapon_plasma_rifle"
 #define WEAPON_CANON		"weapon_plasma_canon"
+#define WEAPON_FLAREGUN		"weapon_flaregun"
 
 #define GRENADE_NULL		"none"
 #define GRENADE_FRAG		"grenade"
@@ -226,6 +227,7 @@ typedef struct class_info_t class_info_t;
 #define AMMO_SPIKE		"spike"
 #define AMMO_PLASMA		"plasma"
 #define AMMO_PLASMA_CANON "plasma_bolt"
+#define AMMO_FLARES		"env_flare"
 
 #define ENGY_TAUNT		"Engy.Taunt"
 #define GRUNT_TAUNT		"Grunt.Taunt"

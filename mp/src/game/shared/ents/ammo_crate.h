@@ -22,6 +22,7 @@
 
 #define AMMO_CRATE_RELOAD_TIME	90.0f
 #define AMMO_CRATE_THINK_TIME	5.0f
+#define AMMO_CRATE_DENY_SOUND	"AmmoCrate.Deny"
 
 // Ammo crate
 class CAmmoCrate : public CHumanMateriel {

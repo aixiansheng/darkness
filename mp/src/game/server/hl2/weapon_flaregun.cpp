@@ -386,25 +386,7 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 	}
 
 	//If the flare hit a person or NPC, do damage here.
-	if ( pOther && pOther->m_takedamage )
-	{
-		/*
-			The Flare is the iRifle round right now. No damage, just ignite. (sjb)
-
-		//Damage is a function of how fast the flare is flying.
-		int iDamage = GetAbsVelocity().Length() / 50.0f;
-
-		if ( iDamage < 5 )
-		{
-			//Clamp minimum damage
-			iDamage = 5;
-		}
-
-		//Use m_pOwner, not GetOwnerEntity()
-		pOther->TakeDamage( CTakeDamageInfo( this, m_pOwner, iDamage, (DMG_BULLET|DMG_BURN) ) );
-		m_flNextDamage = gpGlobals->curtime + 1.0f;
-		*/
-
+	if ( pOther && pOther->m_takedamage ) {
 		CBaseAnimating *pAnim;
 
 		pAnim = dynamic_cast<CBaseAnimating*>(pOther);
@@ -424,9 +406,7 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		Die( 0.5 );
 
 		return;
-	}
-	else
-	{
+	} else {
 		// hit the world, check the material type here, see if the flare should stick.
 		trace_t tr;
 		tr = CBaseEntity::GetTouchTrace();
