@@ -240,6 +240,7 @@ $Project "Client (HL2MP)"
 				$File	"$SRCDIR\game\shared\hl2mp\weapon_stalker_slash.h"
 				$File	"$SRCDIR\game\shared\hl2mp\weapon_stinger_fire.cpp"
 				$File	"$SRCDIR\game\shared\hl2mp\weapon_stinger_fire.h"
+				$File	"$SRCDIR\game\shared\hl2mp\weapon_flare_gren.cpp"
 			}
 
 			$Folder	"UI"

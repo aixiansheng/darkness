@@ -66,7 +66,6 @@ BEGIN_DATADESC( CFlare )
 
 	// Function Pointers
 	DEFINE_FUNCTION( FlareTouch ),
-	DEFINE_FUNCTION( FlareBurnTouch ),
 	DEFINE_FUNCTION( FlareThink ),
 
 END_DATADESC()
@@ -360,19 +359,6 @@ void CFlare::FlareThink( void )
 // Purpose: 
 // Input  : *pOther - 
 //-----------------------------------------------------------------------------
-void CFlare::FlareBurnTouch( CBaseEntity *pOther )
-{
-	if ( pOther && pOther->m_takedamage && ( m_flNextDamage < gpGlobals->curtime ) )
-	{
-		pOther->TakeDamage( CTakeDamageInfo( this, m_pOwner, 1, (DMG_BULLET|DMG_BURN) ) );
-		m_flNextDamage = gpGlobals->curtime + 1.0f;
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pOther - 
-//-----------------------------------------------------------------------------
 void CFlare::FlareTouch( CBaseEntity *pOther )
 {
 	Assert( pOther );
@@ -385,15 +371,10 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		g_pEffects->Sparks( GetAbsOrigin() );
 	}
 
+	m_nBounces++;
+
 	//If the flare hit a person or NPC, do damage here.
 	if ( pOther && pOther->m_takedamage ) {
-		CBaseAnimating *pAnim;
-
-		pAnim = dynamic_cast<CBaseAnimating*>(pOther);
-		if( pAnim )
-		{
-			pAnim->Ignite( 30.0f );
-		}
 
 		Vector vecNewVelocity = GetAbsVelocity();
 		vecNewVelocity	*= 0.1f;
@@ -402,9 +383,6 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		SetMoveType( MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE );
 		SetGravity(1.0f);
 
-
-		Die( 0.5 );
-
 		return;
 	} else {
 		// hit the world, check the material type here, see if the flare should stick.
@@ -412,43 +390,30 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		tr = CBaseEntity::GetTouchTrace();
 
 		//Only do this on the first bounce
-		if ( m_nBounces == 0 )
+		if ( m_nBounces == 1 )
 		{
 			const surfacedata_t *pdata = physprops->GetSurfaceData( tr.surface.surfaceProps );	
 
 			if ( pdata != NULL )
 			{
-				//Only embed into concrete and wood (jdw: too obscure for players?)
-				//if ( ( pdata->gameMaterial == 'C' ) || ( pdata->gameMaterial == 'W' ) )
-				{
-					Vector	impactDir = ( tr.endpos - tr.startpos );
-					VectorNormalize( impactDir );
+				Vector	impactDir = ( tr.endpos - tr.startpos );
+				VectorNormalize( impactDir );
 
-					float	surfDot = tr.plane.normal.Dot( impactDir );
+				float	surfDot = tr.plane.normal.Dot( impactDir );
 
-					//Do not stick to ceilings or on shallow impacts
-					if ( ( tr.plane.normal.z > -0.5f ) && ( surfDot < -0.9f ) )
+				if (( tr.plane.normal.z > -0.5f) && (surfDot < -0.9f)) {
+
+					int index = decalsystem->GetDecalIndexForName( "SmallScorch" );
+					if ( index >= 0 )
 					{
-						RemoveSolidFlags( FSOLID_NOT_SOLID );
-						AddSolidFlags( FSOLID_TRIGGER );
-						UTIL_SetOrigin( this, tr.endpos + ( tr.plane.normal * 2.0f ) );
-						SetAbsVelocity( vec3_origin );
-						SetMoveType( MOVETYPE_NONE );
-						
-						SetTouch( &CFlare::FlareBurnTouch );
-						
-						int index = decalsystem->GetDecalIndexForName( "SmallScorch" );
-						if ( index >= 0 )
-						{
-							CBroadcastRecipientFilter filter;
-							te->Decal( filter, 0.0, &tr.endpos, &tr.startpos, ENTINDEX( tr.m_pEnt ), tr.hitbox, index );
-						}
-						
-						CPASAttenuationFilter filter2( this, "Flare.Touch" );
-						EmitSound( filter2, entindex(), "Flare.Touch" );
-
-						return;
+						CBroadcastRecipientFilter filter;
+						te->Decal( filter, 0.0, &tr.endpos, &tr.startpos, ENTINDEX( tr.m_pEnt ), tr.hitbox, index );
 					}
+						
+					CPASAttenuationFilter filter2( this, "Flare.Touch" );
+					EmitSound( filter2, entindex(), "Flare.Touch" );
+
+					return;
 				}
 			}
 		}
@@ -467,8 +432,6 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		// Change our flight characteristics
 		SetMoveType( MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE );
 		SetGravity( UTIL_ScaleForGravity( 640 ) );
-		
-		m_nBounces++;
 
 		//After the first bounce, smacking into whoever fired the flare is fair game
 		SetOwnerEntity( this );	
@@ -480,13 +443,11 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		SetAbsVelocity( vecNewVelocity );
 
 		//Stopped?
-		if ( GetAbsVelocity().Length() < 64.0f )
-		{
+		if (GetAbsVelocity().Length() < 64.0f) {
 			SetAbsVelocity( vec3_origin );
 			SetMoveType( MOVETYPE_NONE );
 			RemoveSolidFlags( FSOLID_NOT_SOLID );
 			AddSolidFlags( FSOLID_TRIGGER );
-			SetTouch( &CFlare::FlareBurnTouch );
 		}
 	}
 }

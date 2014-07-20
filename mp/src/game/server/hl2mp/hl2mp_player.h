@@ -298,6 +298,8 @@ private:
 	float m_flNextHitTime;
 	float last_spit_hit;
 
+	int num_flares;
+	float m_flNextFlareTime;
 	float m_flNextAmmoDenySound;
 	float m_flNextHealthPack;
 	float m_flNextRefilTime;

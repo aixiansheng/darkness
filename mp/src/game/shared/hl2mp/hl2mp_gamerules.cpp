@@ -961,17 +961,12 @@ CAmmoDef *GetAmmoDef()
 	{
 		bInitted = true;
 
-		//def.AddAmmoType("AR2",				WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	60,	BULLET_IMPULSE(200, 1225),	0 );
-		//def.AddAmmoType("AR2AltFire",		WPN_DEFAULT,		DMG_DISSOLVE,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("Pistol",			WPN_PISTOL,			DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	36,	BULLET_IMPULSE(200, 1225),	0 );
 		def.AddAmmoType("SMG1",				WPN_SMG,			DMG_BULLET,			TRACER_LINE_AND_WHIZ,	0,	0,	100,	BULLET_IMPULSE(200, 1225),	0 );
 		def.AddAmmoType("357",				WPN_357,			DMG_BULLET | DMG_ALWAYSGIB,	TRACER_LINE_AND_WHIZ,	0,	0,	12,	BULLET_IMPULSE(800, 5000),	0 );
-		//def.AddAmmoType("XBowBolt",			WPN_DEFAULT,		DMG_BULLET,			TRACER_LINE,		0,	0,	10,	BULLET_IMPULSE(800, 8000),	0 );
 		def.AddAmmoType("Buckshot",			WPN_SHOTGUN_BUCK,	DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,		0,	0,	12,	BULLET_IMPULSE(400, 1200),	0 );
 		def.AddAmmoType("RPG_Round",		WPN_RPG,			DMG_BLAST,			TRACER_NONE,		0,	0,	3,	0,				0 );
-		//def.AddAmmoType("SMG1_Grenade",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("Grenade",			WPN_FRAG,			DMG_BURN,			TRACER_NONE,		0,	0,	3,	0,				0 );
-		//def.AddAmmoType("slam",				WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("grenade_smk",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	2,	0,				0 );
 		def.AddAmmoType("grenade_spike",	WPN_STALKER_GREN,	DMG_BULLET,			TRACER_NONE,		0,	0,	3,	0,				0 );
 		def.AddAmmoType("grenade_guardian",	WPN_GUARDIAN_SPIKE,	DMG_BULLET,			TRACER_NONE,		0,	0,	4,	0,				0 );
@@ -996,6 +991,7 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("turret_bullet",	WPN_MG_TURRET,		DMG_BULLET,			TRACER_NONE,		0,	0,	1,	0,				0 );
 		def.AddAmmoType("obstacle",			WPN_OBSTACLE,		DMG_CLUB | DMG_ALWAYSGIB,	TRACER_NONE,	0,	0,	20,	0, 			0 );
 		def.AddAmmoType("engy_charge",		WPN_ENGY,			DMG_PLASMA,			TRACER_NONE,		0,	0,	1,	10000.0f,		0);
+		def.AddAmmoType("env_flare",		WPN_DEFAULT,		DMG_BURN,			TRACER_NONE,		0,	0,	2,	 0,				0);
 
 		//
 		// make sure you don't hit the 32 item limit without first increasing it :D

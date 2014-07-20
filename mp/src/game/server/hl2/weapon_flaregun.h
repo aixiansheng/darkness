@@ -4,6 +4,7 @@
 //
 //=============================================================================//
 
+#include "cbase.h"
 #include "basehlcombatweapon.h"
 #include "soundenvelope.h"
 
@@ -18,7 +19,7 @@
 #define	SF_FLARE_INFINITE	0x00000004
 #define	SF_FLARE_START_OFF	0x00000008
 
-#define	FLARE_DURATION		30.0f
+#define	FLARE_DURATION		120.0f
 #define FLARE_DECAY_TIME	10.0f
 #define FLARE_BLIND_TIME	6.0f
 
@@ -55,7 +56,6 @@ public:
 	Class_T Classify( void );
 
 	void	FlareTouch( CBaseEntity *pOther );
-	void	FlareBurnTouch( CBaseEntity *pOther );
 	void	FlareThink( void );
 
 	void	InputStart( inputdata_t &inputdata );
@@ -90,7 +90,7 @@ public:
 //---------------------
 // Flaregun
 //---------------------
-class CFlaregun:public CBaseHLCombatWeapon
+class CFlaregun : public CBaseHLCombatWeapon
 {
 public:
 	DECLARE_CLASS( CFlaregun, CBaseHLCombatWeapon );

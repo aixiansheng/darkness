@@ -42,6 +42,7 @@
 #include "weapon_plasma_canon.h"
 #include "physics_prop_ragdoll.h"
 #include "ents/teleporter.h"
+#include "weapon_flaregun.h"
 
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -2207,7 +2208,8 @@ void CHL2MP_Player::CheckThrowPosition(const Vector &vecEye, Vector &vecSrc) {
 //
 
 void CHL2MP_Player::ThrowGrenade(int type) {
-	CBaseGrenade *pGrenade;
+	CBaseGrenade *pGrenade = NULL;
+	CFlare *pFlare;
 	Vector vecEye;
 	Vector vForward;
 	Vector vRight;
@@ -2224,8 +2226,8 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 	int type_smoke;
 	int type_acid;
 	int type_frag;
+	int type_flare;
 
-	
 	vecEye = EyePosition();
 	EyeVectors(&vForward, &vRight, NULL);
 	vecSrc = vecEye + vForward * 18.0f + vRight * 8.0f;
@@ -2233,12 +2235,12 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 	vForward[2] += 0.1f;
 	GetVelocity(&vecThrow, NULL);
 
-
 	type_guardian = GetAmmoDef()->Index(GRENADE_GUARD);
 	type_spike = GetAmmoDef()->Index(GRENADE_SPIKE);
 	type_smoke = GetAmmoDef()->Index(GRENADE_SMOKE);
 	type_acid = GetAmmoDef()->Index(GRENADE_ACID);
 	type_frag = GetAmmoDef()->Index(GRENADE_FRAG);
+	type_flare = GetAmmoDef()->Index(GRENADE_FLARE);
 
 	// guardian/stalker both use same type
 	if (type == type_guardian || type == type_spike) {
@@ -2319,8 +2321,29 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 			false
 		);
 
+	}
+	else if (type == type_flare) {
+		speed_factor = 300;
+		gren_damage = 1.0f;
+		gren_radius = 250.0f;
+		gren_timer = 2.5f;
+
+		vecThrow += vForward * speed_factor;
+
+		pFlare = CFlare::Create
+		(
+			vecSrc,
+			vec3_angle,
+			this,
+			FLARE_DURATION
+		);
+
+		if (pFlare) {
+			pFlare->SetAbsVelocity(vecThrow);
+		}
+
 	} else {
-		Warning("Unknown grenade type!");
+		Warning("Unknown grenade type!\n");
 		return;
 	}
 
@@ -2535,13 +2558,18 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 		if (spec_weapon) {
 			Weapon_Switch(spec_weapon);
 			return true;
-		} else if (m_iClassNumber == CLASS_GUARDIAN_IDX && !IsDead()) {
+		}
 
-				if (next_infestation < gpGlobals->curtime) {
-					InfestCorpse();
-				}
+		if (IsDead())
+			return true;
+		
+		switch (m_iClassNumber) {
+		case CLASS_GUARDIAN_IDX:
+			if (next_infestation < gpGlobals->curtime) {
+				InfestCorpse();
+			}
 
-				return true;
+			break;
 		}
 
 		return true;

@@ -251,8 +251,7 @@ void C_Flare::Update( float timeDelta )
 	if ( m_bLight )
 	{
 		dlight_t *dl= effects->CL_AllocDlight( index );
-
-		
+		float light_radius = baseScale * 4.0f;
 
 		if ( m_bPropFlare == false )
 		{
@@ -260,7 +259,7 @@ void C_Flare::Update( float timeDelta )
 			dl->color.r = 255;
 			dl->die		= gpGlobals->curtime + 0.1f;
 
-			dl->radius	= baseScale * random->RandomFloat( 110.0f, 128.0f );
+			dl->radius	= light_radius * random->RandomFloat( 110.0f, 128.0f );
 			dl->color.g = dl->color.b = random->RandomInt( 32, 64 );
 		}
 		else
@@ -282,7 +281,7 @@ void C_Flare::Update( float timeDelta )
 				dl->color.r = 255;
 				dl->die		= gpGlobals->curtime + 0.1f;
 
-				dl->radius	= baseScale * random->RandomFloat( 245.0f, 256.0f );
+				dl->radius	= light_radius * random->RandomFloat( 245.0f, 256.0f );
 				dl->color.g = dl->color.b = random->RandomInt( 95, 128 );
 		
 				dlight_t *el= effects->CL_AllocElight( index );
@@ -290,7 +289,7 @@ void C_Flare::Update( float timeDelta )
 				el->origin	= effect_origin;
 				el->color.r = 255;
 				el->color.g = dl->color.b = random->RandomInt( 95, 128 );
-				el->radius	= baseScale * random->RandomFloat( 260.0f, 290.0f );
+				el->radius	= light_radius * random->RandomFloat( 260.0f, 290.0f );
 				el->die		= gpGlobals->curtime + 0.1f;
 			}
 		}
