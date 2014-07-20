@@ -86,8 +86,8 @@ typedef struct class_info_t class_info_t;
 #define DRONE_SPEED			(NORMAL_SPEED * 1.25f)
 #define KAMI_SPEED			HATCHY_SPEED
 #define STINGER_SPEED		(NORMAL_SPEED * 1.3f)
-#define GUARDIAN_SPEED		(NORMAL_SPEED)
-#define STALKER_SPEED		(NORMAL_SPEED * 1.25f)
+#define GUARDIAN_SPEED		(NORMAL_SPEED * 0.9f)
+#define STALKER_SPEED		(NORMAL_SPEED)
 
 // models
 #define ENGINEER_MODEL		"models/engy.mdl"

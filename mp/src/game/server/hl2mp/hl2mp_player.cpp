@@ -947,7 +947,9 @@ bool CHL2MP_Player::EntRefil(float delay) {
 
 	if (m_flNextAmmoDenySound < gpGlobals->curtime) {
 		m_flNextAmmoDenySound = gpGlobals->curtime + NEXT_AMMO_DENY_SOUND;
-		EmitSound(AMMO_CRATE_DENY_SOUND);
+
+		if (GetTeamNumber() == TEAM_HUMANS)
+			EmitSound(AMMO_CRATE_DENY_SOUND);
 	}
 
 	return false;
@@ -1044,7 +1046,7 @@ void CHL2MP_Player::RefilAmmo(bool small) {
 				MessageEnd();
 			}
 
-		} else {
+		} else { // if (small == false)
 			
 			//
 			// All human classes can gain secondary ammo from engy fixes
@@ -1514,6 +1516,7 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 	int otherTeam;
 	Vector dirToOther;
 	Vector vel;
+	Vector deltav;
 	trace_t tr;
 	CHL2MP_Player *p;
 
@@ -1533,15 +1536,15 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 		// player's GroundEntity :)
 		//
 		if (other == GetGroundEntity()) {
-		
+
 			if (otherTeam == TEAM_HUMANS &&
 				m_iClassNumber != CLASS_STALKER_IDX) {
-					return;
+				return;
 			}
 
 			if (otherTeam == TEAM_SPIDERS &&
 				m_iClassNumber != CLASS_MECH_IDX) {
-					return;
+				return;
 			}
 
 			ClearMultiDamage();
@@ -1552,42 +1555,85 @@ void CHL2MP_Player::Touch(CBaseEntity *other) {
 
 			return;
 		}
+
 		
-		//
-		// mechs crush hatchies and kamis they "step on"
-		// this means:
-		// - they are trying to walk toward the spider
-		// - they are touching the spider
-		// - the spider is on the ground
-		// - the mech is on the ground
-		//
-
-		if (m_iClassNumber != CLASS_MECH_IDX)
-			return;
-
+		
 		if ((p = ToHL2MPPlayer(other)) == NULL)
 			return;
 
-		if (p->m_iClassNumber != CLASS_HATCHY_IDX &&
-			p->m_iClassNumber != CLASS_KAMI_IDX)
-			return;
+		switch (m_iClassNumber) {
+		case CLASS_MECH_IDX:
+			//
+			// mechs crush hatchies and kamis they "step on"
+			// this means:
+			// - they are trying to walk toward the spider
+			// - they are touching the spider
+			// - the spider is on the ground
+			// - the mech is on the ground
+			//
+			if (p->m_iClassNumber != CLASS_HATCHY_IDX &&
+				p->m_iClassNumber != CLASS_KAMI_IDX)
+				return;
 
-		if (!other->GetGroundEntity() || !GetGroundEntity())
-			return;
+			if (!other->GetGroundEntity() || !GetGroundEntity())
+				return;
 
-		//
-		// technically, if the mech is blocked/not moving
-		// we'll fail to stomp the hatchy, but that
-		// won't happen often
-		//
-		dirToOther = other->GetAbsOrigin() - GetAbsOrigin();
-		
-		if (dirToOther.Dot(vel) > 0) {
-			ClearMultiDamage();
-			CTakeDamageInfo dmg(this, this, 1500, DMG_CRUSH);
-			CalculateMeleeDamageForce(&dmg, vel, GetAbsOrigin(), 0.05f);
-			other->DispatchTraceAttack(dmg, vel, &tr);
-			ApplyMultiDamage();
+			//
+			// technically, if the mech is blocked/not moving
+			// we'll fail to stomp the hatchy, but that
+			// won't happen often
+			//
+			dirToOther = other->GetAbsOrigin() - GetAbsOrigin();
+
+			if (dirToOther.Dot(vel) > 0) {
+				ClearMultiDamage();
+				CTakeDamageInfo dmg(this, this, 1500, DMG_CRUSH);
+				CalculateMeleeDamageForce(&dmg, vel, GetAbsOrigin(), 0.05f);
+				other->DispatchTraceAttack(dmg, vel, &tr);
+				ApplyMultiDamage();
+			}
+
+			break;
+
+		case CLASS_STALKER_IDX:
+			//
+			// stalkers harm soft humans if they run
+			// into them at terminal velocity...
+			// in Q2, you probably needed to bunny hop
+			// to accomplish this... but in Source
+			// we don't have that, so assume if the stalker
+			// hits at full (relative) speed, it's damage-worthy
+			//
+			switch (p->m_iClassNumber) {
+			case CLASS_ENGINEER_IDX:
+			case CLASS_GRUNT_IDX:
+			case CLASS_SHOCK_IDX:
+			case CLASS_HEAVY_IDX:
+				break;
+
+			default:
+				return;
+			}
+
+			deltav = vel - other->GetAbsVelocity();
+
+			if ((float)deltav.Length() < GetPlayerMaxSpeed() * 0.985f)
+				return;
+
+			dirToOther = other->GetAbsOrigin() - GetAbsOrigin();
+
+			if (dirToOther.Dot(vel) > 0) {
+				ClearMultiDamage();
+				CTakeDamageInfo dmg(this, this, 150, DMG_CRUSH);
+				CalculateMeleeDamageForce(&dmg, vel, GetAbsOrigin(), 0.05f);
+				other->DispatchTraceAttack(dmg, vel, &tr);
+				ApplyMultiDamage();
+			}
+
+			break;
+
+		default:
+			return;
 		}
 
 	}
@@ -2321,8 +2367,7 @@ void CHL2MP_Player::ThrowGrenade(int type) {
 			false
 		);
 
-	}
-	else if (type == type_flare) {
+	} else if (type == type_flare) {
 		speed_factor = 300;
 		gren_damage = 1.0f;
 		gren_radius = 250.0f;

@@ -226,7 +226,7 @@ void CClassMenu::ShowClassButton(int buttonNum, int classNum) {
 
 	Q_snprintf(buttonName, sizeof(buttonName), "switchclass%d", buttonNum);
 	Q_snprintf(commandStr, sizeof(commandStr), "switchclass %d", classNum);
-	Q_snprintf(buttonText, sizeof(buttonText), "%d. %s [%d points]", buttonNum + 1, name, cost);
+	Q_snprintf(buttonText, sizeof(buttonText), "&%d. %s [%d points]", buttonNum + 1, name, cost);
 
 	b = dynamic_cast<Button *>(FindChildByName((const char *)buttonName));
 	if (b) {

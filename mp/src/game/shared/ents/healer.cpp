@@ -94,8 +94,9 @@ void CHealerEntity::HealThink(void) {
 						GetCreator()->IncrementFragCount(1);
 					}
 				}
-			}
 
+				p->IncrementArmorValue(1, p->GetMaxArmor());
+			}
 		}
 	}
 

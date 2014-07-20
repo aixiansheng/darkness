@@ -517,7 +517,7 @@ CAmmoDef::CAmmoDef(void)
 	
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_BREEDER_IDX]			= 1.0f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_HATCHY_IDX]				= 1.0f;
-	dmg_factors[WPN_PLASMA_RIFLE][CLASS_DRONE_IDX]				= 0.8f;
+	dmg_factors[WPN_PLASMA_RIFLE][CLASS_DRONE_IDX]				= 0.9f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_KAMI_IDX]				= 0.5f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_STINGER_IDX]			= 0.4f;
 	dmg_factors[WPN_PLASMA_RIFLE][CLASS_GUARDIAN_IDX]			= 1.2f;

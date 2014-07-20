@@ -238,7 +238,7 @@ void CBuildMenu::ShowItemButton(int buttonNum, int itemNum) {
 
 	Q_snprintf(buttonName, sizeof(buttonName), "builditem%d", buttonNum);
 	Q_snprintf(commandStr, sizeof(commandStr), "builditem %d", itemNum);
-	Q_snprintf(buttonText, sizeof(buttonText), "%d. %s [%d points]", buttonNum + 1, name, cost);
+	Q_snprintf(buttonText, sizeof(buttonText), "&%d. %s [%d points]", buttonNum + 1, name, cost);
 
 	b = dynamic_cast<Button *>(FindChildByName((const char *)buttonName));
 	if (b) {
@@ -254,55 +254,6 @@ void CBuildMenu::ShowItemButton(int buttonNum, int itemNum) {
 		}
 	}
 }
-
-//#define BUTTON_STR		"builditem"
-//#define BUTTON_FMT_STR	BUTTON_STR "%d"
-//
-//// see BuildMenu.res for max...
-//#define MAX_BUTTONS 9
-//
-//
-//void CBuildMenu::ShowItems(item_info_t *infos, int num) {
-//	int i;
-//	char buf[sizeof(BUTTON_STR) + 1];
-//	char dispBuf[32];
-//	Button *b;
-//	
-//	if (infos == NULL || num == 0) {
-//		for (i = 0; i < MAX_BUTTONS; i++) {
-//			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
-//			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
-//			if (b) {
-//				b->SetText("None");
-//				b->SetVisible(false);
-//			}
-//		}
-//	}
-//
-//	// num > 9 = bad... so don't do it :D
-//	for (i = 0; i < num; i++) {
-//		Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
-//		b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
-//		if (b) {
-//			Q_snprintf(dispBuf, sizeof(dispBuf), "&%d. %ls  [%d points]", i + 1, infos[i].display_name, infos[i].value);
-//			b->SetText(dispBuf);
-//			b->SetVisible(true);
-//			b->SetButtonBorderEnabled(false);
-//			b->SetPaintBorderEnabled(false);
-//		}
-//	}
-//
-//	if (i < MAX_BUTTONS - 1) {
-//		for (; i < MAX_BUTTONS; i++) {
-//			Q_snprintf(buf, sizeof(buf), BUTTON_FMT_STR, i);
-//			b = dynamic_cast<Button *>(FindChildByName((const char *)buf));
-//			if (b) {
-//				b->SetText("None");
-//				b->SetVisible(false);
-//			}
-//		}
-//	}
-//}
 
 void CBuildMenu::SetData(KeyValues *data) {
 	return;

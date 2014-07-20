@@ -167,7 +167,7 @@ class_info_t dk_classes[NUM_CLASSES] = {
 		WEAPON_PISTOL,
 		GRENADE_FLARE,
 		WEAPON_FLARE_GREN,
-		3, 
+		4, 
 		GRUNT_SPEED, 
 		GRUNT_NAME, 
 		GRUNT_MODEL, 
